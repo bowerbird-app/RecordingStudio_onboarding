@@ -30,6 +30,9 @@ Then open the app and sign in with:
 ## Useful Routes
 
 - `/` - dummy app home page and template guidance
+- `/flows` - registered onboarding flows and recent runs
+- `/flow_runs/:id` - run status, step progress, and transition controls
+- `/provisioning` - provisioning execution status
 - `/recording_studio` - redirects to `/` while the mounted Recording Studio engine stays available under that prefix for non-root routes
 - `/users/sign_in` - Devise sign-in page
 - `/docs/install`, `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` - dummy-only starter pages

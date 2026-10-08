@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_01_000011) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_010002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -81,6 +81,61 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_01_000011) do
     t.index ["recording_id"], name: "index_recording_studio_events_on_recording_id"
   end
 
+  create_table "recording_studio_onboarding_flow_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "flow_key", null: false
+    t.integer "flow_version", default: 1, null: false
+    t.string "scope_type", null: false
+    t.uuid "scope_id", null: false
+    t.string "initiating_actor_type", null: false
+    t.uuid "initiating_actor_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "current_step_key", null: false
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.datetime "dismissed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["flow_key", "scope_type", "scope_id"], name: "idx_rso_flow_runs_open_scope", unique: true, where: "((status)::text = ANY ((ARRAY['pending'::character varying, 'in_progress'::character varying])::text[]))"
+    t.index ["flow_key", "status"], name: "idx_rso_flow_runs_flow_status"
+    t.index ["initiating_actor_type", "initiating_actor_id"], name: "idx_rso_flow_runs_actor"
+    t.index ["scope_type", "scope_id"], name: "idx_rso_flow_runs_scope"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'in_progress'::character varying, 'completed'::character varying, 'dismissed'::character varying]::text[])", name: "rso_flow_runs_status_check"
+  end
+
+  create_table "recording_studio_onboarding_provisioning_executions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "provisioner", null: false
+    t.string "idempotency_key", null: false
+    t.string "actor_type", null: false
+    t.uuid "actor_id", null: false
+    t.string "subject_type"
+    t.uuid "subject_id"
+    t.string "status", default: "pending", null: false
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.text "failure_details"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_type", "actor_id"], name: "idx_rso_provisioning_executions_actor"
+    t.index ["provisioner", "idempotency_key"], name: "idx_rso_provisioning_executions_idempotency", unique: true
+    t.index ["status"], name: "idx_rso_provisioning_executions_status"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'running'::character varying::text, 'completed'::character varying::text, 'failed'::character varying::text])", name: "rso_provisioning_executions_status_check"
+  end
+
+  create_table "recording_studio_onboarding_step_progresses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "flow_run_id", null: false
+    t.string "step_key", null: false
+    t.string "status", default: "pending", null: false
+    t.string "acted_by_type"
+    t.uuid "acted_by_id"
+    t.datetime "acted_at"
+    t.datetime "first_viewed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["flow_run_id", "step_key"], name: "idx_rso_step_progresses_run_step", unique: true
+    t.index ["status"], name: "idx_rso_step_progresses_status"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'completed'::character varying, 'skipped'::character varying]::text[])", name: "rso_step_progresses_status_check"
+  end
+
   create_table "recording_studio_recordings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.uuid "parent_recording_id"
@@ -137,6 +192,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_01_000011) do
 
   add_foreign_key "recording_studio_access_invitations", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
+  add_foreign_key "recording_studio_onboarding_step_progresses", "recording_studio_onboarding_flow_runs", column: "flow_run_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
 end

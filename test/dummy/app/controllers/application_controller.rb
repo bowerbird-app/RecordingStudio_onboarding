@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
 
   layout :application_layout
 
-  before_action :authenticate_user!
+  before_action :authenticate_user!, unless: :devise_controller?
   before_action :set_current_actor
 
   private

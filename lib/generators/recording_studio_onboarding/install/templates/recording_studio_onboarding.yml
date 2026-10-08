@@ -1,0 +1,4 @@
+# Optional environment-specific settings for RecordingStudioOnboarding.
+# Provisioners are registered in config/initializers/recording_studio_onboarding.rb.
+development:
+production:
