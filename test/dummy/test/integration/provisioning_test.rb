@@ -11,22 +11,41 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "password registration provisions a workspace exactly once" do
+  test "password registration alone does not provision without the users event" do
     email = "new-user-#{SecureRandom.hex(4)}@example.com"
+
+    assert_difference -> { User.count }, 1 do
+      assert_no_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count } do
+        assert_no_difference -> { Workspace.count } do
+          post user_registration_path, params: {
+            user: {
+              email: email,
+              password: "Password123!",
+              password_confirmation: "Password123!"
+            }
+          }
+        end
+      end
+    end
+  end
+
+  test "registration completed event provisions a workspace exactly once" do
+    user = User.create!(
+      email: "event-user-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
 
     assert_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count }, 1 do
       assert_difference -> { Workspace.count }, 1 do
-        post user_registration_path, params: {
-          user: {
-            email: email,
-            password: "Password123!",
-            password_confirmation: "Password123!"
-          }
-        }
+        ActiveSupport::Notifications.instrument(
+          "registration.completed.recording_studio_user",
+          user_id: user.id,
+          method: :password
+        )
       end
     end
 
-    user = User.find_by!(email: email)
     execution = RecordingStudioOnboarding::ProvisioningExecution.find_by!(
       provisioner: "new_registration",
       actor: user
@@ -38,9 +57,13 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
     assert_equal 1, workspaces.size
     assert_match(/Workspace\z/, workspaces.first.name)
 
-    # Second call with the same identity must not create another workspace.
     assert_no_difference -> { Workspace.count } do
       assert_no_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count } do
+        ActiveSupport::Notifications.instrument(
+          "registration.completed.recording_studio_user",
+          user_id: user.id,
+          method: :password
+        )
         RecordingStudioOnboarding.provision(:new_registration, actor: user, subject: user)
       end
     end
@@ -128,16 +151,17 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
   end
 
   test "provisioning status page shows executions and workspaces" do
-    email = "status-#{SecureRandom.hex(4)}@example.com"
-    post user_registration_path, params: {
-      user: {
-        email: email,
-        password: "Password123!",
-        password_confirmation: "Password123!"
-      }
-    }
+    user = User.create!(
+      email: "status-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
+    ActiveSupport::Notifications.instrument(
+      "registration.completed.recording_studio_user",
+      user_id: user.id,
+      method: :password
+    )
 
-    user = User.find_by!(email: email)
     sign_in user
     get provisioning_path
 

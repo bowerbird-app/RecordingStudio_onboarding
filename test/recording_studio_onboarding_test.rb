@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioOnboardingTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.2.3", ::RecordingStudioOnboarding::VERSION
+    assert_equal "0.3.0", ::RecordingStudioOnboarding::VERSION
   end
 
   def test_engine_exists
@@ -15,6 +15,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
     gemspec = File.read(File.expand_path("../recording_studio_onboarding.gemspec", __dir__))
 
     assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.15.0"'
   end
 
   def test_gemspec_excludes_cursor_config
@@ -45,12 +46,14 @@ class RecordingStudioOnboardingTest < Minitest::Test
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.10.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.11.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.15.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.1"'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.196"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.2.1"'
     refute_includes gemfile, 'tag: "v4.2.0"'
+    refute_includes gemfile, 'tag: "v0.10.1"'
     refute_includes gemfile, 'tag: "v0.9.1"'
     refute_includes gemfile, 'tag: "v0.5.0"'
     refute_includes gemfile, 'tag: "v0.1.177"'
@@ -181,10 +184,12 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes readme, "Terms & Conditions"
     assert_includes readme, "v4.2.2"
     assert_includes readme, "v0.1.196"
-    assert_includes readme, "v0.10.1"
+    assert_includes readme, "v0.11.1"
+    assert_includes readme, "v0.15.0"
     assert_includes readme, "v0.5.1"
     assert_includes readme, "v2.0.5"
     assert_includes readme, "Admin integration"
+    assert_includes readme, "registration.completed.recording_studio_user"
     refute_includes readme, "ExampleService"
     refute_includes readme, "recording_studio/v3.0.0"
   end

@@ -13,7 +13,9 @@ Next steps:
 3. Run `bin/rails db:migrate`
 4. Wire auth, layout, and current actor integration in the host app
 5. Ensure host recordables declare `recording_studio_recordable` as required
-6. Call RecordingStudioOnboarding.provision after registration (or rely on the
-   OTP notification subscriber when RecordingStudio_users is installed)
+6. With RecordingStudio_users >= 0.15.0, provisioning runs from
+   registration.completed.recording_studio_user (password, OAuth, and OTP).
+   Call RecordingStudioOnboarding.provision only for custom registration paths
+   that do not emit that event.
 
 ===============================================================================

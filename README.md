@@ -128,17 +128,22 @@ No separate analytics store.
 
 ## RecordingStudio_users integration
 
-OTP: `otp.registration_completed.recording_studio_user`. Password/OmniAuth hooks
-are not yet available — hosts call `provision` explicitly for those paths.
-The switch to `registration.completed.recording_studio_user` waits on RS Users
-v0.15.0 and is **out of scope for this PR**.
+Requires **RecordingStudio_users >= 0.15.0**.
+
+Subscribes to `registration.completed.recording_studio_user` for every
+successful sign-up method (`:password`, `:oauth`, `:otp`). Provisioning is
+idempotent per actor, so duplicate events do not double-provision.
+
+The older OTP-only event (`otp.registration_completed.recording_studio_user`)
+is not subscribed; OTP is covered by the unified event.
 
 ## Architecture notes
 
 - No dependency on RS Terms & Conditions
 - Flatpack ViewComponents only; no React or Vue
-- Dummy GitHub tag pins: RecordingStudio `v4.2.2`, Accessible `v0.10.1`,
-  Root Switchable `v0.5.1`, Flatpack `v0.1.196`, Admin `v2.0.5`
+- Dummy GitHub tag pins: RecordingStudio `v4.2.2`, Accessible `v0.11.1`,
+  RecordingStudio_users `v0.15.0`, Root Switchable `v0.5.1`, Flatpack `v0.1.196`,
+  Admin `v2.0.5`
 
 ## Development
 
