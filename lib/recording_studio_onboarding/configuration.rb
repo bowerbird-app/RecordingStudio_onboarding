@@ -5,7 +5,7 @@ require "recording_studio_onboarding/flow_definition"
 module RecordingStudioOnboarding
   class Configuration
     attr_reader :hooks, :provisioners, :flows
-    attr_accessor :authorize_run, :preview_context
+    attr_accessor :authorize_run, :preview_context, :current_actor
 
     def initialize
       @hooks = RecordingStudio::Hooks.new
@@ -13,6 +13,7 @@ module RecordingStudioOnboarding
       @flows = {}
       @authorize_run = nil
       @preview_context = nil
+      @current_actor = nil
     end
 
     # Register a named provisioning handler.

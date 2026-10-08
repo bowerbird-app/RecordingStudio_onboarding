@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "recording_studio"
+require "view_component"
 require "recording_studio_onboarding/version"
 require "recording_studio_onboarding/engine"
 require "recording_studio_onboarding/configuration"

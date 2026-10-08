@@ -1,0 +1,3 @@
+<% content_for :title, "#{@run.flow_key} · #{@run.current_step_key}" %>
+
+<%= render RecordingStudioOnboarding::RunComponent.new(run: @run, embedded: @embedded) %>

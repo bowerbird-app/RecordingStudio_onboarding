@@ -3,14 +3,25 @@
 <div class="flex w-full flex-col gap-8">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Onboarding flows",
-    subtitle: "PR 2 demo: registered flows, start a run, inspect progress. Card UI arrives in PR 3.",
+    subtitle: "Start a run, then the engine card shell at /onboarding/runs/:uuid takes over.",
     variant: :h1
   ) %>
+
+  <% if @active_account_setup %>
+    <section class="flex flex-col gap-3" data-testid="embedded-run">
+      <%= render FlatPack::PageTitle::Component.new(
+        title: "Embedded mode",
+        subtitle: "RunComponent inside a host page (Turbo Frame).",
+        variant: :h2
+      ) %>
+      <%= render RecordingStudioOnboarding::RunComponent.new(run: @active_account_setup, embedded: true) %>
+    </section>
+  <% end %>
 
   <section class="flex flex-col gap-3" data-testid="registered-flows">
     <%= render FlatPack::PageTitle::Component.new(
       title: "Registered flows",
-      subtitle: "Ruby configuration from RecordingStudioOnboarding.configure.",
+      subtitle: "Full-screen presentation redirects to the engine run route.",
       variant: :h2
     ) %>
     <ul class="space-y-3 text-sm leading-6">
@@ -20,6 +31,7 @@
           — scope <%= flow.scope %>,
           version <%= flow.version %>,
           <%= flow.steps.size %> steps,
+          progress <%= flow.progress %>,
           dismissible=<%= flow.dismissible %>
           <div class="mt-2">
             <% if flow.scope == :user %>
@@ -61,7 +73,6 @@
   <section class="flex flex-col gap-3" data-testid="flow-runs">
     <%= render FlatPack::PageTitle::Component.new(
       title: "Recent runs",
-      subtitle: "FlowRun records for this actor or user-scoped subject.",
       variant: :h2
     ) %>
     <% if @runs.any? %>
@@ -69,7 +80,7 @@
         <% @runs.each do |run| %>
           <li data-testid="flow-run">
             <%= link_to "#{run.flow_key} · #{run.status} · step #{run.current_step_key}",
-                  flow_run_path(run),
+                  recording_studio_onboarding.run_path(run),
                   class: "underline" %>
             <span class="opacity-70">
               scope <%= run.scope_type %>/<%= run.scope_id.to_s.first(8) %>

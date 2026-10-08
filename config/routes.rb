@@ -1,5 +1,12 @@
 # frozen_string_literal: true
 
 RecordingStudioOnboarding::Engine.routes.draw do
-  # PR 1 ships provisioning only. Flow run routes arrive in PR 3.
+  resources :runs, only: [:show], param: :uuid do
+    member do
+      post :advance
+      post :back
+      post :skip
+      post :dismiss
+    end
+  end
 end

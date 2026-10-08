@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Row-lock concurrency, open-run unique partial index, definition versioning
   reconcile, and `ActiveSupport::Notifications` flow events.
 - Dummy `/flows` and `/flow_runs/:id` demo pages for PR 2.
+- Card shell, `RunComponent`, Flatpack `ControlsComponent` / `ProgressComponent`.
+- Engine routes `/onboarding/runs/:uuid` with advance/back/skip/dismiss.
+- Presentation modes (full-screen + embedded Turbo Frame), host form-step
+  contract, Accessible-backed `authorize_run` (404 on denial), exit destinations.
+- Dummy card layouts (wide welcome, form, centred complete) and host form endpoints.
 
 ### Changed
 - Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`.
