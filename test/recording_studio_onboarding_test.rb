@@ -199,6 +199,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
     view_source = File.read(view_path)
 
     assert_includes view_source, 'title: "Recording Studio Onboarding"'
+    assert_includes view_source, "registration.completed.recording_studio_user"
     assert_includes view_source, "provision"
     assert_includes view_source, "dummy_page_nav"
     refute_includes view_source, "FlatPack::Card::Component"

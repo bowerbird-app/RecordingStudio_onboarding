@@ -83,6 +83,3 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 end
-
-# RecordingStudio Admin (PR 4 analytics/admin surfaces)
-gem "recording_studio_admin", github: "bowerbird-app/RecordingStudio_admin", tag: "v2.0.5"
