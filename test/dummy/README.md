@@ -4,7 +4,9 @@ This Rails app exists to validate the Recording Studio addon template in a real 
 
 ## What It Covers
 
-- Devise authentication with a seeded admin user
+- RecordingStudio_users auth at `/users/sign_up` and `/users/sign_in` (Devise
+  actor + People/Profile), with a seeded admin user
+- Onboarding provisioning from `registration.completed.recording_studio_user`
 - `Current.actor` wiring for Recording Studio events
 - Root workspace plus seeded folder and page recordables
 - Recording Studio default layout, FlatPack assets, and Tailwind source scanning
@@ -37,7 +39,8 @@ Then open the app and sign in with:
 - `/onboarding/admin/previews/:flow/:step` - card preview (writes nothing)
 - `/provisioning` - provisioning execution status
 - `/recording_studio` - redirects to `/` while the mounted Recording Studio engine stays available under that prefix for non-root routes
-- `/users/sign_in` - Devise sign-in page
+- `/users/sign_in` / `/users/sign_up` - RecordingStudio_users auth screens
+- `/recording_studio_users` - mounted Users engine (profile / admin)
 - `/docs/install`, `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` - dummy-only starter pages
 - `/up` - Rails health check
 

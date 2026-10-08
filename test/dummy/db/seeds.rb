@@ -16,11 +16,14 @@ find_or_record_child = lambda do |recordable, root_recording, parent_recording|
   ).recording
 end
 
-# Create the admin user
+# Create the admin user (Devise actor; profile is created on first RS Users write).
 user = User.find_or_create_by!(email: "admin@admin.com") do |u|
   u.password = "Password"
   u.password_confirmation = "Password"
+  u.registered_with = "password" if u.respond_to?(:registered_with=)
+  u.confirmed_at = Time.current if u.respond_to?(:confirmed_at=)
 end
+user.update!(confirmed_at: Time.current) if user.respond_to?(:confirmed_at) && user.confirmed_at.blank?
 
 # Create the workspace recordables
 workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
@@ -63,6 +66,10 @@ begin
     User.find_or_create_by!(email: "onboarding-demo-#{i}@example.com") do |u|
       u.password = "Password"
       u.password_confirmation = "Password"
+      u.registered_with = "password" if u.respond_to?(:registered_with=)
+      u.confirmed_at = Time.current if u.respond_to?(:confirmed_at=)
+    end.tap do |u|
+      u.update!(confirmed_at: Time.current) if u.respond_to?(:confirmed_at) && u.confirmed_at.blank?
     end
   end
 

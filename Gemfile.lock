@@ -17,8 +17,8 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_admin.git
-  revision: 2d94e2f1f17cde64bfde756ac9df5dddefbe64ca
-  tag: v2.0.4
+  revision: cddb417187fef223a19d8b55b2fc7c84adc28198
+  tag: v2.0.5
   specs:
     recording_studio_admin (2.0.2)
       flat_pack (~> 0.1.129)

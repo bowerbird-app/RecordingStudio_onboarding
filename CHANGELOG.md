@@ -35,22 +35,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Requires RecordingStudio_users `>= 0.15.0`. The registration subscriber listens
   to `registration.completed.recording_studio_user` for `:password`, `:oauth`,
   and `:otp`, and no longer subscribes to the OTP-only event.
-- Dummy Devise registration no longer calls `provision` directly; hosts rely on
-  the RecordingStudio_users registration-completed event.
+- Dummy mounts RecordingStudio_users auth at `/users/sign_up` and `/users/sign_in`
+  (`recording_studio_user_auth_for` + engine mount). Password and OAuth sign-up
+  emit `registration.completed` from RS Users; Onboarding provisions from that
+  event. Plain Devise registrations are skipped.
 - Dummy Accessible pin `v0.10.1` → `v0.11.1` (role column string migration).
 - Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`.
 - Removed template residue: example capability, placeholder config, committed coverage output.
 
 ### Upgrade notes
 - Install RecordingStudio_users `>= 0.15.0` (dummy/root GitHub tag `v0.15.0`).
+- Wire host auth with `recording_studio_user_auth_for :users` (skip Devise
+  sessions/registrations/passwords) so RS Users emits
+  `registration.completed.recording_studio_user`.
 - Remove host workarounds that called `RecordingStudioOnboarding.provision` from
-  Devise password or OmniAuth registration paths when RecordingStudio_users
-  already emits `registration.completed.recording_studio_user`.
+  Devise password or OmniAuth registration paths.
 - If Accessible is still on `0.10.x`, bump to `0.11.x`, run
   `bin/rails generate recording_studio_accessible:migrations` and
   `bin/rails db:migrate` for the role-to-string change.
 - Point host and dummy Gemfiles at Recording Studio `v4.2.2`.
 - Run `bin/rails generate recording_studio_onboarding:migrations` and `bin/rails db:migrate`.
+- Dummy also needs `bin/rails generate recording_studio_user:migrations`,
+  `bin/rails generate recording_studio_attachable:migrations`, and `db:migrate`.
 
 ## [0.2.3] - 2026-10-01
 

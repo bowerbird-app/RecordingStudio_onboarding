@@ -9,24 +9,77 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
     RecordingStudioOnboarding.configure do |config|
       config.provision :new_registration, with: "Dummy::ProvisionRegistration"
     end
+    OmniAuth.config.test_mode = true
+    clear_omniauth_mocks!
   end
 
-  test "password registration alone does not provision without the users event" do
+  teardown do
+    clear_omniauth_mocks!
+  end
+
+  test "RS Users password registration provisions a workspace exactly once" do
     email = "new-user-#{SecureRandom.hex(4)}@example.com"
 
-    assert_difference -> { User.count }, 1 do
+    post new_user_registration_path, params: { user: { email: email } }
+    assert_response :redirect
+    follow_redirect!
+
+    assert_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count }, 1 do
+      assert_difference -> { Workspace.count }, 1 do
+        post user_registration_path, params: {
+          user: { email: email, password: "Password123!" }
+        }
+      end
+    end
+
+    user = User.find_by!(email: email)
+    execution = RecordingStudioOnboarding::ProvisioningExecution.find_by!(
+      provisioner: "new_registration",
+      actor: user
+    )
+    assert_equal "completed", execution.status
+    assert_equal "new_registration:User:#{user.id}", execution.idempotency_key
+
+    workspaces = owned_workspaces_for(user)
+    assert_equal 1, workspaces.size
+    assert_match(/Workspace\z/, workspaces.first.name)
+
+    assert_no_difference -> { Workspace.count } do
       assert_no_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count } do
-        assert_no_difference -> { Workspace.count } do
-          post user_registration_path, params: {
-            user: {
-              email: email,
-              password: "Password123!",
-              password_confirmation: "Password123!"
-            }
-          }
+        ActiveSupport::Notifications.instrument(
+          "registration.completed.recording_studio_user",
+          user_id: user.id,
+          method: :password
+        )
+        RecordingStudioOnboarding.provision(:new_registration, actor: user, subject: user)
+      end
+    end
+
+    assert_equal "completed", execution.reload.status
+  end
+
+  test "RS Users oauth new-user registration provisions a workspace" do
+    email = "oauth-user-#{SecureRandom.hex(4)}@example.com"
+    mock_provider_auth!(
+      :google_oauth2,
+      uid: "oauth-#{SecureRandom.hex(4)}",
+      email: email
+    )
+
+    assert_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count }, 1 do
+      assert_difference -> { Workspace.count }, 1 do
+        assert_difference -> { User.count }, 1 do
+          get user_google_oauth2_omniauth_callback_path
         end
       end
     end
+
+    user = User.find_by!(email: email)
+    execution = RecordingStudioOnboarding::ProvisioningExecution.find_by!(
+      provisioner: "new_registration",
+      actor: user
+    )
+    assert_equal "completed", execution.status
   end
 
   test "registration completed event provisions a workspace exactly once" do
@@ -80,6 +133,9 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
 
     assert_no_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count } do
       assert_no_difference -> { Workspace.count } do
+        post new_user_session_path, params: { user: { email: user.email } }
+        assert_response :redirect
+        follow_redirect!
         post user_session_path, params: {
           user: { email: user.email, password: "Password123!" }
         }
@@ -151,17 +207,14 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
   end
 
   test "provisioning status page shows executions and workspaces" do
-    user = User.create!(
-      email: "status-#{SecureRandom.hex(4)}@example.com",
-      password: "Password123!",
-      password_confirmation: "Password123!"
-    )
-    ActiveSupport::Notifications.instrument(
-      "registration.completed.recording_studio_user",
-      user_id: user.id,
-      method: :password
-    )
+    email = "status-#{SecureRandom.hex(4)}@example.com"
+    post new_user_registration_path, params: { user: { email: email } }
+    follow_redirect!
+    post user_registration_path, params: {
+      user: { email: email, password: "Password123!" }
+    }
 
+    user = User.find_by!(email: email)
     sign_in user
     get provisioning_path
 
@@ -183,7 +236,7 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match(/Recording Studio Onboarding/, response.body)
-    assert_match(/provisioning/, response.body)
+    assert_match(/registration\.completed\.recording_studio_user/, response.body)
   end
 
   private
@@ -191,5 +244,24 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
   def owned_workspaces_for(user)
     root_ids = RecordingStudioAccessible.root_recording_ids_for(actor: user, minimum_role: :admin)
     RecordingStudio::Recording.where(id: root_ids, recordable_type: "Workspace").filter_map(&:recordable)
+  end
+
+  def clear_omniauth_mocks!
+    %i[google_oauth2 microsoft_graph apple linkedin instagram].each do |provider|
+      OmniAuth.config.mock_auth[provider] = nil
+    end
+  end
+
+  def mock_provider_auth!(provider, uid:, email:, first_name: "OAuth", last_name: "User")
+    OmniAuth.config.mock_auth[provider] = OmniAuth::AuthHash.new(
+      provider: provider.to_s,
+      uid: uid,
+      info: {
+        email: email,
+        name: "#{first_name} #{last_name}",
+        first_name: first_name,
+        last_name: last_name
+      }
+    )
   end
 end

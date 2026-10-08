@@ -36,7 +36,7 @@ This gem is independent of Recording Studio Terms & Conditions.
 - `/admin/root` — host admin landing with search
 - `/onboarding/admin/previews/:flow/:step` — card preview (writes nothing)
 - `/provisioning` — provisioning status
-- `/users/sign_up` / `/users/sign_in`
+- `/users/sign_up` / `/users/sign_in` — RecordingStudio_users auth (not Devise chrome)
 
 ## Configuration
 
@@ -136,6 +136,11 @@ idempotent per actor, so duplicate events do not double-provision.
 
 The older OTP-only event (`otp.registration_completed.recording_studio_user`)
 is not subscribed; OTP is covered by the unified event.
+
+The dummy mounts RS Users auth (`recording_studio_user_auth_for :users` plus
+`RecordingStudioUser::Engine`) so `/users/sign_up` is the real users flow.
+Password and OAuth sign-up emit the unified event; OTP registration is off in
+the dummy until Notifications is installed.
 
 ## Architecture notes
 
