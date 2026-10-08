@@ -3,7 +3,7 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Recording Studio Onboarding",
-    subtitle: "PR 1 demo: registration triggers host-configured workspace provisioning.",
+    subtitle: "Provisioning plus named flow runs (card UI arrives in PR 3).",
     variant: :h1
   ) %>
 
@@ -16,6 +16,14 @@
     </p>
 
     <p>
+      Named flows live in Ruby configuration. Start a run with
+      <code>RecordingStudioOnboarding.start</code>; advance, skip, dismiss, and reset
+      go through the public API without rendering UI in the gem itself.
+    </p>
+
+    <p>
+      <%= link_to "View flows and runs", flows_path, class: "underline" %>
+      ·
       <%= link_to "View provisioning status", provisioning_path, class: "underline" %>
       ·
       <%= link_to "Create an account", new_user_registration_path, class: "underline" %>
