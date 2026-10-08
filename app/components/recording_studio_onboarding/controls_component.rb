@@ -9,7 +9,7 @@ module RecordingStudioOnboarding
     def initialize(run:, controls: nil, preview: false)
       super()
       @run = run
-      @preview = preview || run.respond_to?(:preview?) && run.preview?
+      @preview = preview || (run.respond_to?(:preview?) && run.preview?)
       @controls = Array(controls || run.current_step&.controls || []).map(&:to_sym)
     end
 

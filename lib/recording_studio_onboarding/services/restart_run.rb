@@ -28,7 +28,7 @@ module RecordingStudioOnboarding
 
       private
 
-      def close_open_run!
+      def close_open_run! # rubocop:disable Metrics/MethodLength
         @run.with_lock do
           @run.reload
           return unless @run.open?

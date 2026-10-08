@@ -7,7 +7,7 @@ class PreviewRunTest < Minitest::Test
   def setup
     RecordingStudioOnboarding.configure do |config|
       config.instance_variable_set(:@flows, {})
-      config.preview_context = ->(flow_key:, step_key:) { { actor: :preview_actor, subject: nil } }
+      config.preview_context = ->(**) { { actor: :preview_actor, subject: nil } }
       config.flow :preview_demo do
         scope :user
         version 1

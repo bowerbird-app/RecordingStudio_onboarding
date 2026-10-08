@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RecordingStudioOnboarding
-  class Engine < ::Rails::Engine
+  class Engine < ::Rails::Engine # rubocop:disable Metrics/ClassLength
     isolate_namespace RecordingStudioOnboarding
 
     class << self

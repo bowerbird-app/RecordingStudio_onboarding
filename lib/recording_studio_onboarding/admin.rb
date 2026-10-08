@@ -4,7 +4,7 @@
 # RecordingStudioAdmin is loaded (see Engine to_prepare).
 
 module RecordingStudioOnboarding
-  module Admin
+  module Admin # rubocop:disable Metrics/ModuleLength
     module_function
 
     FlowRow = Struct.new(
@@ -52,7 +52,7 @@ module RecordingStudioOnboarding
       engine_helpers.retry_admin_provisioning_execution_path(execution, script_name: engine_mount_path)
     end
 
-    def flow_rows
+    def flow_rows # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       counts = FlowRun.group(:flow_key, :status).count
       RecordingStudioOnboarding.configuration.flows.values.map do |definition|
         key = definition.key.to_s
@@ -92,7 +92,7 @@ module RecordingStudioOnboarding
       raw.presence || default_flow_key
     end
 
-    def date_bounds_from(context)
+    def date_bounds_from(context) # rubocop:disable Metrics/MethodLength
       definition = RecordingStudioAdmin::Definitions::FilterDefinition.new(
         :date_range,
         :date_range,
@@ -396,7 +396,7 @@ module RecordingStudioOnboarding
              url: ->(row, _ctx) { RecordingStudioOnboarding::Admin.admin_retry_provisioning_path(row) }
     end
 
-    def register!
+    def register! # rubocop:disable Metrics/MethodLength
       return unless defined?(RecordingStudioAdmin)
       return if @registered
 

@@ -7,7 +7,7 @@ module RecordingStudioOnboarding
       super()
       @run = run
       @embedded = embedded
-      @preview = preview || run.respond_to?(:preview?) && run.preview?
+      @preview = preview || (run.respond_to?(:preview?) && run.preview?)
     end
 
     def call

@@ -20,7 +20,7 @@ module RecordingStudioOnboarding
         @context = context || resolve_preview_context
       end
 
-      def build
+      def build # rubocop:disable Metrics/MethodLength
         definition = RecordingStudioOnboarding.configuration.flow_for(@flow_key)
         raise KeyError, "No flow registered for #{@flow_key.inspect}" unless definition
         raise KeyError, "Unknown step #{@step_key.inspect}" unless definition.step_for(@step_key)

@@ -3,7 +3,7 @@
 module RecordingStudioOnboarding
   module Services
     # SQL aggregates for drop-off analytics (§25). No separate analytics store.
-    class FunnelAnalytics
+    class FunnelAnalytics # rubocop:disable Metrics/ClassLength
       StepRow = Struct.new(
         :step_key,
         :reached,
@@ -34,7 +34,7 @@ module RecordingStudioOnboarding
         @to = to
       end
 
-      def call
+      def call # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         definition = RecordingStudioOnboarding.configuration.flow_for(@flow_key)
         raise KeyError, "No flow registered for #{@flow_key.inspect}" unless definition
 
@@ -102,7 +102,7 @@ module RecordingStudioOnboarding
         runs.where(status: "dismissed", current_step_key: step_key.to_s).count
       end
 
-      def median_step_seconds(step_key, runs)
+      def median_step_seconds(step_key, runs) # rubocop:disable Metrics/MethodLength
         sql = <<~SQL.squish
           SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (
             ORDER BY EXTRACT(EPOCH FROM (acted_at - first_viewed_at))
