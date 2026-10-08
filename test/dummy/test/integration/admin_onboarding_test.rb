@@ -20,6 +20,21 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
     raise result.error if result.failure?
 
     sign_in @user
+    switch_to_admin_root!
+  end
+
+  def switch_to_admin_root!
+    # Admin authorization requires RootSwitchable's current root to be AdminRoot.
+    get "/"
+    cookie_name = RecordingStudioRootSwitchable.configuration.device_key_cookie_name
+    device_key = cookies[cookie_name].presence || SecureRandom.uuid
+    cookies[cookie_name] = device_key
+    RecordingStudio::RootSwitchable::Selection.upsert_for(
+      actor: @user,
+      device_key: device_key,
+      scope_key: "all_workspaces",
+      root_recording: @admin_recording
+    )
   end
 
   teardown do
