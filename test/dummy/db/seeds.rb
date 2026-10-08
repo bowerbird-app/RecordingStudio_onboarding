@@ -56,9 +56,66 @@ ensure
   Current.actor = previous_actor
 end
 
+# Seed onboarding analytics fixtures (runs, step progress, failed provision).
+Current.actor = user
+begin
+  demo_users = 3.times.map do |i|
+    User.find_or_create_by!(email: "onboarding-demo-#{i}@example.com") do |u|
+      u.password = "Password"
+      u.password_confirmation = "Password"
+    end
+  end
+
+  demo_users.each_with_index do |demo_user, i|
+    next if RecordingStudioOnboarding::FlowRun.open_runs.for_flow("account_setup")
+                                                  .where(initiating_actor: demo_user).exists? ||
+            RecordingStudioOnboarding::FlowRun.where(initiating_actor: demo_user, flow_key: "account_setup").exists?
+
+    run = RecordingStudioOnboarding.start(:account_setup, actor: demo_user)
+    RecordingStudioOnboarding.mark_viewed(run, actor: demo_user)
+    next if i.zero?
+
+    RecordingStudioOnboarding.advance(run, from: "welcome", actor: demo_user)
+    run.reload
+    RecordingStudioOnboarding.mark_viewed(run, actor: demo_user)
+    next if i == 1
+
+    RecordingStudioOnboarding.advance(run, from: "workspace_details", actor: demo_user)
+    run.reload
+    RecordingStudioOnboarding.mark_viewed(run, actor: demo_user)
+    RecordingStudioOnboarding.advance(run, from: "complete", actor: demo_user)
+  end
+
+  dismiss_user = User.find_or_create_by!(email: "onboarding-dismiss@example.com") do |u|
+    u.password = "Password"
+    u.password_confirmation = "Password"
+  end
+  unless RecordingStudioOnboarding::FlowRun.where(initiating_actor: dismiss_user, status: "dismissed").exists?
+    run = RecordingStudioOnboarding.start(:account_setup, actor: dismiss_user)
+    RecordingStudioOnboarding.mark_viewed(run, actor: dismiss_user)
+    RecordingStudioOnboarding.dismiss(run, actor: dismiss_user)
+  end
+
+  RecordingStudioOnboarding::ProvisioningExecution.find_or_create_by!(
+    provisioner: "new_registration",
+    idempotency_key: "seed-failed-provision"
+  ) do |execution|
+    execution.actor = user
+    execution.status = "failed"
+    execution.failure_details = { "error_class" => "RuntimeError", "message" => "seeded failure for admin demo" }
+    execution.started_at = Time.current
+    execution.completed_at = Time.current
+  end
+ensure
+  Current.actor = previous_actor
+end
+
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"
 puts "Seeded: Workspace '#{accessible_workspace.name}' with root recording ##{accessible_root_recording.id}"
 puts "Seeded: Workspace '#{private_workspace.name}' with root recording ##{private_root_recording.id}"
 puts "Seeded: AdminRoot '#{admin_root.name}' with root recording ##{admin_root_recording.id}"
 puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
+puts "Seeded: onboarding runs=#{RecordingStudioOnboarding::FlowRun.count} " \
+     "progress=#{RecordingStudioOnboarding::StepProgress.count} " \
+     "provisions=#{RecordingStudioOnboarding::ProvisioningExecution.count}"

@@ -55,6 +55,65 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "dummy boots turbo so admin lazy table and chart frames can load" do
+    importmap = File.read(Rails.root.join("config/importmap.rb"))
+    application_js = File.read(Rails.root.join("app/javascript/application.js"))
+
+    assert_includes importmap, 'pin "@hotwired/turbo-rails"'
+    assert_includes application_js, 'import "@hotwired/turbo-rails"'
+
+    get "/admin/screens/onboarding_runs"
+    assert_response :success
+    assert_select "turbo-frame#screen-table[src=?]", "/admin/screens/onboarding_runs/table"
+
+    get "/admin/screens/onboarding_funnel", params: { flow_key: "account_setup" }
+    assert_response :success
+    assert_select "turbo-frame#screen-table[src*='onboarding_funnel/table']"
+    assert_select "turbo-frame#screen-chart[src*='onboarding_funnel/chart']"
+  end
+
+  test "admin table and chart regions return populated data not placeholders" do
+    run = RecordingStudioOnboarding.start(:account_setup, actor: @user)
+    RecordingStudioOnboarding.mark_viewed(run, actor: @user)
+    RecordingStudioOnboarding.advance(run, from: "welcome", actor: @user)
+
+    RecordingStudioOnboarding::ProvisioningExecution.create!(
+      provisioner: "new_registration",
+      idempotency_key: "admin-table-fail-#{SecureRandom.hex(4)}",
+      actor: @user,
+      status: "failed",
+      failure_details: { "error_class" => "RuntimeError", "message" => "seeded failure" },
+      started_at: Time.current,
+      completed_at: Time.current
+    )
+
+    get "/admin/screens/onboarding_runs/table"
+    assert_response :success
+    assert_includes response.body, "account_setup"
+    assert_includes response.body, 'data-recording-studio-admin-table-cell-content="true"'
+    assert_select "turbo-frame#screen-table"
+    # Placeholder-only skeleton rows use shimmer rectangles without cell content.
+    assert_operator response.body.scan('data-recording-studio-admin-table-cell-content="true"').size, :>=, 1
+
+    get "/admin/screens/onboarding_funnel/table", params: { flow_key: "account_setup" }
+    assert_response :success
+    assert_includes response.body, "welcome"
+    assert_match(/Reached|Continued/i, response.body)
+    assert_includes response.body, 'data-recording-studio-admin-table-cell-content="true"'
+
+    get "/admin/screens/onboarding_funnel/chart", params: { flow_key: "account_setup" }
+    assert_response :success
+    assert_select "turbo-frame#screen-chart"
+    assert_match(/chart|series|apexcharts|welcome|Reached/i, response.body)
+    refute_match(/Skeleton::Component|fp-skeleton-shimmer/i, response.body)
+
+    get "/admin/screens/onboarding_provisioning/table"
+    assert_response :success
+    assert_includes response.body, "new_registration"
+    assert_includes response.body, "failed"
+    assert_includes response.body, 'data-recording-studio-admin-table-cell-content="true"'
+  end
+
   test "card preview writes nothing" do
     before_runs = RecordingStudioOnboarding::FlowRun.count
     before_progress = RecordingStudioOnboarding::StepProgress.count
