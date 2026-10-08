@@ -3,11 +3,12 @@
 module RecordingStudioOnboarding
   module Services
     # Executes a registered provisioner with DB-backed idempotency tracking.
-    class Provision
-      def self.call(...)
-        new(...).call
+    class Provision # rubocop:disable Metrics/ClassLength
+      def self.call(name, **)
+        new(name, **).call
       end
 
+      # rubocop:disable-next Metrics/ParameterLists -- stable provisioner call shape
       def initialize(name, actor:, subject: nil, root: nil, context: {}, idempotency_key: nil)
         @name = name.to_sym
         @actor = actor
@@ -36,10 +37,12 @@ module RecordingStudioOnboarding
 
       def default_idempotency_key
         parts = [@name, type_name(@actor), identity(@actor)]
-        if @subject && !same_record?(@actor, @subject)
-          parts.concat([type_name(@subject), identity(@subject)])
-        end
+        parts.push(type_name(@subject), identity(@subject)) if distinct_subject?
         parts.join(":")
+      end
+
+      def distinct_subject?
+        @subject && !same_record?(@actor, @subject)
       end
 
       def find_or_create_execution!
@@ -58,9 +61,8 @@ module RecordingStudioOnboarding
         execution.completed?
       end
 
-      # Returns true when this caller owns the run. Returns false when another
-      # process already completed or is actively running the same operation.
-      def claim_for_run!(execution)
+      # Returns true when this caller owns the run.
+      def claim_for_run!(execution) # rubocop:disable Metrics/MethodLength
         execution.with_lock do
           execution.reload
           return false if execution.completed? || execution.running?
@@ -83,19 +85,19 @@ module RecordingStudioOnboarding
         execution.update!(status: "completed", completed_at: Time.current, failure_details: nil)
         instrument("provision.completed", execution)
         execution
-      rescue StandardError => error
-        persist_failure!(execution, error)
-        instrument("provision.failed", execution, error: error)
+      rescue StandardError => e
+        persist_failure!(execution, e)
+        instrument("provision.failed", execution, error: e)
         raise
       end
 
       def invoke_handler
         handler = resolve_handler
-        if handler.respond_to?(:call)
-          handler.call(actor: @actor, subject: @subject, root: @root, context: @context)
-        else
+        unless handler.respond_to?(:call)
           raise ArgumentError, "Provisioner #{handler_source.inspect} does not respond to call"
         end
+
+        handler.call(actor: @actor, subject: @subject, root: @root, context: @context)
       end
 
       def resolve_handler
@@ -116,7 +118,7 @@ module RecordingStudioOnboarding
         end
       end
 
-      def instrument(event_name, execution, error: nil)
+      def instrument(event_name, execution, error: nil) # rubocop:disable Metrics/MethodLength
         payload = {
           execution_uuid: execution.id,
           provisioner: execution.provisioner,

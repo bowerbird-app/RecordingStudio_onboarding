@@ -31,16 +31,27 @@ module RecordingStudioOnboarding
       user = resolve_user(payload)
       return if user.nil?
 
+      provision_new_registration(user)
+    rescue StandardError => e
+      log_provisioning_failure(e)
+    end
+
+    def provision_new_registration(user)
       RecordingStudioOnboarding.provision(
         PROVISIONER,
         actor: user,
         subject: user,
-        context: { source: "otp.registration_completed.recording_studio_user" }
+        context: { source: OTP_EVENT }
       )
-    rescue StandardError => error
+    end
+
+    def log_provisioning_failure(error)
+      return unless defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+
       Rails.logger.error(
-        "[RecordingStudioOnboarding] OTP registration provisioning failed: #{error.class}: #{error.message}"
-      ) if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+        "[RecordingStudioOnboarding] OTP registration provisioning failed: " \
+        "#{error.class}: #{error.message}"
+      )
     end
 
     def resolve_user(payload)

@@ -51,7 +51,8 @@ module RecordingStudioOnboarding
       end
     end
 
-    initializer "recording_studio_onboarding.before_initialize", before: "recording_studio_onboarding.load_config" do |_app|
+    initializer "recording_studio_onboarding.before_initialize",
+                before: "recording_studio_onboarding.load_config" do |_app|
       RecordingStudioOnboarding.configuration.hooks.run(:before_initialize, self)
     end
 
@@ -87,7 +88,8 @@ module RecordingStudioOnboarding
       RecordingStudioOnboarding.configuration.hooks.run(:on_configuration, RecordingStudioOnboarding.configuration)
     end
 
-    initializer "recording_studio_onboarding.after_initialize", after: "recording_studio_onboarding.load_config" do |_app|
+    initializer "recording_studio_onboarding.after_initialize",
+                after: "recording_studio_onboarding.load_config" do |_app|
       RecordingStudioOnboarding.configuration.hooks.run(:after_initialize, self)
     end
 

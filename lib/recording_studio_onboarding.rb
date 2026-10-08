@@ -25,16 +25,9 @@ module RecordingStudioOnboarding
     #     actor: user,
     #     subject: user
     #   )
-    def provision(name, actor:, subject: nil, root: nil, context: {}, idempotency_key: nil)
+    def provision(name, **)
       require "recording_studio_onboarding/services/provision"
-      Services::Provision.call(
-        name,
-        actor: actor,
-        subject: subject,
-        root: root,
-        context: context,
-        idempotency_key: idempotency_key
-      )
+      Services::Provision.call(name, **)
     end
   end
 end

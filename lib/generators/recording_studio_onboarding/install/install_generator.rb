@@ -25,7 +25,8 @@ module RecordingStudioOnboarding
       end
 
       def add_yaml_config
-        return unless yes?("Would you like to add `config/recording_studio_onboarding.yml` for environment-specific settings? [y/N]")
+        prompt = "Add `config/recording_studio_onboarding.yml` for env settings? [y/N]"
+        return unless yes?(prompt)
 
         template "recording_studio_onboarding.yml", "config/recording_studio_onboarding.yml"
       end
@@ -94,9 +95,10 @@ module RecordingStudioOnboarding
       end
 
       def tailwind_source_lines
+        gem_glob = "recording_studio_onboarding-*"
         [
           '@source "../../vendor/bundle/**/recording_studio_onboarding/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_onboarding-*/app/views/**/*.erb";',
+          "@source \"../../../../../../usr/local/bundle/ruby/**/bundler/gems/#{gem_glob}/app/views/**/*.erb\";",
           '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
         ]
