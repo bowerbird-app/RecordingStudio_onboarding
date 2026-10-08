@@ -21,5 +21,21 @@ Rails.application.routes.draw do
 
   get "provisioning", to: "provisioning#show", as: :provisioning
 
+  resources :flows, only: [:index] do
+    collection do
+      post :start
+    end
+  end
+
+  resources :flow_runs, only: [:show] do
+    member do
+      post :advance
+      post :back
+      post :skip
+      post :dismiss
+      post :reset
+    end
+  end
+
   root "home#index"
 end

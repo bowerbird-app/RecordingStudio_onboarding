@@ -5,6 +5,7 @@ require "recording_studio_onboarding/version"
 require "recording_studio_onboarding/engine"
 require "recording_studio_onboarding/configuration"
 require "recording_studio_onboarding/services/failure_sanitizer"
+require "recording_studio_onboarding/services/instrumenter"
 require "recording_studio_onboarding/users_registration_integration"
 
 module RecordingStudioOnboarding
@@ -19,15 +20,63 @@ module RecordingStudioOnboarding
     end
 
     # Execute a registered provisioner immediately with idempotent tracking.
-    #
-    #   RecordingStudioOnboarding.provision(
-    #     :new_registration,
-    #     actor: user,
-    #     subject: user
-    #   )
     def provision(name, **)
       require "recording_studio_onboarding/services/provision"
       Services::Provision.call(name, **)
+    end
+
+    # Start (or resume) a registered flow. Never redirects or renders UI.
+    def start(name, actor:, subject: nil)
+      require_flow_services!
+      Services::StartFlow.call(name, actor: actor, subject: subject)
+    end
+
+    # Open run for the flow+scope, or nil.
+    def active_run(name, actor:, subject: nil)
+      require_flow_services!
+      Services::ActiveRunQuery.call(name, actor: actor, subject: subject)
+    end
+
+    def advance(run, from:, actor:)
+      require_flow_services!
+      Services::TransitionRun.call(run, action: :advance, from: from, actor: actor)
+    end
+
+    def back(run, from:, actor:)
+      require_flow_services!
+      Services::TransitionRun.call(run, action: :back, from: from, actor: actor)
+    end
+
+    def skip(run, from:, actor:)
+      require_flow_services!
+      Services::TransitionRun.call(run, action: :skip, from: from, actor: actor)
+    end
+
+    def dismiss(run, actor:)
+      require_flow_services!
+      Services::TransitionRun.call(run, action: :dismiss, actor: actor)
+    end
+
+    def reset(run, actor:)
+      require_flow_services!
+      Services::ResetRun.call(run, actor: actor)
+    end
+
+    def mark_viewed(run, actor: nil)
+      require_flow_services!
+      Services::MarkStepViewed.call(run, actor: actor)
+    end
+
+    private
+
+    def require_flow_services!
+      require "recording_studio_onboarding/services/scope_resolver"
+      require "recording_studio_onboarding/services/reconcile_run"
+      require "recording_studio_onboarding/services/start_flow"
+      require "recording_studio_onboarding/services/active_run_query"
+      require "recording_studio_onboarding/services/transition_run"
+      require "recording_studio_onboarding/services/reset_run"
+      require "recording_studio_onboarding/services/mark_step_viewed"
     end
   end
 end

@@ -31,14 +31,18 @@ class ConfigurationTest < Minitest::Test
     refute_respond_to @configuration, :timeout
   end
 
-  def test_to_h_reports_provisioners_and_hook_counts
+  def test_to_h_reports_provisioners_flows_and_hook_counts
     @configuration.provision :new_registration, with: "X"
+    @configuration.flow :account_setup do
+      step :welcome, component: "X"
+    end
     @configuration.hooks.before_initialize { nil }
     @configuration.hooks.before_initialize { nil }
 
     result = @configuration.to_h
 
     assert_equal [:new_registration], result.fetch(:provisioners)
+    assert_equal [:account_setup], result.fetch(:flows)
     assert_equal 2, result.fetch(:hooks_registered).fetch(:before_initialize)
   end
 
@@ -50,5 +54,6 @@ class ConfigurationTest < Minitest::Test
   def test_initialize_exposes_hooks
     assert_instance_of RecordingStudio::Hooks, @configuration.hooks
     assert_empty @configuration.provisioners
+    assert_empty @configuration.flows
   end
 end

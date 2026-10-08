@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ProvisioningExecution` model with DB uniqueness, concurrent claim, failure retry, and sanitised failure details.
 - Optional OTP registration subscriber for RecordingStudio_users (`otp.registration_completed.recording_studio_user`).
 - Dummy host workspace provisioner and Devise registration integration.
+- Named flow registry (`config.flow`) with user / workspace / subject scopes.
+- `FlowRun` and `StepProgress` models, public flow API (`start`, `active_run`,
+  `advance`, `back`, `skip`, `dismiss`, `reset`, `mark_viewed`).
+- Row-lock concurrency, open-run unique partial index, definition versioning
+  reconcile, and `ActiveSupport::Notifications` flow events.
+- Dummy `/flows` and `/flow_runs/:id` demo pages for PR 2.
 
 ### Changed
 - Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`.
