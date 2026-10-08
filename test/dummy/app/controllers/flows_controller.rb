@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-# Dummy demo surface for PR 2 — lists registered flows and open/closed runs.
-# Card UI arrives in PR 3; this page only shows state and transition controls.
+# Dummy launcher for registered flows. Starts a run then redirects to engine routes.
 class FlowsController < ApplicationController
   def index
     @flows = RecordingStudioOnboarding.configuration.flows.values
@@ -12,6 +11,7 @@ class FlowsController < ApplicationController
             .limit(50)
     @workspaces = accessible_workspaces
     @pages = Page.order(:created_at).limit(20)
+    @active_account_setup = RecordingStudioOnboarding.active_run(:account_setup, actor: current_user)
   end
 
   def start
@@ -21,8 +21,7 @@ class FlowsController < ApplicationController
       actor: current_user,
       subject: subject
     )
-    RecordingStudioOnboarding.mark_viewed(run, actor: current_user)
-    redirect_to flow_run_path(run), notice: "Started #{run.flow_key}"
+    redirect_to recording_studio_onboarding.run_path(run)
   end
 
   private

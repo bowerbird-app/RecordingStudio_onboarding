@@ -2,19 +2,22 @@
 
 RecordingStudioOnboarding.configure do |config|
   config.provision :new_registration, with: "Dummy::ProvisionRegistration"
+  config.current_actor = ->(controller) { controller.current_user }
 
   config.flow :account_setup do
     scope :user
     progress :segments
     dismissible true
     version 1
+    after_complete "/"
+    after_dismiss "/flows"
     step :welcome,
       component: "Dummy::Onboarding::WelcomeComponent",
       controls: %i[continue exit],
       show_progress: true
     step :workspace_details,
       component: "Dummy::Onboarding::WorkspaceDetailsComponent",
-      controls: %i[back continue skip exit],
+      controls: %i[back skip exit],
       skippable: true
     step :complete,
       component: "Dummy::Onboarding::CompleteComponent",
@@ -27,6 +30,8 @@ RecordingStudioOnboarding.configure do |config|
     progress :bar
     dismissible false
     version 1
+    after_complete "/"
+    after_dismiss "/"
     step :name_workspace,
       component: "Dummy::Onboarding::NameWorkspaceComponent",
       controls: %i[continue]
@@ -41,6 +46,8 @@ RecordingStudioOnboarding.configure do |config|
     progress :segments
     dismissible true
     version 1
+    after_complete "/"
+    after_dismiss "/flows"
     step :introduction,
       component: "Dummy::Onboarding::PresskitIntroductionComponent",
       controls: %i[continue exit]

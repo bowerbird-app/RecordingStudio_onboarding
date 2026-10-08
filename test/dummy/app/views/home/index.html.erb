@@ -3,22 +3,18 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Recording Studio Onboarding",
-    subtitle: "Provisioning plus named flow runs (card UI arrives in PR 3).",
+    subtitle: "Provisioning, flows, and Flatpack card shell (admin arrives in PR 4).",
     variant: :h1
   ) %>
 
   <div class="flex flex-col gap-4 text-sm leading-6">
     <p>
-      New accounts created through Devise registration call
+      New accounts call
       <code>RecordingStudioOnboarding.provision(:new_registration, …)</code>.
-      The host provisioner creates a Workspace root and grants owner access via
-      Recording Studio Accessible. Signing in as an existing user does not re-provision.
-    </p>
-
-    <p>
-      Named flows live in Ruby configuration. Start a run with
-      <code>RecordingStudioOnboarding.start</code>; advance, skip, dismiss, and reset
-      go through the public API without rendering UI in the gem itself.
+      Named flows start with
+      <code>RecordingStudioOnboarding.start</code>; presentation is full-screen
+      (<code>/onboarding/runs/:uuid</code>) or embedded via
+      <code>RunComponent</code>.
     </p>
 
     <p>

@@ -43,6 +43,7 @@ PATH
     recording_studio_onboarding (0.2.3)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
+      view_component (>= 3.0)
 
 GEM
   remote: https://rubygems.org/

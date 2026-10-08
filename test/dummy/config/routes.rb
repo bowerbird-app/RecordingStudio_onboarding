@@ -27,15 +27,16 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :flow_runs, only: [:show] do
-    member do
-      post :advance
-      post :back
-      post :skip
-      post :dismiss
-      post :reset
-    end
-  end
+  # Host form endpoints for onboarding cards (§16).
+  post "onboarding_forms/workspace_details",
+       to: "onboarding_forms#workspace_details",
+       as: :onboarding_workspace_details
+  post "onboarding_forms/presskit_images",
+       to: "onboarding_forms#presskit_images",
+       as: :onboarding_presskit_images
+
+  # PR 2 flow_runs demo folded into engine routes.
+  get "flow_runs/:id", to: redirect { |params, _req| "/onboarding/runs/#{params[:id]}" }
 
   root "home#index"
 end

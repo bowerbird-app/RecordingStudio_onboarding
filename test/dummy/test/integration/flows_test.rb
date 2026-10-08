@@ -14,9 +14,18 @@ class FlowsTest < ActionDispatch::IntegrationTest
         progress :segments
         dismissible true
         version 1
-        step :welcome, component: "Dummy::Welcome", controls: %i[continue exit]
-        step :details, component: "Dummy::Details", controls: %i[back continue skip], skippable: true
-        step :finish, component: "Dummy::Finish", controls: %i[continue], show_progress: false, skippable: false
+        step :welcome,
+          component: "Dummy::Onboarding::WelcomeComponent",
+          controls: %i[continue exit]
+        step :details,
+          component: "Dummy::Onboarding::WorkspaceDetailsComponent",
+          controls: %i[back continue skip],
+          skippable: true
+        step :finish,
+          component: "Dummy::Onboarding::CompleteComponent",
+          controls: %i[continue],
+          show_progress: false,
+          skippable: false
       end
 
       config.flow :workspace_setup do
@@ -24,8 +33,8 @@ class FlowsTest < ActionDispatch::IntegrationTest
         progress :bar
         dismissible false
         version 1
-        step :name, component: "Dummy::Name"
-        step :invite, component: "Dummy::Invite", skippable: true
+        step :name, component: "Dummy::Onboarding::NameWorkspaceComponent"
+        step :invite, component: "Dummy::Onboarding::InviteTeammateComponent", skippable: true
       end
 
       config.flow :first_presskit do
@@ -33,8 +42,8 @@ class FlowsTest < ActionDispatch::IntegrationTest
         progress :segments
         dismissible true
         version 1
-        step :intro, component: "Dummy::Intro"
-        step :publish, component: "Dummy::Publish"
+        step :intro, component: "Dummy::Onboarding::PresskitIntroductionComponent"
+        step :publish, component: "Dummy::Onboarding::PublishComponent"
       end
     end
 
@@ -183,9 +192,9 @@ class FlowsTest < ActionDispatch::IntegrationTest
       config.flow :account_setup do
         scope :user
         version 2
-        step :welcome, component: "Dummy::Welcome"
-        step :extra, component: "Dummy::Extra"
-        step :finish, component: "Dummy::Finish"
+        step :welcome, component: "Dummy::Onboarding::WelcomeComponent"
+        step :extra, component: "Dummy::Onboarding::InviteTeammateComponent"
+        step :finish, component: "Dummy::Onboarding::CompleteComponent"
       end
     end
 
@@ -205,7 +214,7 @@ class FlowsTest < ActionDispatch::IntegrationTest
       config.flow :account_setup do
         scope :user
         version 3
-        step :brand_new, component: "Dummy::BrandNew"
+        step :brand_new, component: "Dummy::Onboarding::WelcomeComponent"
       end
     end
 
@@ -259,11 +268,11 @@ class FlowsTest < ActionDispatch::IntegrationTest
     assert_match(/account_setup/, response.body)
     assert_select "[data-testid='registered-flows']"
 
-    get flow_run_path(run)
+    get recording_studio_onboarding.run_path(run)
     assert_response :success
-    assert_match(/welcome/, response.body)
-    assert_select "[data-testid='step-progress-list']"
-    assert_select "[data-testid='run-controls']"
+    assert_match(/welcome|Welcome/i, response.body)
+    assert_select "[data-testid='onboarding-card-shell']"
+    assert_select "[data-testid='onboarding-controls']"
   end
 
   test "non-dismissible workspace flow leaves status open on dismiss" do
