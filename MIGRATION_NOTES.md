@@ -5,7 +5,7 @@
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
 - Recording Studio 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.2.2`)
-- RecordingStudio_users `>= 0.15.0` (dummy/root GitHub tag `v0.15.0`) for the
+- RecordingStudio_users `>= 0.15.0` (dummy/root GitHub tag `v0.16.0`) for the
   registration-completed provisioning subscriber; dummy mounts users auth
 - Accessible dummy tag `v0.11.1`, Attachable `v0.7.1`, Admin `v2.0.5`,
   Root Switchable `v0.5.1`

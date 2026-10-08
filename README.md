@@ -147,7 +147,7 @@ the dummy until Notifications is installed.
 - No dependency on RS Terms & Conditions
 - Flatpack ViewComponents only; no React or Vue
 - Dummy GitHub tag pins: RecordingStudio `v4.2.2`, Accessible `v0.11.1`,
-  RecordingStudio_users `v0.15.0`, Root Switchable `v0.5.1`, Flatpack `v0.1.196`,
+  RecordingStudio_users `v0.16.0`, Root Switchable `v0.5.1`, Flatpack `v0.1.196`,
   Admin `v2.0.5`
 
 ## Development

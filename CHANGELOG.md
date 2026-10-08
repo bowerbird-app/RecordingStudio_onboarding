@@ -40,11 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   emit `registration.completed` from RS Users; Onboarding provisions from that
   event. Plain Devise registrations are skipped.
 - Dummy Accessible pin `v0.10.1` → `v0.11.1` (role column string migration).
-- Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`.
+- Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`,
+  RecordingStudio_users `v0.15.0` → `v0.16.0` (host auth-view overrides).
 - Removed template residue: example capability, placeholder config, committed coverage output.
 
 ### Upgrade notes
-- Install RecordingStudio_users `>= 0.15.0` (dummy/root GitHub tag `v0.15.0`).
+- Install RecordingStudio_users `>= 0.15.0` (dummy/root GitHub tag `v0.16.0`).
 - Wire host auth with `recording_studio_user_auth_for :users` (skip Devise
   sessions/registrations/passwords) so RS Users emits
   `registration.completed.recording_studio_user`.
