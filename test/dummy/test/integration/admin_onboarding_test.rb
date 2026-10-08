@@ -188,6 +188,7 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
   end
 
   test "empty admin screens render without runs" do
+    RecordingStudioOnboarding::StepProgress.delete_all
     RecordingStudioOnboarding::FlowRun.delete_all
     RecordingStudioOnboarding::ProvisioningExecution.delete_all
 
