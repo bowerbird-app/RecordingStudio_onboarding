@@ -10,10 +10,47 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_010002) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_050002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
+
+  create_table "admin_audit_logs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "event_id", null: false
+    t.string "resource_key", null: false
+    t.string "action_key", null: false
+    t.string "outcome", null: false
+    t.string "actor_type"
+    t.string "actor_id"
+    t.string "record_type"
+    t.string "record_id"
+    t.uuid "access_recording_id"
+    t.string "surface_key"
+    t.string "http_method"
+    t.boolean "destructive"
+    t.string "required_role"
+    t.string "blast_radius"
+    t.string "request_id"
+    t.string "ip_address"
+    t.string "user_agent"
+    t.jsonb "metadata", default: {}, null: false
+    t.string "error_class"
+    t.text "error_message"
+    t.string "recording_studio_event_id"
+    t.datetime "occurred_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_admin_audit_logs_on_event_id", unique: true
+    t.index ["occurred_at"], name: "index_admin_audit_logs_on_occurred_at"
+    t.index ["outcome"], name: "index_admin_audit_logs_on_outcome"
+    t.index ["resource_key", "action_key"], name: "index_admin_audit_logs_on_resource_key_and_action_key"
+  end
+
+  create_table "admin_roots", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name", default: "Admin", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "folders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -95,11 +132,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_010002) do
     t.datetime "dismissed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["flow_key", "scope_type", "scope_id"], name: "idx_rso_flow_runs_open_scope", unique: true, where: "((status)::text = ANY ((ARRAY['pending'::character varying, 'in_progress'::character varying])::text[]))"
+    t.index ["flow_key", "scope_type", "scope_id"], name: "idx_rso_flow_runs_open_scope", unique: true, where: "((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('in_progress'::character varying)::text]))"
     t.index ["flow_key", "status"], name: "idx_rso_flow_runs_flow_status"
     t.index ["initiating_actor_type", "initiating_actor_id"], name: "idx_rso_flow_runs_actor"
     t.index ["scope_type", "scope_id"], name: "idx_rso_flow_runs_scope"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'in_progress'::character varying, 'completed'::character varying, 'dismissed'::character varying]::text[])", name: "rso_flow_runs_status_check"
+    t.index ["started_at"], name: "idx_rso_flow_runs_started_at"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'in_progress'::character varying::text, 'completed'::character varying::text, 'dismissed'::character varying::text])", name: "rso_flow_runs_status_check"
   end
 
   create_table "recording_studio_onboarding_provisioning_executions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -133,7 +171,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_010002) do
     t.datetime "updated_at", null: false
     t.index ["flow_run_id", "step_key"], name: "idx_rso_step_progresses_run_step", unique: true
     t.index ["status"], name: "idx_rso_step_progresses_status"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'completed'::character varying, 'skipped'::character varying]::text[])", name: "rso_step_progresses_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'completed'::character varying::text, 'skipped'::character varying::text])", name: "rso_step_progresses_status_check"
   end
 
   create_table "recording_studio_recordings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

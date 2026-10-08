@@ -9,6 +9,11 @@ Rails.application.routes.draw do
   mount RecordingStudio::Engine, at: "/recording_studio"
   mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
   mount RecordingStudioOnboarding::Engine, at: "/onboarding"
+  mount RecordingStudioAccessible::Engine, at: "/admin/access"
+  namespace :admin do
+    get "root", to: "root#show", as: :root
+  end
+  recording_studio_admin_for :admin, at: "/admin", root_section: :root
 
   get "up" => "rails/health#show", as: :rails_health_check
 

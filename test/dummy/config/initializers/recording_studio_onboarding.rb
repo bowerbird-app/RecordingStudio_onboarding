@@ -3,6 +3,14 @@
 RecordingStudioOnboarding.configure do |config|
   config.provision :new_registration, with: "Dummy::ProvisionRegistration"
   config.current_actor = ->(controller) { controller.current_user }
+  config.preview_context = lambda do |flow_key:, step_key:|
+    {
+      actor: User.find_by(email: "admin@admin.com") || User.first,
+      subject: Workspace.find_by(name: "Studio Workspace") || Workspace.first,
+      flow_key: flow_key,
+      step_key: step_key
+    }
+  end
 
   config.flow :account_setup do
     scope :user

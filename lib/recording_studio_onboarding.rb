@@ -63,9 +63,20 @@ module RecordingStudioOnboarding
       Services::ResetRun.call(run, actor: actor)
     end
 
+    def restart(run, actor:)
+      require_flow_services!
+      Services::RestartRun.call(run, actor: actor)
+    end
+
     def mark_viewed(run, actor: nil)
       require_flow_services!
       Services::MarkStepViewed.call(run, actor: actor)
+    end
+
+    # In-memory card preview for admin (§23). Writes nothing.
+    def preview(flow_key, step_key, context: nil)
+      require "recording_studio_onboarding/services/preview_run"
+      Services::PreviewRun.call(flow_key: flow_key, step_key: step_key, context: context)
     end
 
     private
@@ -77,6 +88,7 @@ module RecordingStudioOnboarding
       require "recording_studio_onboarding/services/active_run_query"
       require "recording_studio_onboarding/services/transition_run"
       require "recording_studio_onboarding/services/reset_run"
+      require "recording_studio_onboarding/services/restart_run"
       require "recording_studio_onboarding/services/mark_step_viewed"
     end
   end

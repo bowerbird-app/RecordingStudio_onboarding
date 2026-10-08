@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Presentation modes (full-screen + embedded Turbo Frame), host form-step
   contract, Accessible-backed `authorize_run` (404 on denial), exit destinations.
 - Dummy card layouts (wide welcome, form, centred complete) and host form endpoints.
+- Soft RecordingStudioAdmin registration: onboarding section, flows/previews/runs/
+  funnel/provisioning screens, widgets, reset/restart/retry resources.
+- `preview`, `restart` public API; SQL funnel analytics over FlowRun/StepProgress.
+- Dummy AdminRoot mount at `/admin` with Accessible-gated admin screens.
 
 ### Changed
 - Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`.

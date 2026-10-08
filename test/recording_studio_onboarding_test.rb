@@ -154,7 +154,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
     initializer_source = File.read(initializer_path)
 
     assert_includes initializer_source, "config.require_recordable_declarations = true"
-    assert_includes initializer_source, "config.recordable_types = [ \"Workspace\", \"Folder\", \"Page\" ]"
+    assert_includes initializer_source, "config.recordable_types = [ \"Workspace\", \"Folder\", \"Page\", \"AdminRoot\" ]"
     refute_includes initializer_source, "config.include_children"
     refute_includes initializer_source, "config.features."
     refute_includes initializer_source, "v3"
@@ -180,6 +180,8 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes readme, "v0.1.196"
     assert_includes readme, "v0.10.1"
     assert_includes readme, "v0.5.1"
+    assert_includes readme, "v2.0.5"
+    assert_includes readme, "Admin integration"
     refute_includes readme, "ExampleService"
     refute_includes readme, "recording_studio/v3.0.0"
   end

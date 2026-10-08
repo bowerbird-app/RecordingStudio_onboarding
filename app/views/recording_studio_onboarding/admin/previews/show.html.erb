@@ -1,0 +1,12 @@
+<% content_for :title, "Preview · #{@run.flow_key} / #{@run.current_step_key}" %>
+
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Card preview",
+  subtitle: "#{@run.flow_key} · #{@run.current_step_key} (writes nothing)"
+) %>
+
+<div class="mt-6" data-testid="onboarding-admin-preview">
+  <%= render RecordingStudioOnboarding::CardShellComponent.new(run: @run, preview: true) do %>
+    <%= render @card %>
+  <% end %>
+</div>

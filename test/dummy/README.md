@@ -32,6 +32,9 @@ Then open the app and sign in with:
 - `/` - dummy app home page and template guidance
 - `/flows` - start registered flows; embedded RunComponent when active
 - `/onboarding/runs/:uuid` - full-screen card shell for the current step
+- `/admin` - RecordingStudio Admin root (onboarding section + screens)
+- `/admin/root` - host admin landing with search
+- `/onboarding/admin/previews/:flow/:step` - card preview (writes nothing)
 - `/provisioning` - provisioning execution status
 - `/recording_studio` - redirects to `/` while the mounted Recording Studio engine stays available under that prefix for non-root routes
 - `/users/sign_in` - Devise sign-in page

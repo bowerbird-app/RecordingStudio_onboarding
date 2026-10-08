@@ -43,5 +43,8 @@ module Dummy
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Admin definition files are loaded explicitly from to_prepare.
+    Rails.autoloaders.main.ignore(root.join("app/admin"))
   end
 end

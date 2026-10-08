@@ -99,6 +99,16 @@ module RecordingStudioOnboarding
       end
     end
 
+    # Soft register with RecordingStudioAdmin when the host mounts it.
+    initializer "recording_studio_onboarding.register_admin" do
+      config.to_prepare do
+        next unless defined?(RecordingStudioAdmin)
+
+        require "recording_studio_onboarding/admin"
+        RecordingStudioOnboarding::Admin.register!
+      end
+    end
+
     initializer "recording_studio_onboarding.apply_model_extensions" do
       config.to_prepare do
         next unless defined?(ActiveRecord::Base)
