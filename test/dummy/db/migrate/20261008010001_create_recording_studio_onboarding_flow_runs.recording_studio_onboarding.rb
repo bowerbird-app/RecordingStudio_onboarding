@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class CreateRecordingStudioOnboardingFlowRuns < ActiveRecord::Migration[8.1]
-  def change
+  def change # rubocop:disable Metrics/AbcSize
     create_table :recording_studio_onboarding_flow_runs, id: :uuid do |t|
       t.string :flow_key, null: false
       t.integer :flow_version, null: false, default: 1
