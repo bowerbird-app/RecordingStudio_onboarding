@@ -12,7 +12,7 @@ pin "flat_pack/local_time", to: "flat_pack/local_time.js", preload: false
 pin "flat_pack/heroicons", to: "flat_pack/heroicons.js", preload: false
 
 # RecordingStudio Admin Stimulus controllers
-pin_all_from RecordingStudioAdmin::Engine.root.join("app/javascript/recording_studio_admin/controllers"),
+pin_all_from ::RecordingStudioAdmin::Engine.root.join("app/javascript/recording_studio_admin/controllers"),
              under: "controllers/recording_studio_admin",
              to: "recording_studio_admin/controllers",
              preload: false
