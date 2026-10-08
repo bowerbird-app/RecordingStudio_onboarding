@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RecordingStudioOnboarding
-  class Engine < ::Rails::Engine
+  class Engine < ::Rails::Engine # rubocop:disable Metrics/ClassLength
     isolate_namespace RecordingStudioOnboarding
 
     class << self
@@ -96,6 +96,16 @@ module RecordingStudioOnboarding
     initializer "recording_studio_onboarding.users_registration_integration" do
       config.after_initialize do
         RecordingStudioOnboarding::UsersRegistrationIntegration.install!
+      end
+    end
+
+    # Soft register with RecordingStudioAdmin when the host mounts it.
+    initializer "recording_studio_onboarding.register_admin" do
+      config.to_prepare do
+        next unless defined?(RecordingStudioAdmin)
+
+        require "recording_studio_onboarding/admin"
+        RecordingStudioOnboarding::Admin.register!
       end
     end
 

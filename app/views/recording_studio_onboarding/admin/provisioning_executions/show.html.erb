@@ -1,0 +1,33 @@
+<% content_for :title, "Provisioning #{@execution.id}" %>
+
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Provisioning execution",
+  subtitle: "#{@execution.provisioner} · #{@execution.status}"
+) %>
+
+<div class="mt-4 space-y-2 text-sm" data-testid="onboarding-admin-provisioning">
+  <p><strong>UUID:</strong> <%= @execution.id %></p>
+  <p><strong>Idempotency key:</strong> <%= @execution.idempotency_key %></p>
+  <p><strong>Actor:</strong> <%= @execution.actor_type %> <%= @execution.actor_id %></p>
+  <p><strong>Subject:</strong> <%= @execution.subject_type || "—" %> <%= @execution.subject_id %></p>
+  <p><strong>Started:</strong> <%= @execution.started_at || "—" %></p>
+  <p><strong>Completed:</strong> <%= @execution.completed_at || "—" %></p>
+</div>
+
+<% if @execution.failure_details.present? %>
+  <div class="mt-6" data-testid="provisioning-failure-details">
+    <%= render FlatPack::Alert::Component.new(
+      title: "Failure details",
+      description: (@execution.failure_details.is_a?(Hash) ? @execution.failure_details.to_json : @execution.failure_details.to_s).truncate(2000),
+      style: :danger
+    ) %>
+  </div>
+<% end %>
+
+<% if @execution.failed? %>
+  <div class="mt-6">
+    <%= form_with url: retry_admin_provisioning_execution_path(@execution), method: :post, class: "inline-flex" do %>
+      <%= render FlatPack::Button::Component.new(text: "Retry", style: :primary, type: "submit", size: :md) %>
+    <% end %>
+  </div>
+<% end %>

@@ -6,14 +6,15 @@ module RecordingStudioOnboarding
   class ControlsComponent < ViewComponent::Base
     CONTROL_ORDER = %i[back continue skip exit].freeze
 
-    def initialize(run:, controls: nil)
+    def initialize(run:, controls: nil, preview: false)
       super()
       @run = run
+      @preview = preview || (run.respond_to?(:preview?) && run.preview?)
       @controls = Array(controls || run.current_step&.controls || []).map(&:to_sym)
     end
 
     def render?
-      @run.open? && visible_controls.any?
+      (@run.open? || @preview) && visible_controls.any?
     end
 
     def call
@@ -48,19 +49,24 @@ module RecordingStudioOnboarding
 
     def render_control(control)
       case control
-      when :back then transition_form("Back", :back, style: :secondary)
-      when :continue then transition_form("Continue", :advance, style: :primary)
-      when :skip then transition_form("Skip", :skip, style: :ghost)
-      when :exit then exit_form
+      when :back then control_button("Back", :back, style: :secondary)
+      when :continue then control_button("Continue", :advance, style: :primary)
+      when :skip then control_button("Skip", :skip, style: :ghost)
+      when :exit then control_button("Exit", :dismiss, style: :ghost, from: false, testid: "control-exit")
       end
     end
 
-    def transition_form(label, action, style:)
-      form_button(engine_path("#{action}_run_path"), label, style, "control-#{action}", from: true)
+    def control_button(label, action, style:, from: true, testid: nil)
+      testid ||= "control-#{action}"
+      return preview_button(label, style, testid) if @preview
+
+      form_button(engine_path("#{action}_run_path"), label, style, testid, from: from)
     end
 
-    def exit_form
-      form_button(engine_path("dismiss_run_path"), "Exit", :ghost, "control-exit", from: false)
+    def preview_button(label, style, testid)
+      content_tag(:div, class: "inline-flex", data: { testid: testid, preview: true }) do
+        render FlatPack::Button::Component.new(text: label, style: style, type: "button", size: :md)
+      end
     end
 
     def form_button(url, label, style, testid, from:)

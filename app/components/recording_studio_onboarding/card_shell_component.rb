@@ -3,10 +3,11 @@
 module RecordingStudioOnboarding
   # Minimal outer presentation: centres the card, Flatpack theme, flexible dimensions.
   class CardShellComponent < ViewComponent::Base
-    def initialize(run:, embedded: false)
+    def initialize(run:, embedded: false, preview: false)
       super()
       @run = run
       @embedded = embedded
+      @preview = preview || (run.respond_to?(:preview?) && run.preview?)
     end
 
     def call
@@ -22,7 +23,8 @@ module RecordingStudioOnboarding
         testid: "onboarding-card-shell",
         flow_key: @run.flow_key,
         step_key: @run.current_step_key,
-        embedded: @embedded
+        embedded: @embedded,
+        preview: @preview
       }
     end
 
@@ -45,7 +47,7 @@ module RecordingStudioOnboarding
     end
 
     def controls_region
-      render ControlsComponent.new(run: @run)
+      render ControlsComponent.new(run: @run, preview: @preview)
     end
   end
 end

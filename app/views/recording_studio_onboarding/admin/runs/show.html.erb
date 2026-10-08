@@ -1,0 +1,46 @@
+<% content_for :title, "Run #{@run.id}" %>
+
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Flow run",
+  subtitle: "#{@run.flow_key} · #{@run.status}"
+) %>
+
+<div class="mt-4 space-y-2 text-sm" data-testid="onboarding-admin-run">
+  <p><strong>UUID:</strong> <%= @run.id %></p>
+  <p><strong>Scope:</strong> <%= @run.scope_type %> <%= @run.scope_id %></p>
+  <p><strong>Actor:</strong> <%= @run.initiating_actor_type %> <%= @run.initiating_actor_id %></p>
+  <p><strong>Current step:</strong> <%= @run.current_step_key %></p>
+  <p><strong>Started:</strong> <%= @run.started_at %></p>
+  <p><strong>Completed:</strong> <%= @run.completed_at || "—" %></p>
+  <p><strong>Dismissed:</strong> <%= @run.dismissed_at || "—" %></p>
+</div>
+
+<div class="mt-6 flex flex-wrap gap-3">
+  <%= form_with url: reset_admin_run_path(@run), method: :post, class: "inline-flex" do %>
+    <%= render FlatPack::Button::Component.new(text: "Reset", style: :secondary, type: "submit", size: :md) %>
+  <% end %>
+  <%= form_with url: restart_admin_run_path(@run), method: :post, class: "inline-flex" do %>
+    <%= render FlatPack::Button::Component.new(text: "Restart", style: :primary, type: "submit", size: :md) %>
+  <% end %>
+</div>
+
+<%= render FlatPack::PageTitle::Component.new(title: "Step timeline", subtitle: "Who, when, completed or skipped", class: "mt-10") %>
+
+<% if @step_progresses.any? %>
+  <%= render FlatPack::List::Component.new(divider: true, class: "mt-4 w-full") do %>
+    <% @step_progresses.each do |progress| %>
+      <%= render FlatPack::List::Item.new do %>
+        <div class="flex flex-col gap-1" data-testid="step-progress-<%= progress.step_key %>">
+          <span><%= progress.step_key %> · <%= progress.status %></span>
+          <span class="text-sm text-(--surface-muted-content-color)">
+            viewed <%= progress.first_viewed_at || "—" %>
+            · acted <%= progress.acted_at || "—" %>
+            · by <%= progress.acted_by_type || "—" %> <%= progress.acted_by_id || "" %>
+          </span>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <p class="mt-4 text-sm text-(--surface-muted-content-color)">No step progress yet.</p>
+<% end %>
