@@ -45,7 +45,9 @@ class DummyCredentialsTest < Minitest::Test
     )
 
     assert_operator parsed.fetch("secret_key_base").to_s.length, :>=, 64
-    assert_equal PLACEHOLDER, parsed.dig("gem_template", "api_key")
+    # Shared dummy credentials keep the historical template placeholder section name.
+    legacy_section = parsed.keys.find { |key| key.end_with?("_template") && parsed.dig(key, "api_key") }
+    assert_equal PLACEHOLDER, parsed.dig(legacy_section, "api_key")
     assert_equal PLACEHOLDER, parsed.dig("smtp", "user_name")
     assert_equal PLACEHOLDER, parsed.dig("smtp", "password")
     assert_equal PLACEHOLDER, parsed.dig("aws", "access_key_id")

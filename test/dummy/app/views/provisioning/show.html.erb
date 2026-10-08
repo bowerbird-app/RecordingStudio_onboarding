@@ -1,0 +1,57 @@
+<% dummy_page_nav(title: "Provisioning", back_url: root_path) %>
+
+<div class="flex w-full flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Provisioning status",
+    subtitle: "Backend provisioning executions and owned workspaces for the signed-in user.",
+    variant: :h1
+  ) %>
+
+  <section class="flex flex-col gap-3">
+    <%= render FlatPack::PageTitle::Component.new(
+      title: "Workspaces",
+      subtitle: "Roots granted through RecordingStudioAccessible after :new_registration.",
+      variant: :h2
+    ) %>
+
+    <% if @workspaces.any? %>
+      <ul class="space-y-2 text-sm leading-6">
+        <% @workspaces.each do |workspace| %>
+          <li data-testid="provisioned-workspace"><%= workspace.name %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-sm leading-6">No accessible workspaces yet.</p>
+    <% end %>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <%= render FlatPack::PageTitle::Component.new(
+      title: "Provisioning executions",
+      subtitle: "Idempotent RecordingStudioOnboarding::ProvisioningExecution records.",
+      variant: :h2
+    ) %>
+
+    <% if @executions.any? %>
+      <ul class="space-y-3 text-sm leading-6">
+        <% @executions.each do |execution| %>
+          <li data-testid="provisioning-execution">
+            <strong><%= execution.provisioner %></strong>
+            — <%= execution.status %>
+            <span class="block text-xs opacity-70">
+              key: <%= execution.idempotency_key %>
+              <% if execution.completed_at %>
+                · completed <%= execution.completed_at %>
+              <% end %>
+            </span>
+            <% if execution.failure_details.present? %>
+              <span class="block text-xs"><%= execution.failure_details %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-sm leading-6">No provisioning executions for this user.</p>
+    <% end %>
+  </section>
+</div>

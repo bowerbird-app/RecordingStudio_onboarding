@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-GemTemplate::Engine.routes.draw do
-  root "home#index"
+RecordingStudioOnboarding::Engine.routes.draw do
+  # PR 1 ships provisioning only. Flow run routes arrive in PR 3.
 end
