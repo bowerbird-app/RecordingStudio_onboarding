@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Segment progress labels sit above the connector line so the line never cuts
   through step text (`ProgressComponent` owns the trail; Flatpack tokens +
   `IconComponent` for markers).
+- Step numbers sit centered in segment markers (`leading-none` + absolute inset
+  grid on the digit).
 - One shared page width via `PageFrameComponent` for admin, card previews, and
   user-facing full-screen steps (replacing mismatched `max-w-*` on layouts /
   shells / dummy cards).

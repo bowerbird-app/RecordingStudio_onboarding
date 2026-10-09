@@ -153,13 +153,21 @@ module RecordingStudioOnboarding
           if status == :complete
             @view.render FlatPack::Shared::IconComponent.new(name: "check", size: :sm)
           else
-            @view.content_tag(:span, number.to_s, class: "fp-tabular-nums text-xs font-semibold")
+            # Absolute inset + grid centers the digit in the circle. leading-none
+            # collapses text-xs line-height so the glyph is not optically high.
+            @view.content_tag(
+              :span,
+              number.to_s,
+              class: "absolute inset-0 grid place-items-center fp-tabular-nums text-xs " \
+                     "font-semibold leading-none"
+            )
           end
         end
       end
 
       def marker_classes(status)
-        base = "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border"
+        base = "relative z-10 inline-flex h-8 w-8 shrink-0 items-center justify-center " \
+               "rounded-full border leading-none"
         "#{base} #{MARKER_TONES.fetch(status)}"
       end
     end
