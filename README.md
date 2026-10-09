@@ -12,7 +12,9 @@ This gem is independent of Recording Studio Terms & Conditions.
 - **Public API** — `start`, `active_run`, `advance`, `back`, `skip`, `dismiss`,
   `reset`, `restart`, `mark_viewed`, `preview` (no automatic redirect from `start`)
 - **Card UI** — `RunComponent`, `CardShellComponent`, `ControlsComponent`,
-  `ProgressComponent` (Flatpack Button / Progress / Stepper)
+  `ProgressComponent` (Flatpack Button / Progress; segment trail with labels
+  above the connector), shared `PageFrameComponent` width for admin / preview /
+  full-screen steps
 - **Engine routes** — `/onboarding/runs/:uuid` (+ advance/back/skip/dismiss)
 - **Admin + analytics** — soft `RecordingStudioAdmin.register_*` section/screens
   for flows, card previews, runs, drop-off funnel, and provisioning

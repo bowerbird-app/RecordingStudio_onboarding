@@ -138,8 +138,48 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
       assert_response :success, "expected preview #{flow_key}/#{step_key} to render"
       assert_select "[data-testid=onboarding-admin-preview]"
       assert_select "[data-testid=onboarding-card-shell][data-preview=true]"
+      assert_select "[data-testid=onboarding-page-frame]"
       refute_match(/NoMethodError|undefined method/i, response.body)
     end
+  end
+
+  test "every introduction admin preview and user-facing step renders" do
+    introductions = RecordingStudioOnboarding.configuration.flows.values.flat_map do |definition|
+      definition.steps.filter_map do |step|
+        next unless step.key.to_s == "introduction"
+
+        [ definition.key.to_s, step.key.to_s ]
+      end
+    end
+    assert_operator introductions.size, :>=, 1, "expected at least one introduction step"
+
+    introductions.each do |flow_key, step_key|
+      path = "/onboarding/admin/previews/#{flow_key}/#{step_key}"
+      get path
+      assert_response :success, "expected #{path} to render"
+      assert_select "[data-testid=onboarding-page-frame]"
+      assert_select "[data-testid=onboarding-card-shell]"
+      refute_match(/NoMethodError|undefined method|Error/i, response.body)
+    end
+
+    workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
+    workspace_recording = RecordingStudio.root_recording_for(workspace)
+    access = RecordingStudioAccessible.bootstrap_owner_access!(
+      recording: workspace_recording,
+      actor: @user
+    )
+    raise access.error if access.failure?
+
+    run = RecordingStudioOnboarding.start(:first_presskit, actor: @user, subject: workspace)
+    assert_equal "introduction", run.current_step_key
+
+    get "/onboarding/runs/#{run.id}"
+    assert_response :success
+    assert_select "[data-testid=onboarding-page-frame]"
+    assert_select "[data-testid=onboarding-card-shell]"
+    assert_select "[data-testid=card-presskit-intro]"
+    assert_match(/First press kit/i, response.body)
+    refute_match(/NoMethodError|undefined method/i, response.body)
   end
 
   test "funnel screen numbers match analytics on fixture data" do

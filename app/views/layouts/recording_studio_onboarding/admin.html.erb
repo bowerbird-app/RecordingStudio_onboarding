@@ -11,8 +11,10 @@
     <%= javascript_importmap_tags %>
   </head>
   <body class="m-0 min-h-screen bg-[var(--surface-page-background-color)] text-[var(--surface-content-color)]">
-    <main class="mx-auto w-full max-w-4xl p-6">
-      <%= yield %>
+    <main class="min-h-screen w-full">
+      <%= render RecordingStudioOnboarding::PageFrameComponent.new do %>
+        <%= yield %>
+      <% end %>
     </main>
   </body>
 </html>
