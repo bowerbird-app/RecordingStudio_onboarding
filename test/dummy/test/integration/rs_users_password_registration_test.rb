@@ -9,8 +9,14 @@ class RsUsersPasswordRegistrationTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "RS Users password sign-up provisions a workspace" do
+  test "RS Users password sign-up fires registration.completed and provisions" do
     email = "rs-user-#{SecureRandom.hex(4)}@example.com"
+    events = []
+    subscriber = ActiveSupport::Notifications.subscribe(
+      RecordingStudioOnboarding::UsersRegistrationIntegration::EVENT
+    ) do |_name, _start, _finish, _id, payload|
+      events << payload
+    end
 
     post new_user_registration_path, params: { user: { email: email } }
     assert_response :redirect
@@ -26,15 +32,27 @@ class RsUsersPasswordRegistrationTest < ActionDispatch::IntegrationTest
         end
       end
     end
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
 
     user = User.find_by!(email: email)
     assert_equal "password", user.registered_with
+    assert_equal 1, events.count { |payload| payload[:user_id] == user.id }
+    assert_equal :password, events.find { |payload| payload[:user_id] == user.id }[:method]
+
     execution = RecordingStudioOnboarding::ProvisioningExecution.find_by!(
       provisioner: "new_registration",
       actor: user
     )
     assert_equal "completed", execution.status
     assert_equal "new_registration:User:#{user.id}", execution.idempotency_key
+    assert Workspace.exists?(name: "#{email}'s Workspace"),
+           "expected new_registration provisioner to create the actor workspace"
+
+    # Host may start a named flow after provision; the gem does not auto-start.
+    run = RecordingStudioOnboarding.start(:account_setup, actor: user)
+    assert_equal "welcome", run.current_step_key
+    assert run.open?
   end
 
   test "RS Users sign-up page is the auth engine form" do

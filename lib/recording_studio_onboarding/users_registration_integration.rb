@@ -3,7 +3,7 @@
 module RecordingStudioOnboarding
   # Soft integration with RecordingStudio_users registration completion.
   #
-  # Requires RecordingStudio_users >= 0.15.0, which emits:
+  # Requires RecordingStudio_users >= 0.18.0, which emits:
   #   "registration.completed.recording_studio_user"
   # with payload `{ user_id:, method: }` where method is :password, :oauth, or :otp.
   #

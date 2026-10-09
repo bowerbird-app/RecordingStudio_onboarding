@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   user-facing full-screen steps (replacing mismatched `max-w-*` on layouts /
   shells / dummy cards).
 
+### Changed
+- Requires RecordingStudio_users `>= 0.18.0` (dummy/root GitHub tag `v0.18.0`).
+  Pins `recording_studio_metrics` `v0.2.0` for the Users dependency. With OTP
+  off (dummy default), Users omits OTP routes so those paths 404 cleanly.
+
 ### Added
 - Gem identity `recording_studio_onboarding` / `RecordingStudioOnboarding`.
 - Provisioning registry (`config.provision`) and public `RecordingStudioOnboarding.provision`.
@@ -40,8 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dummy AdminRoot mount at `/admin` with Accessible-gated admin screens.
 
 ### Changed
-- Requires RecordingStudio_users `>= 0.15.0`. The registration subscriber listens
-  to `registration.completed.recording_studio_user` for `:password`, `:oauth`,
+- The registration subscriber listens to
+  `registration.completed.recording_studio_user` for `:password`, `:oauth`,
   and `:otp`, and no longer subscribes to the OTP-only event.
 - Dummy mounts RecordingStudio_users auth at `/users/sign_up` and `/users/sign_in`
   (`recording_studio_user_auth_for` + engine mount). Password and OAuth sign-up
@@ -49,11 +54,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   event. Plain Devise registrations are skipped.
 - Dummy Accessible pin `v0.10.1` → `v0.11.1` (role column string migration).
 - Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`,
-  RecordingStudio_users `v0.15.0` → `v0.16.0` (host auth-view overrides).
+  RecordingStudio_users `v0.15.0` → `v0.18.0` (OTP routes absent when OTP off),
+  Metrics `v0.2.0`.
 - Removed template residue: example capability, placeholder config, committed coverage output.
 
 ### Upgrade notes
-- Install RecordingStudio_users `>= 0.15.0` (dummy/root GitHub tag `v0.16.0`).
+- Install RecordingStudio_users `>= 0.18.0` (dummy/root GitHub tag `v0.18.0`)
+  and pin `recording_studio_metrics` `v0.2.0` from GitHub.
 - Wire host auth with `recording_studio_user_auth_for :users` (skip Devise
   sessions/registrations/passwords) so RS Users emits
   `registration.completed.recording_studio_user`.
@@ -66,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Run `bin/rails generate recording_studio_onboarding:migrations` and `bin/rails db:migrate`.
 - Dummy also needs `bin/rails generate recording_studio_user:migrations`,
   `bin/rails generate recording_studio_attachable:migrations`, and `db:migrate`.
+- Do not copy Users template residue such as `gem_template_pages` migrations.
 
 ## [0.2.3] - 2026-10-01
 

@@ -15,7 +15,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
     gemspec = File.read(File.expand_path("../recording_studio_onboarding.gemspec", __dir__))
 
     assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.15.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.18.0"'
   end
 
   def test_gemspec_excludes_cursor_config
@@ -47,7 +47,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.11.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.16.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.0.5"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.1"'
@@ -188,7 +188,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes readme, "v4.2.2"
     assert_includes readme, "v0.1.196"
     assert_includes readme, "v0.11.1"
-    assert_includes readme, "v0.16.0"
+    assert_includes readme, "v0.18.0"
     assert_includes readme, "v0.5.1"
     assert_includes readme, "v2.0.5"
     assert_includes readme, "Admin integration"

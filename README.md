@@ -130,7 +130,7 @@ No separate analytics store.
 
 ## RecordingStudio_users integration
 
-Requires **RecordingStudio_users >= 0.15.0**.
+Requires **RecordingStudio_users >= 0.18.0**.
 
 Subscribes to `registration.completed.recording_studio_user` for every
 successful sign-up method (`:password`, `:oauth`, `:otp`). Provisioning is
@@ -141,16 +141,17 @@ is not subscribed; OTP is covered by the unified event.
 
 The dummy mounts RS Users auth (`recording_studio_user_auth_for :users` plus
 `RecordingStudioUser::Engine`) so `/users/sign_up` is the real users flow.
-Password and OAuth sign-up emit the unified event; OTP registration is off in
-the dummy until Notifications is installed.
+Password and OAuth sign-up emit the unified event. OTP registration stays off
+in the dummy (`otp_enabled = false`); with Users 0.18+, OTP paths are absent
+and return 404 rather than error pages.
 
 ## Architecture notes
 
 - No dependency on RS Terms & Conditions
 - Flatpack ViewComponents only; no React or Vue
 - Dummy GitHub tag pins: RecordingStudio `v4.2.2`, Accessible `v0.11.1`,
-  RecordingStudio_users `v0.16.0`, Root Switchable `v0.5.1`, Flatpack `v0.1.196`,
-  Admin `v2.0.5`
+  RecordingStudio_users `v0.18.0`, Metrics `v0.2.0`, Root Switchable `v0.5.1`,
+  Flatpack `v0.1.196`, Admin `v2.0.5`
 
 ## Development
 
