@@ -6,6 +6,7 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   setup do
+    Thread.current[:leave_terms_pending] = true
     @original_configuration = RecordingStudioOnboarding.instance_variable_get(:@configuration)
     RecordingStudioOnboarding.instance_variable_set(:@configuration, RecordingStudioOnboarding::Configuration.new)
     RecordingStudioOnboarding.configure do |config|
@@ -50,6 +51,7 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
   teardown do
     RecordingStudioOnboarding.instance_variable_set(:@configuration, @original_configuration)
     Current.actor = nil
+    Thread.current[:leave_terms_pending] = false
   end
 
   test "terms installed and due sends run page to Agree then back after accept" do
@@ -75,6 +77,10 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
     user = pending_terms_user("terms-clear")
     accept_all_terms!(user)
     run = RecordingStudioOnboarding.start(:account_setup, actor: user)
+    # Accept on every live root (seed may publish under Studio Workspace too).
+    Thread.current[:leave_terms_pending] = false
+    accept_live_terms_for_tests!(user)
+    Thread.current[:leave_terms_pending] = true
     sign_in user
 
     get recording_studio_onboarding.run_path(run)
