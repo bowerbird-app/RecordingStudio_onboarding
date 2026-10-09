@@ -9,10 +9,14 @@ RecordingStudio.configure do |config|
     "AdminRoot",
     "RecordingStudioUser::People",
     "RecordingStudioUser::Profile",
-    "RecordingStudioAttachable::Attachment",
-    "RecordingStudioTermsAndConditions::Terms",
-    "RecordingStudioPublishable::Publishable"
+    "RecordingStudioAttachable::Attachment"
   ]
+  if defined?(RecordingStudioTermsAndConditions)
+    config.recordable_types << "RecordingStudioTermsAndConditions::Terms"
+  end
+  if defined?(RecordingStudioPublishable)
+    config.recordable_types << "RecordingStudioPublishable::Publishable"
+  end
 
   # Require each configured ActiveRecord type to call recording_studio_recordable.
   config.require_recordable_declarations = true

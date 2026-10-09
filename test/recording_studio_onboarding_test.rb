@@ -67,6 +67,21 @@ class RecordingStudioOnboardingTest < Minitest::Test
     refute_includes gemfile, 'tag: "0.3.1"'
   end
 
+  def test_without_terms_gemfile_omits_terms_and_publishable
+    gemfile_path = File.expand_path("../gemfiles/without_terms.gemfile", __dir__)
+    lock_path = "#{gemfile_path}.lock"
+    gemfile = File.read(gemfile_path)
+
+    assert File.exist?(lock_path), "expected committed #{lock_path}"
+    lock = File.read(lock_path)
+    refute_includes gemfile, "recording_studio_terms_and_conditions"
+    refute_includes gemfile, "recording_studio_publishable"
+    refute_includes lock, "recording_studio_terms_and_conditions"
+    refute_includes lock, "recording_studio_publishable"
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
+  end
+
   def test_dummy_schema_includes_accessible_depends_on_recording_id
     schema = File.read(File.expand_path("dummy/db/schema.rb", __dir__))
     migration = File.read(
@@ -167,8 +182,10 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes initializer_source, '"RecordingStudioUser::People"'
     assert_includes initializer_source, '"RecordingStudioUser::Profile"'
     assert_includes initializer_source, '"RecordingStudioAttachable::Attachment"'
-    assert_includes initializer_source, '"RecordingStudioTermsAndConditions::Terms"'
-    assert_includes initializer_source, '"RecordingStudioPublishable::Publishable"'
+    assert_includes initializer_source, "RecordingStudioTermsAndConditions::Terms"
+    assert_includes initializer_source, "RecordingStudioPublishable::Publishable"
+    assert_includes initializer_source, "if defined?(RecordingStudioTermsAndConditions)"
+    assert_includes initializer_source, "if defined?(RecordingStudioPublishable)"
     refute_includes initializer_source, "config.include_children"
     refute_includes initializer_source, "config.features."
     refute_includes initializer_source, "v3"

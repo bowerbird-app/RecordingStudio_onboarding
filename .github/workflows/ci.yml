@@ -46,6 +46,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    name: test (${{ matrix.ruby-version }}, ${{ matrix.label }})
 
     services:
       postgres:
@@ -61,11 +62,23 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     strategy:
       fail-fast: false
       matrix:
-        ruby-version: ["3.3", "3.4"]
+        include:
+          - ruby-version: "3.3"
+            label: with_terms
+            gemfile: test/dummy/Gemfile
+          - ruby-version: "3.4"
+            label: with_terms
+            gemfile: test/dummy/Gemfile
+          - ruby-version: "3.3"
+            label: without_terms
+            gemfile: gemfiles/without_terms.gemfile
+          - ruby-version: "3.4"
+            label: without_terms
+            gemfile: gemfiles/without_terms.gemfile
 
     steps:
       - name: Checkout code
@@ -76,19 +89,42 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
-          cache-version: ${{ hashFiles('test/dummy/Gemfile.lock') }}
+          cache-version: ${{ hashFiles('Gemfile.lock', matrix.gemfile, format('{0}.lock', matrix.gemfile)) }}
+
+      - name: Install root gems (rake / gem suite)
+        run: bundle install
 
       - name: Install dummy app dependencies
         run: bundle install
-        working-directory: test/dummy
         env:
+          BUNDLE_GEMFILE: ${{ matrix.gemfile }}
           BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
+
+      - name: Assert Terms presence matches matrix label
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.label }}" = "with_terms" ]; then
+            grep -q recording_studio_terms_and_conditions "${{ matrix.gemfile }}.lock"
+            grep -q recording_studio_publishable "${{ matrix.gemfile }}.lock"
+          else
+            if grep -q recording_studio_terms_and_conditions "${{ matrix.gemfile }}.lock"; then
+              echo "Terms must not appear in without_terms lockfile" >&2
+              exit 1
+            fi
+            if grep -q recording_studio_publishable "${{ matrix.gemfile }}.lock"; then
+              echo "Publishable must not appear in without_terms lockfile" >&2
+              exit 1
+            fi
+          fi
 
       - name: Build dummy app Tailwind assets
         run: bundle exec rails tailwindcss:build
         working-directory: test/dummy
+        env:
+          BUNDLE_GEMFILE: ${{ github.workspace }}/${{ matrix.gemfile }}
 
       - name: Run tests
         run: bundle exec rake test:all
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_onboarding_test
+          DUMMY_GEMFILE: ${{ github.workspace }}/${{ matrix.gemfile }}

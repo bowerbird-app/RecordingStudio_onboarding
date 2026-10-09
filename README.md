@@ -220,10 +220,14 @@ and return 404 rather than error pages.
   RecordingStudio_users `v0.18.0`, Metrics `v0.2.0`, Root Switchable `v0.5.1`,
   Flatpack `v0.1.196`, Admin `v2.0.5`, Publishable `v0.4.2`,
   Terms & Conditions `v0.9.0`
+- CI also runs against `gemfiles/without_terms.gemfile` (no Terms / Publishable)
 
 ## Development
 
 ```bash
 bundle exec rake test
 bundle exec rake test:all
+
+# Without RS Terms (real absence — gem never required):
+DUMMY_GEMFILE=gemfiles/without_terms.gemfile bundle exec rake test:all
 ```

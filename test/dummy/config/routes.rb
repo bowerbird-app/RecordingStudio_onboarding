@@ -18,8 +18,12 @@ Rails.application.routes.draw do
   mount RecordingStudioOnboarding::Engine, at: "/onboarding"
   mount RecordingStudioAccessible::Engine, at: "/admin/access"
   mount RecordingStudioAttachable::Engine, at: "/recording_studio_attachable"
-  mount RecordingStudioTermsAndConditions::Engine, at: "/recording_studio_terms_and_conditions"
-  mount RecordingStudioPublishable::Engine, at: "/", as: :recording_studio_publishable
+  if defined?(RecordingStudioTermsAndConditions)
+    mount RecordingStudioTermsAndConditions::Engine, at: "/recording_studio_terms_and_conditions"
+  end
+  if defined?(RecordingStudioPublishable)
+    mount RecordingStudioPublishable::Engine, at: "/", as: :recording_studio_publishable
+  end
   mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path, as: :recording_studio_users
   namespace :admin do
     get "root", to: "root#show", as: :root

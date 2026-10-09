@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   does not.
 - Dummy pins RS Terms `v0.9.0` + Publishable `v0.4.2` with a seeded published
   document so Agree-before-onboarding is demoable.
+- CI matrix runs the suite with Terms (`test/dummy/Gemfile`) and without
+  (`gemfiles/without_terms.gemfile`), plus Bundler Audit on both lockfiles.
 
 ### Fixed
 - Segment progress labels sit above the connector line so the line never cuts

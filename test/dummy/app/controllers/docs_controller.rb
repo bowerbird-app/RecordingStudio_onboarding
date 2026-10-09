@@ -17,7 +17,11 @@ class DocsController < ApplicationController
   end
 
   def recordings_tree
-    recordings = RecordingStudio::Recording.includes(:recordable).reorder(:created_at, :id).to_a
+    # Skip rows whose recordable constant is absent (e.g. Terms rows when the
+    # without_terms Gemfile is active but schema still has those tables).
+    recordings = RecordingStudio::Recording.reorder(:created_at, :id).select do |recording|
+      recording.recordable_type.to_s.safe_constantize
+    end
     recordings_by_parent_id = recordings.group_by(&:parent_recording_id)
 
     @recording_tree = recordings_by_parent_id.fetch(nil, []).map do |recording|

@@ -17,9 +17,17 @@ permissions:
 
 jobs:
   bundler-audit:
-    name: Bundler Audit
+    name: Bundler Audit (${{ matrix.label }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: with_terms
+            gemfile: test/dummy/Gemfile
+          - label: without_terms
+            gemfile: gemfiles/without_terms.gemfile
 
     steps:
       - name: Checkout code
@@ -31,12 +39,17 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
         env:
-          BUNDLE_GEMFILE: test/dummy/Gemfile
+          BUNDLE_GEMFILE: ${{ matrix.gemfile }}
           BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
 
       - name: Scan gems for known vulnerabilities
-        run: bin/bundler-audit
-        working-directory: test/dummy
+        run: |
+          set -euo pipefail
+          bundle install
+          bundle exec bundler-audit check --config test/dummy/config/bundler-audit.yml
+        env:
+          BUNDLE_GEMFILE: ${{ matrix.gemfile }}
+          BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
 
   brakeman:
     name: Brakeman

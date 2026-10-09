@@ -13,6 +13,7 @@
 - FlatPack dummy tag `v0.1.196`
 - Optional (dummy demo): RecordingStudio Terms & Conditions `v0.9.0` and
   Publishable `v0.4.2` for Agree-before-onboarding (`config.before_onboarding`)
+- CI also exercises `gemfiles/without_terms.gemfile` where those gems are absent
 - Public RubyGems and GitHub access for dependency installation
 
 ## Verification

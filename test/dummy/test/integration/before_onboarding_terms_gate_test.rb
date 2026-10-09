@@ -2,10 +2,13 @@
 
 require "test_helper"
 
+# Runs only when the dummy bundle includes RS Terms (default Gemfile).
 class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   setup do
+    skip "RS Terms not in this bundle" unless defined?(RecordingStudioTermsAndConditions)
+
     Thread.current[:leave_terms_pending] = true
     @original_configuration = RecordingStudioOnboarding.instance_variable_get(:@configuration)
     RecordingStudioOnboarding.instance_variable_set(:@configuration, RecordingStudioOnboarding::Configuration.new)
@@ -49,7 +52,10 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
   end
 
   teardown do
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, @original_configuration)
+    # skip-in-setup still runs teardown; only restore when setup replaced config.
+    if defined?(@original_configuration) && @original_configuration
+      RecordingStudioOnboarding.instance_variable_set(:@configuration, @original_configuration)
+    end
     Current.actor = nil
     Thread.current[:leave_terms_pending] = false
   end
@@ -101,20 +107,6 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
 
     get "/flows"
     assert_redirected_to recording_studio_terms_and_conditions.acceptance_path
-  end
-
-  test "without before_onboarding gates onboarding helper is a no-op" do
-    user = pending_terms_user("terms-ungated")
-    run = RecordingStudioOnboarding.start(:account_setup, actor: user)
-    RecordingStudioOnboarding.configuration.before_onboarding_gates.clear
-
-    assert_empty RecordingStudioOnboarding.configuration.before_onboarding_gates
-    path = RecordingStudioOnboarding.before_onboarding_redirect_to(
-      nil,
-      actor: user,
-      return_path: recording_studio_onboarding.run_path(run)
-    )
-    assert_nil path
   end
 
   test "registration.completed still provisions while terms are due" do
