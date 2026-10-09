@@ -153,21 +153,41 @@ module RecordingStudioOnboarding
           if status == :complete
             @view.render FlatPack::Shared::IconComponent.new(name: "check", size: :sm)
           else
-            # Absolute inset + grid centers the digit in the circle. leading-none
-            # collapses text-xs line-height so the glyph is not optically high.
-            @view.content_tag(
-              :span,
-              number.to_s,
-              class: "absolute inset-0 grid place-items-center fp-tabular-nums text-xs " \
-                     "font-semibold leading-none"
-            )
+            # SVG text with dominant-baseline=central centers the glyph in the
+            # circle; HTML/CSS flex still leaves Latin digits optically high.
+            marker_digit(number)
           end
+        end
+      end
+
+      def marker_digit(number)
+        # Alphabetic baseline at y=20 centers 12px digits in the 32×32 viewBox.
+        # dominant-baseline=central still leaves Latin digit ink ~1px high in Chrome.
+        @view.content_tag(
+          :svg,
+          class: "h-full w-full",
+          viewBox: "0 0 32 32",
+          focusable: "false",
+          "aria-hidden": true
+        ) do
+          @view.content_tag(
+            :text,
+            number.to_s,
+            x: "16",
+            y: "20",
+            fill: "currentColor",
+            "text-anchor": "middle",
+            "dominant-baseline": "alphabetic",
+            "font-size": "12",
+            "font-weight": "600",
+            style: "font-variant-numeric: tabular-nums;"
+          )
         end
       end
 
       def marker_classes(status)
         base = "relative z-10 inline-flex h-8 w-8 shrink-0 items-center justify-center " \
-               "rounded-full border leading-none"
+               "overflow-hidden rounded-full border"
         "#{base} #{MARKER_TONES.fetch(status)}"
       end
     end

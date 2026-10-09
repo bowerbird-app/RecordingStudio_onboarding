@@ -77,10 +77,10 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='onboarding-progress'][data-mode='segments']"
     assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='current'] > p",
                   text: "Welcome"
-    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='current'] > div > span.leading-none",
+    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='current'] > div > span > svg > text",
                   text: "1"
-    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='current'] > div > span > span.absolute.inset-0.place-items-center.leading-none",
-                  text: "1"
+    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='upcoming'] > div > span > svg > text",
+                  text: "2"
     assert_select "[data-testid='onboarding-controls']"
     assert_select "[data-testid='control-advance']"
     assert_select "[data-testid='control-exit']"
