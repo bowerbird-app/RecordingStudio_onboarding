@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioOnboardingTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.2.3", ::RecordingStudioOnboarding::VERSION
+    assert_equal "0.3.0", ::RecordingStudioOnboarding::VERSION
   end
 
   def test_engine_exists
@@ -15,6 +15,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
     gemspec = File.read(File.expand_path("../recording_studio_onboarding.gemspec", __dir__))
 
     assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.18.0"'
   end
 
   def test_gemspec_excludes_cursor_config
@@ -45,18 +46,40 @@ class RecordingStudioOnboardingTest < Minitest::Test
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.10.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.11.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.0.5"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.1"'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.196"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_publishable", tag: "v0.4.2"'
+    assert_includes gemfile,
+                    'github: "bowerbird-app/RecordingStudio_terms_and_conditions", tag: "v0.9.0"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.2.1"'
     refute_includes gemfile, 'tag: "v4.2.0"'
+    refute_includes gemfile, 'tag: "v0.10.1"'
     refute_includes gemfile, 'tag: "v0.9.1"'
     refute_includes gemfile, 'tag: "v0.5.0"'
     refute_includes gemfile, 'tag: "v0.1.177"'
     refute_includes gemfile, 'tag: "v0.1.133"'
     refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "0.3.1"'
+  end
+
+  def test_without_terms_gemfile_omits_terms_and_publishable
+    gemfile_path = File.expand_path("../gemfiles/without_terms.gemfile", __dir__)
+    lock_path = "#{gemfile_path}.lock"
+    gemfile = File.read(gemfile_path)
+
+    assert File.exist?(lock_path), "expected committed #{lock_path}"
+    lock = File.read(lock_path)
+    refute_includes gemfile, "recording_studio_terms_and_conditions"
+    refute_includes gemfile, "recording_studio_publishable"
+    refute_includes lock, "recording_studio_terms_and_conditions"
+    refute_includes lock, "recording_studio_publishable"
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
   end
 
   def test_dummy_schema_includes_accessible_depends_on_recording_id
@@ -154,10 +177,15 @@ class RecordingStudioOnboardingTest < Minitest::Test
     initializer_source = File.read(initializer_path)
 
     assert_includes initializer_source, "config.require_recordable_declarations = true"
-    assert_includes(
-      initializer_source,
-      "config.recordable_types = [ \"Workspace\", \"Folder\", \"Page\", \"AdminRoot\" ]"
-    )
+    assert_includes initializer_source, '"Workspace"'
+    assert_includes initializer_source, '"AdminRoot"'
+    assert_includes initializer_source, '"RecordingStudioUser::People"'
+    assert_includes initializer_source, '"RecordingStudioUser::Profile"'
+    assert_includes initializer_source, '"RecordingStudioAttachable::Attachment"'
+    assert_includes initializer_source, "RecordingStudioTermsAndConditions::Terms"
+    assert_includes initializer_source, "RecordingStudioPublishable::Publishable"
+    assert_includes initializer_source, "if defined?(RecordingStudioTermsAndConditions)"
+    assert_includes initializer_source, "if defined?(RecordingStudioPublishable)"
     refute_includes initializer_source, "config.include_children"
     refute_includes initializer_source, "config.features."
     refute_includes initializer_source, "v3"
@@ -179,12 +207,20 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes readme, "RecordingStudioOnboarding"
     assert_includes readme, "Provisioning"
     assert_includes readme, "Terms & Conditions"
+    assert_includes readme, "before_onboarding"
+    assert_includes readme, "store_location_for"
+    assert_includes readme, "visible_steps"
+    assert_includes readme, "complete_when"
     assert_includes readme, "v4.2.2"
     assert_includes readme, "v0.1.196"
-    assert_includes readme, "v0.10.1"
+    assert_includes readme, "v0.11.1"
+    assert_includes readme, "v0.18.0"
     assert_includes readme, "v0.5.1"
     assert_includes readme, "v2.0.5"
+    assert_includes readme, "v0.9.0"
+    assert_includes readme, "v0.4.2"
     assert_includes readme, "Admin integration"
+    assert_includes readme, "registration.completed.recording_studio_user"
     refute_includes readme, "ExampleService"
     refute_includes readme, "recording_studio/v3.0.0"
   end
@@ -194,6 +230,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
     view_source = File.read(view_path)
 
     assert_includes view_source, 'title: "Recording Studio Onboarding"'
+    assert_includes view_source, "registration.completed.recording_studio_user"
     assert_includes view_source, "provision"
     assert_includes view_source, "dummy_page_nav"
     refute_includes view_source, "FlatPack::Card::Component"

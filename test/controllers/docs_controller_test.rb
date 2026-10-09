@@ -18,7 +18,24 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
       user.password_confirmation = TEST_PASSWORD
     end
 
+    accept_live_terms_for_docs!(@user)
     sign_in @user
+  end
+
+  def accept_live_terms_for_docs!(actor)
+    return unless defined?(RecordingStudioTermsAndConditions)
+    return if actor.blank?
+
+    RecordingStudio::Recording.where(parent_recording_id: nil).find_each do |root_recording|
+      root = root_recording.recordable
+      next if root.blank?
+
+      RecordingStudioTermsAndConditions.pending_published_list(actor, root).each do |terms|
+        RecordingStudioTermsAndConditions.accept!(actor, terms, { "source" => "test" })
+      end
+    rescue StandardError
+      nil
+    end
   end
 
   test "install page renders successfully" do

@@ -10,7 +10,7 @@ module Dummy
       end
 
       def call
-        content_tag(:div, class: "mx-auto flex w-full max-w-md flex-col gap-4", data: {testid: "card-workspace-details"}) do
+        content_tag(:div, class: "flex w-full flex-col gap-4", data: {testid: "card-workspace-details"}) do
           safe_join([
             render(FlatPack::PageTitle::Component.new(
                      title: "Name your workspace",

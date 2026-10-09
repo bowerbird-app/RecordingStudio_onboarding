@@ -12,7 +12,7 @@ module Dummy
       def call
         content_tag(
           :div,
-          class: "mx-auto flex w-full max-w-sm flex-col items-center gap-4 text-center",
+          class: "flex w-full flex-col items-center gap-4 text-center",
           data: {testid: "card-complete"}
         ) do
           safe_join([

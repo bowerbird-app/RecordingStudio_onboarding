@@ -4,16 +4,32 @@ require "recording_studio_onboarding/flow_definition"
 
 module RecordingStudioOnboarding
   class Configuration
-    attr_reader :hooks, :provisioners, :flows
+    attr_reader :hooks, :provisioners, :flows, :before_onboarding_gates
     attr_accessor :authorize_run, :preview_context, :current_actor
 
     def initialize
       @hooks = RecordingStudio::Hooks.new
       @provisioners = {}
       @flows = {}
+      @before_onboarding_gates = []
       @authorize_run = nil
       @preview_context = nil
       @current_actor = nil
+    end
+
+    # Register a callable (or object responding to #call) that runs before the
+    # user-facing onboarding UI. Signature:
+    #
+    #   call(controller:, actor:, return_path:) → redirect path or nil
+    #
+    # First non-nil path wins. Provisioning is not gated.
+    def before_onboarding(gate = nil, &block)
+      callable = gate || block
+      raise ArgumentError, "before_onboarding gate or block is required" if callable.nil?
+      raise ArgumentError, "before_onboarding gate must respond to #call" unless callable.respond_to?(:call)
+
+      @before_onboarding_gates << callable
+      callable
     end
 
     # Register a named provisioning handler.
@@ -64,6 +80,7 @@ module RecordingStudioOnboarding
       {
         provisioners: @provisioners.keys,
         flows: @flows.keys,
+        before_onboarding_gates: @before_onboarding_gates.size,
         hooks_registered: @hooks.instance_variable_get(:@registry).transform_values(&:size)
       }
     end

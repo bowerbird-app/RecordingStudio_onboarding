@@ -9,7 +9,8 @@ require "rails/test_help"
 class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
   test "dummy recordable declarations validate and expose parent/root introspection" do
     assert RecordingStudio.validate_recordable_declarations!
-    assert_equal %w[AdminRoot Workspace].sort, RecordingStudio.root_recordable_types.sort
+    expected_roots = %w[AdminRoot RecordingStudioUser::People Workspace].sort
+    assert_equal expected_roots, RecordingStudio.root_recordable_types.sort
     assert_equal %w[Workspace Folder], RecordingStudio.allowed_parent_types_for("Folder")
     assert_equal %w[Workspace Folder], RecordingStudio.allowed_parent_types_for(Page)
   end
@@ -86,7 +87,9 @@ class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
     assert RecordingStudio.capability_enabled?(:accessible, for: "Workspace")
     refute RecordingStudio.capability_enabled?(:accessible, for: "Folder")
     refute RecordingStudio.capability_enabled?(:accessible, for: "Page")
-    refute RecordingStudio.registered_capabilities.key?(:example)
+    # Onboarding does not ship :example. RS Terms may register it when loaded.
+    example = RecordingStudio.registered_capabilities[:example]
+    refute_match(/Onboarding/i, example&.dig(:source).to_s)
   end
 
   private

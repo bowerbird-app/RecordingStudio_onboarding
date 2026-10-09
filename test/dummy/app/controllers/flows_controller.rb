@@ -12,6 +12,7 @@ class FlowsController < ApplicationController
     @workspaces = accessible_workspaces
     @pages = Page.order(:created_at).limit(20)
     @active_account_setup = RecordingStudioOnboarding.active_run(:account_setup, actor: current_user)
+    defer_before_onboarding!(return_path: main_app.flows_path) if @active_account_setup
   end
 
   def start
@@ -21,10 +22,25 @@ class FlowsController < ApplicationController
       actor: current_user,
       subject: subject
     )
-    redirect_to recording_studio_onboarding.run_path(run)
+    run_path = recording_studio_onboarding.run_path(run)
+    return if defer_before_onboarding!(return_path: run_path)
+
+    redirect_to run_path
   end
 
   private
+
+  def defer_before_onboarding!(return_path:)
+    path = RecordingStudioOnboarding.before_onboarding_redirect_to(
+      self,
+      actor: current_user,
+      return_path: return_path
+    )
+    return false if path.blank?
+
+    redirect_to path
+    true
+  end
 
   def resolve_subject
     case params[:scope_type]

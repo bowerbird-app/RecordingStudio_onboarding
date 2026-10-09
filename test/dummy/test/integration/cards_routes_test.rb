@@ -71,9 +71,16 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
 
     get recording_studio_onboarding.run_path(run)
     assert_response :success
+    assert_select "[data-testid='onboarding-page-frame']"
     assert_select "[data-testid='onboarding-card-shell']"
     assert_select "[data-testid='card-welcome']"
-    assert_select "[data-testid='onboarding-progress']"
+    assert_select "[data-testid='onboarding-progress'][data-mode='segments']"
+    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='current'] > p",
+                  text: "Welcome"
+    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='current'] > div > span > svg > text",
+                  text: "1"
+    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='upcoming'] > div > span > svg > text",
+                  text: "2"
     assert_select "[data-testid='onboarding-controls']"
     assert_select "[data-testid='control-advance']"
     assert_select "[data-testid='control-exit']"

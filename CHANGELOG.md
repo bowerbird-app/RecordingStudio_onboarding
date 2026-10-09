@@ -7,12 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-08
+
+### Added
+- Soft `config.before_onboarding` gates and
+  `RecordingStudioOnboarding.before_onboarding_redirect_to`. When
+  `RecordingStudioTermsAndConditions` is loaded, auto-registers a Terms Agree
+  gate (public API + Devise `store_location_for` return path). User-facing run
+  page, embedded `RunComponent`, and host start redirects wait; provisioning
+  does not.
+- Dummy pins RS Terms `v0.9.0` + Publishable `v0.4.2` with a seeded published
+  document so Agree-before-onboarding is demoable.
+- CI matrix runs the suite with Terms (`test/dummy/Gemfile`) and without
+  (`gemfiles/without_terms.gemfile`), plus Bundler Audit on both lockfiles.
+
+### Fixed
+- Segment progress labels sit above the connector line so the line never cuts
+  through step text (`ProgressComponent` owns the trail; Flatpack tokens +
+  `IconComponent` for markers).
+- Step numbers sit centered in segment markers (`leading-none` + absolute inset
+  grid on the digit).
+- One shared page width via `PageFrameComponent` for admin, card previews, and
+  user-facing full-screen steps (replacing mismatched `max-w-*` on layouts /
+  shells / dummy cards).
+
+### Changed
+- Requires RecordingStudio_users `>= 0.18.0` (dummy/root GitHub tag `v0.18.0`).
+  Pins `recording_studio_metrics` `v0.2.0` for the Users dependency. With OTP
+  off (dummy default), Users omits OTP routes so those paths 404 cleanly.
+
 ### Added
 - Gem identity `recording_studio_onboarding` / `RecordingStudioOnboarding`.
 - Provisioning registry (`config.provision`) and public `RecordingStudioOnboarding.provision`.
 - `ProvisioningExecution` model with DB uniqueness, concurrent claim, failure retry, and sanitised failure details.
-- Optional OTP registration subscriber for RecordingStudio_users (`otp.registration_completed.recording_studio_user`).
-- Dummy host workspace provisioner and Devise registration integration.
+- RecordingStudio_users registration subscriber (`registration.completed.recording_studio_user`).
+- Dummy host workspace provisioner.
 - Named flow registry (`config.flow`) with user / workspace / subject scopes.
 - `FlowRun` and `StepProgress` models, public flow API (`start`, `active_run`,
   `advance`, `back`, `skip`, `dismiss`, `reset`, `mark_viewed`).
@@ -30,15 +59,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dummy AdminRoot mount at `/admin` with Accessible-gated admin screens.
 
 ### Changed
-- Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`.
+- The registration subscriber listens to
+  `registration.completed.recording_studio_user` for `:password`, `:oauth`,
+  and `:otp`, and no longer subscribes to the OTP-only event.
+- Dummy mounts RecordingStudio_users auth at `/users/sign_up` and `/users/sign_in`
+  (`recording_studio_user_auth_for` + engine mount). Password and OAuth sign-up
+  emit `registration.completed` from RS Users; Onboarding provisions from that
+  event. Plain Devise registrations are skipped.
+- Dummy Accessible pin `v0.10.1` → `v0.11.1` (role column string migration).
+- Dummy and root GitHub tags: Recording Studio `v4.2.1` → `v4.2.2`,
+  RecordingStudio_users `v0.15.0` → `v0.18.0` (OTP routes absent when OTP off),
+  Metrics `v0.2.0`.
 - Removed template residue: example capability, placeholder config, committed coverage output.
 
-### Notes
-- Password and OmniAuth registration hooks are not yet available in RecordingStudio_users; hosts must call `provision` explicitly for those paths.
-
 ### Upgrade notes
+- Optional: install RecordingStudio Terms & Conditions (`recording_studio_terms_and_conditions`
+  `v0.9.0`) and Publishable (`v0.4.2`) for Agree-before-onboarding. No gemspec
+  change — the engine auto-registers `config.before_onboarding` when the Terms
+  constant is defined. Host start redirects should call
+  `RecordingStudioOnboarding.before_onboarding_redirect_to` (see dummy
+  `FlowsController`). Return path is Devise `store_location_for`, not a query param.
+- Install RecordingStudio_users `>= 0.18.0` (dummy/root GitHub tag `v0.18.0`)
+  and pin `recording_studio_metrics` `v0.2.0` from GitHub.
+- Wire host auth with `recording_studio_user_auth_for :users` (skip Devise
+  sessions/registrations/passwords) so RS Users emits
+  `registration.completed.recording_studio_user`.
+- Remove host workarounds that called `RecordingStudioOnboarding.provision` from
+  Devise password or OmniAuth registration paths.
+- If Accessible is still on `0.10.x`, bump to `0.11.x`, run
+  `bin/rails generate recording_studio_accessible:migrations` and
+  `bin/rails db:migrate` for the role-to-string change.
 - Point host and dummy Gemfiles at Recording Studio `v4.2.2`.
 - Run `bin/rails generate recording_studio_onboarding:migrations` and `bin/rails db:migrate`.
+- Dummy also needs `bin/rails generate recording_studio_user:migrations`,
+  `bin/rails generate recording_studio_attachable:migrations`, and `db:migrate`.
+- Do not copy Users template residue such as `gem_template_pages` migrations.
 
 ## [0.2.3] - 2026-10-01
 
@@ -142,7 +197,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.3.0
 [0.2.3]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.2.3
 [0.2.2]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.2.2
 [0.2.1]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.2.1

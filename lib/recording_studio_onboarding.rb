@@ -5,6 +5,7 @@ require "view_component"
 require "recording_studio_onboarding/version"
 require "recording_studio_onboarding/engine"
 require "recording_studio_onboarding/configuration"
+require "recording_studio_onboarding/gates/terms_and_conditions"
 require "recording_studio_onboarding/services/failure_sanitizer"
 require "recording_studio_onboarding/services/instrumenter"
 require "recording_studio_onboarding/users_registration_integration"
@@ -18,6 +19,16 @@ module RecordingStudioOnboarding
     def configure
       yield(configuration) if block_given?
       configuration
+    end
+
+    # First blocking gate redirect before user-facing onboarding, or nil.
+    # Does not affect provisioning. Gates receive controller, actor, return_path.
+    def before_onboarding_redirect_to(controller, actor:, return_path: nil)
+      configuration.before_onboarding_gates.each do |gate|
+        path = gate.call(controller: controller, actor: actor, return_path: return_path)
+        return path if path.present?
+      end
+      nil
     end
 
     # Execute a registered provisioner immediately with idempotent tracking.

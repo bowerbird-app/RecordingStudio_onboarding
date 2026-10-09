@@ -5,8 +5,15 @@
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
 - Recording Studio 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.2.2`)
-- Accessible dummy tag `v0.10.1` and Root Switchable dummy tag `v0.5.1`
+- RecordingStudio_users `>= 0.18.0` (dummy/root GitHub tag `v0.18.0`) for the
+  registration-completed provisioning subscriber; dummy mounts users auth
+- RecordingStudio_metrics `v0.2.0` (Users 0.18 dependency; GitHub tag pin)
+- Accessible dummy tag `v0.11.1`, Attachable `v0.7.1`, Admin `v2.0.5`,
+  Root Switchable `v0.5.1`
 - FlatPack dummy tag `v0.1.196`
+- Optional (dummy demo): RecordingStudio Terms & Conditions `v0.9.0` and
+  Publishable `v0.4.2` for Agree-before-onboarding (`config.before_onboarding`)
+- CI also exercises `gemfiles/without_terms.gemfile` where those gems are absent
 - Public RubyGems and GitHub access for dependency installation
 
 ## Verification

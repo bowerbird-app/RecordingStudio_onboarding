@@ -16,11 +16,14 @@ find_or_record_child = lambda do |recordable, root_recording, parent_recording|
   ).recording
 end
 
-# Create the admin user
+# Create the admin user (Devise actor; profile is created on first RS Users write).
 user = User.find_or_create_by!(email: "admin@admin.com") do |u|
   u.password = "Password"
   u.password_confirmation = "Password"
+  u.registered_with = "password" if u.respond_to?(:registered_with=)
+  u.confirmed_at = Time.current if u.respond_to?(:confirmed_at=)
 end
+user.update!(confirmed_at: Time.current) if user.respond_to?(:confirmed_at) && user.confirmed_at.blank?
 
 # Create the workspace recordables
 workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
@@ -63,6 +66,10 @@ begin
     User.find_or_create_by!(email: "onboarding-demo-#{i}@example.com") do |u|
       u.password = "Password"
       u.password_confirmation = "Password"
+      u.registered_with = "password" if u.respond_to?(:registered_with=)
+      u.confirmed_at = Time.current if u.respond_to?(:confirmed_at=)
+    end.tap do |u|
+      u.update!(confirmed_at: Time.current) if u.respond_to?(:confirmed_at) && u.confirmed_at.blank?
     end
   end
 
@@ -108,6 +115,50 @@ begin
   end
 ensure
   Current.actor = previous_actor
+end
+
+# Published Terms so the Agree gate can demonstrate terms-before-onboarding.
+# Seed users accept so normal demo logins are not stuck on Agree; tests create
+# pending actors when they need the terms-due path.
+if defined?(RecordingStudioTermsAndConditions) && defined?(RecordingStudioPublishable)
+  Current.actor = user
+  begin
+    terms_recording = RecordingStudioTermsAndConditions::KindPresence
+                      .recordings_for(root_recording, kind: RecordingStudioTermsAndConditions::Terms::KIND_TERMS)
+                      .max_by { |recording| recording.created_at || Time.at(0) }
+
+    if terms_recording.blank?
+      terms_recording = root_recording.record(
+        RecordingStudioTermsAndConditions::Terms,
+        actor: user
+      ) do |terms|
+        terms.title = RecordingStudioTermsAndConditions::SampleTerms::TITLE
+        terms.body = RecordingStudioTermsAndConditions::SampleTerms::BODY
+        terms.kind = RecordingStudioTermsAndConditions::Terms::KIND_TERMS
+      end
+    end
+
+    unless terms_recording.currently_published?
+      RecordingStudioPublishable::Services::Publishables::Update.call(
+        parent_recording: terms_recording,
+        attributes: { slug: "studio-terms", status: "published" }
+      ).value!
+      terms_recording = terms_recording.reload
+    end
+
+    accept_actors = [user] + User.where("email LIKE ?", "onboarding-%@example.com").to_a
+    accept_actors.uniq.each do |actor|
+      next unless RecordingStudioTermsAndConditions.requires_acceptance?(actor, workspace)
+
+      RecordingStudioTermsAndConditions.pending_published_list(actor, workspace).each do |terms|
+        RecordingStudioTermsAndConditions.accept!(actor, terms, { "source" => "seed" })
+      end
+    end
+
+    puts "Seeded: published Terms under '#{workspace.name}' (accepted for seed users)"
+  ensure
+    Current.actor = previous_actor
+  end
 end
 
 puts "Seeded: admin@admin.com / Password"

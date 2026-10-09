@@ -9,9 +9,9 @@
 
   <div class="flex flex-col gap-4 text-sm leading-6">
     <p>
-      New accounts call
-      <code>RecordingStudioOnboarding.provision(:new_registration, …)</code>.
-      Named flows start with
+      New accounts provision from RecordingStudio_users
+      <code>registration.completed.recording_studio_user</code>
+      (password, OAuth, and OTP). Named flows start with
       <code>RecordingStudioOnboarding.start</code>; presentation is full-screen
       (<code>/onboarding/runs/:uuid</code>) or embedded via
       <code>RunComponent</code>.

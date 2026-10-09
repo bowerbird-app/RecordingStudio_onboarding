@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RecordingStudioOnboarding
-  # Minimal outer presentation: centres the card, Flatpack theme, flexible dimensions.
+  # Minimal outer presentation: progress, body, controls. Page width comes from PageFrame.
   class CardShellComponent < ViewComponent::Base
     def initialize(run:, embedded: false, preview: false)
       super()
@@ -29,11 +29,7 @@ module RecordingStudioOnboarding
     end
 
     def shell_classes
-      if @embedded
-        "flex w-full flex-col gap-6"
-      else
-        "mx-auto flex w-full max-w-3xl flex-col gap-6 p-4 sm:p-8"
-      end
+      "flex w-full flex-col gap-6"
     end
 
     def body_region
