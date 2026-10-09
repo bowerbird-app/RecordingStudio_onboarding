@@ -8,7 +8,9 @@ module RecordingStudioOnboarding
       PreviewProgress = Struct.new(:step_key, :status, :first_viewed_at, :acted_at, keyword_init: true)
 
       attr_reader :id, :flow_key, :flow_version, :current_step_key, :status,
-                  :scope, :initiating_actor, :step_progresses, :started_at
+                  :scope, :scope_type, :scope_id,
+                  :initiating_actor, :initiating_actor_type, :initiating_actor_id,
+                  :step_progresses, :started_at
 
       def self.call(flow_key:, step_key:, context: nil)
         new(flow_key: flow_key, step_key: step_key, context: context).build
@@ -29,8 +31,7 @@ module RecordingStudioOnboarding
         @flow_version = definition.version
         @current_step_key = @step_key
         @status = "in_progress"
-        @scope = @context[:subject] || @context[:actor]
-        @initiating_actor = @context[:actor]
+        assign_scope_and_actor!
         @started_at = Time.current
         @step_progresses = preview_progresses(definition)
         self
@@ -84,6 +85,30 @@ module RecordingStudioOnboarding
                    end
           PreviewProgress.new(step_key: key.to_s, status: status)
         end
+      end
+
+      def assign_scope_and_actor!
+        @scope = @context[:subject] || @context[:actor]
+        @scope_type = polymorphic_type(@scope)
+        @scope_id = polymorphic_id(@scope)
+        @initiating_actor = @context[:actor]
+        @initiating_actor_type = polymorphic_type(@initiating_actor)
+        @initiating_actor_id = polymorphic_id(@initiating_actor)
+      end
+
+      # Match ActiveRecord polymorphic columns on FlowRun.
+      def polymorphic_type(record)
+        return if record.nil?
+        return record.class.base_class.name if record.class.respond_to?(:base_class)
+
+        record.class.name
+      end
+
+      def polymorphic_id(record)
+        return if record.nil?
+        return record.id if record.respond_to?(:id)
+
+        nil
       end
     end
   end

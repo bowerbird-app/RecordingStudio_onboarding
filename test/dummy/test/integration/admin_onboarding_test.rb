@@ -127,6 +127,21 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
     assert_equal before_progress, RecordingStudioOnboarding::StepProgress.count
   end
 
+  test "every registered admin card preview renders without error" do
+    previews = RecordingStudioOnboarding.configuration.flows.values.flat_map do |definition|
+      definition.steps.map { |step| [ definition.key.to_s, step.key.to_s ] }
+    end
+    assert_operator previews.size, :>=, 1
+
+    previews.each do |flow_key, step_key|
+      get "/onboarding/admin/previews/#{flow_key}/#{step_key}"
+      assert_response :success, "expected preview #{flow_key}/#{step_key} to render"
+      assert_select "[data-testid=onboarding-admin-preview]"
+      assert_select "[data-testid=onboarding-card-shell][data-preview=true]"
+      refute_match(/NoMethodError|undefined method/i, response.body)
+    end
+  end
+
   test "funnel screen numbers match analytics on fixture data" do
     run = RecordingStudioOnboarding.start(:account_setup, actor: @user)
     RecordingStudioOnboarding.mark_viewed(run, actor: @user)
