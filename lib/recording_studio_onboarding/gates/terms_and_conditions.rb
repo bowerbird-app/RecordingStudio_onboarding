@@ -12,7 +12,7 @@ module RecordingStudioOnboarding
         return unless defined?(::RecordingStudioTermsAndConditions)
 
         config = RecordingStudioOnboarding.configuration
-        return if config.before_onboarding_gates.any? { |gate| gate.is_a?(self) }
+        return if config.before_onboarding_gates.any?(self)
 
         config.before_onboarding(new)
       end

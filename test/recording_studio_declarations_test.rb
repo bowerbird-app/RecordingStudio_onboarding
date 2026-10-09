@@ -87,7 +87,9 @@ class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
     assert RecordingStudio.capability_enabled?(:accessible, for: "Workspace")
     refute RecordingStudio.capability_enabled?(:accessible, for: "Folder")
     refute RecordingStudio.capability_enabled?(:accessible, for: "Page")
-    refute RecordingStudio.registered_capabilities.key?(:example)
+    # Onboarding does not ship :example. RS Terms may register it when loaded.
+    example = RecordingStudio.registered_capabilities[:example]
+    refute_match(/Onboarding/i, example&.dig(:source).to_s)
   end
 
   private

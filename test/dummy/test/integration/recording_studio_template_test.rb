@@ -74,7 +74,10 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     assert RecordingStudio.capability_enabled?(:accessible, for: Workspace)
     refute RecordingStudio.capability_enabled?(:accessible, for: Folder)
     refute RecordingStudio.capability_enabled?(:accessible, for: Page)
-    refute RecordingStudio.registered_capabilities.key?(:example)
+    # Onboarding no longer ships an example capability. RS Terms may still
+    # register :example from its own template residue when that gem is loaded.
+    example = RecordingStudio.registered_capabilities[:example]
+    refute_match(/Onboarding/i, example&.dig(:source).to_s)
     assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
   end
 end
