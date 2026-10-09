@@ -60,9 +60,7 @@ module RecordingStudioOnboarding
       progress && %w[completed skipped].include?(progress.status)
     end
 
-    # Horizontal trail: labels above markers so the connector never cuts text.
-    # Flatpack Stepper places labels beside markers (through the line), so this
-    # trail uses Flatpack stepper tokens + IconComponent instead.
+    # Labels above markers (Flatpack Stepper puts labels through the line).
     class SegmentsTrail
       MARKER_TONES = {
         complete: "border-[var(--stepper-complete-color)] bg-[var(--stepper-complete-color)] " \
@@ -72,6 +70,12 @@ module RecordingStudioOnboarding
         upcoming: "border-[var(--stepper-upcoming-color)] bg-[var(--surface-page-background-color)] " \
                   "text-[var(--stepper-muted-color)]"
       }.freeze
+      # Alphabetic y=20 centers 12px digits in a 32×32 viewBox (Chrome).
+      DIGIT_SVG = { class: "h-full w-full", viewBox: "0 0 32 32", focusable: "false",
+                    "aria-hidden": true }.freeze
+      DIGIT_TEXT = { x: "16", y: "20", fill: "currentColor", "text-anchor": "middle",
+                     "dominant-baseline": "alphabetic", "font-size": "12", "font-weight": "600",
+                     style: "font-variant-numeric: tabular-nums;" }.freeze
 
       def initialize(steps:, current_step:, view_context:)
         @steps = steps
@@ -100,29 +104,20 @@ module RecordingStudioOnboarding
       end
 
       def status_for(number)
-        if number < @current_step
-          :complete
-        elsif number == @current_step
-          :current
-        else
-          :upcoming
+        if number < @current_step then :complete
+        elsif number == @current_step then :current
+        else :upcoming
         end
       end
 
       def label(step, status)
-        current = status == :current
-        classes = label_classes(current)
+        tone = status == :current ? "text-[var(--stepper-label-color)]" : "text-[var(--stepper-muted-color)]"
         @view.content_tag(
           :p,
           step.key.to_s.humanize,
-          class: classes,
-          aria: (current ? { current: "step" } : {})
+          class: "relative z-10 mb-2 w-full px-1 text-center text-sm font-medium #{tone}",
+          aria: (status == :current ? { current: "step" } : {})
         )
-      end
-
-      def label_classes(current)
-        tone = current ? "text-[var(--stepper-label-color)]" : "text-[var(--stepper-muted-color)]"
-        "relative z-10 mb-2 w-full px-1 text-center text-sm font-medium #{tone}"
       end
 
       def track(number, status, index)
@@ -140,8 +135,7 @@ module RecordingStudioOnboarding
       def connector(side)
         position = side == :left ? "left-0 right-1/2" : "left-1/2 right-0"
         @view.content_tag(
-          :span,
-          nil,
+          :span, nil,
           class: "pointer-events-none absolute #{position} top-1/2 h-px -translate-y-1/2 " \
                  "bg-[var(--stepper-upcoming-color)]",
           "aria-hidden": "true"
@@ -153,42 +147,20 @@ module RecordingStudioOnboarding
           if status == :complete
             @view.render FlatPack::Shared::IconComponent.new(name: "check", size: :sm)
           else
-            # SVG text with dominant-baseline=central centers the glyph in the
-            # circle; HTML/CSS flex still leaves Latin digits optically high.
             marker_digit(number)
           end
         end
       end
 
       def marker_digit(number)
-        # Alphabetic baseline at y=20 centers 12px digits in the 32×32 viewBox.
-        # dominant-baseline=central still leaves Latin digit ink ~1px high in Chrome.
-        @view.content_tag(
-          :svg,
-          class: "h-full w-full",
-          viewBox: "0 0 32 32",
-          focusable: "false",
-          "aria-hidden": true
-        ) do
-          @view.content_tag(
-            :text,
-            number.to_s,
-            x: "16",
-            y: "20",
-            fill: "currentColor",
-            "text-anchor": "middle",
-            "dominant-baseline": "alphabetic",
-            "font-size": "12",
-            "font-weight": "600",
-            style: "font-variant-numeric: tabular-nums;"
-          )
+        @view.content_tag(:svg, **DIGIT_SVG) do
+          @view.content_tag(:text, number.to_s, **DIGIT_TEXT)
         end
       end
 
       def marker_classes(status)
-        base = "relative z-10 inline-flex h-8 w-8 shrink-0 items-center justify-center " \
-               "overflow-hidden rounded-full border"
-        "#{base} #{MARKER_TONES.fetch(status)}"
+        "relative z-10 inline-flex h-8 w-8 shrink-0 items-center justify-center " \
+          "overflow-hidden rounded-full border #{MARKER_TONES.fetch(status)}"
       end
     end
   end
