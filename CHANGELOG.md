@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2026-10-08
 
+### Added
+- Soft `config.before_onboarding` gates and
+  `RecordingStudioOnboarding.before_onboarding_redirect_to`. When
+  `RecordingStudioTermsAndConditions` is loaded, auto-registers a Terms Agree
+  gate (public API + Devise `store_location_for` return path). User-facing run
+  page, embedded `RunComponent`, and host start redirects wait; provisioning
+  does not.
+- Dummy pins RS Terms `v0.9.0` + Publishable `v0.4.2` with a seeded published
+  document so Agree-before-onboarding is demoable.
+
 ### Fixed
 - Segment progress labels sit above the connector line so the line never cuts
   through step text (`ProgressComponent` owns the trail; Flatpack tokens +
@@ -61,6 +71,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed template residue: example capability, placeholder config, committed coverage output.
 
 ### Upgrade notes
+- Optional: install RecordingStudio Terms & Conditions (`recording_studio_terms_and_conditions`
+  `v0.9.0`) and Publishable (`v0.4.2`) for Agree-before-onboarding. No gemspec
+  change — the engine auto-registers `config.before_onboarding` when the Terms
+  constant is defined. Host start redirects should call
+  `RecordingStudioOnboarding.before_onboarding_redirect_to` (see dummy
+  `FlowsController`). Return path is Devise `store_location_for`, not a query param.
 - Install RecordingStudio_users `>= 0.18.0` (dummy/root GitHub tag `v0.18.0`)
   and pin `recording_studio_metrics` `v0.2.0` from GitHub.
 - Wire host auth with `recording_studio_user_auth_for :users` (skip Devise

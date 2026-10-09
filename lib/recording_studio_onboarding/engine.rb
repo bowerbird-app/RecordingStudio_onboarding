@@ -99,6 +99,14 @@ module RecordingStudioOnboarding
       end
     end
 
+    # Soft optional: register RS Terms Agree gate when that gem is loaded.
+    # No gemspec dependency — detection is defined?(RecordingStudioTermsAndConditions).
+    initializer "recording_studio_onboarding.register_terms_gate" do
+      config.after_initialize do
+        RecordingStudioOnboarding::Gates::TermsAndConditions.register_if_present!
+      end
+    end
+
     # Soft register with RecordingStudioAdmin when the host mounts it.
     # Controllers also live under RecordingStudioOnboarding::Admin; load (not
     # require) so register! is redefined after Zeitwerk reloads that namespace.

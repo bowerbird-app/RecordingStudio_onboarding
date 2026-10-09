@@ -5,6 +5,7 @@ module RecordingStudioOnboarding
     before_action :require_actor!
     before_action :set_run
     before_action :authorize_run!
+    before_action :defer_before_onboarding_gates!
 
     layout :resolve_layout
 
@@ -62,6 +63,17 @@ module RecordingStudioOnboarding
       return if Services::AuthorizeRun.call(@run, actor: current_onboarding_actor)
 
       render_not_found
+    end
+
+    def defer_before_onboarding_gates!
+      return if performed?
+
+      path = RecordingStudioOnboarding.before_onboarding_redirect_to(
+        self,
+        actor: current_onboarding_actor,
+        return_path: request.fullpath
+      )
+      redirect_to path if path.present?
     end
 
     def render_not_found

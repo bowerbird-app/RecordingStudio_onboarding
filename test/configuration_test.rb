@@ -36,6 +36,7 @@ class ConfigurationTest < Minitest::Test
     @configuration.flow :account_setup do
       step :welcome, component: "X"
     end
+    @configuration.before_onboarding { nil }
     @configuration.hooks.before_initialize { nil }
     @configuration.hooks.before_initialize { nil }
 
@@ -43,7 +44,13 @@ class ConfigurationTest < Minitest::Test
 
     assert_equal [:new_registration], result.fetch(:provisioners)
     assert_equal [:account_setup], result.fetch(:flows)
+    assert_equal 1, result.fetch(:before_onboarding_gates)
     assert_equal 2, result.fetch(:hooks_registered).fetch(:before_initialize)
+  end
+
+  def test_before_onboarding_requires_callable
+    assert_raises(ArgumentError) { @configuration.before_onboarding(nil) }
+    assert_raises(ArgumentError) { @configuration.before_onboarding(Object.new) }
   end
 
   def test_configure_without_block_is_safe

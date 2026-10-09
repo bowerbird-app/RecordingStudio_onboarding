@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_000010) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_072539) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -218,6 +218,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000010) do
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'completed'::character varying::text, 'skipped'::character varying::text])", name: "rso_step_progresses_status_check"
   end
 
+  create_table "recording_studio_publishable_publishables", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "slug", null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "publish_at"
+    t.datetime "unpublish_at"
+    t.string "time_zone"
+    t.string "seo_title"
+    t.text "seo_description"
+    t.string "canonical_url"
+    t.string "meta_robots"
+    t.string "social_title"
+    t.text "social_description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "social_image_attachment_recording_id"
+    t.index ["canonical_url"], name: "index_rs_publishables_on_canonical_url"
+    t.index ["slug"], name: "index_rs_publishables_on_slug"
+    t.index ["social_image_attachment_recording_id"], name: "index_rs_publishables_on_social_image_attachment_recording_id"
+    t.index ["status", "publish_at", "unpublish_at"], name: "index_publishables_on_status_and_publish_times"
+    t.index ["status", "publish_at", "unpublish_at"], name: "index_rs_publishables_on_state_window"
+  end
+
   create_table "recording_studio_recordings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.uuid "parent_recording_id"
@@ -228,6 +250,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000010) do
     t.datetime "updated_at", null: false
     t.index ["parent_recording_id"], name: "idx_rs_attachable_parent_active", where: "(((recordable_type)::text = 'RecordingStudioAttachable::Attachment'::text) AND (trashed_at IS NULL))"
     t.index ["parent_recording_id"], name: "index_recording_studio_recordings_on_parent_recording_id"
+    t.index ["parent_recording_id"], name: "index_rs_publishable_child_per_parent", unique: true, where: "(((recordable_type)::text = 'RecordingStudioPublishable::Publishable'::text) AND (trashed_at IS NULL))"
     t.index ["recordable_type", "recordable_id", "parent_recording_id", "trashed_at"], name: "index_recording_studio_recordings_on_recordable_parent_trashed"
     t.index ["recordable_type", "recordable_id"], name: "index_recording_studio_recordings_on_recordable"
     t.index ["recordable_type", "recordable_id"], name: "index_rs_unique_root_recording_per_recordable", unique: true, where: "(parent_recording_id IS NULL)"
@@ -254,6 +277,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000010) do
     t.index ["actor_type", "actor_id", "device_key", "scope_key"], name: "idx_rs_root_switchable_actor_device_scope", unique: true, where: "(actor_id IS NOT NULL)"
     t.index ["device_key", "scope_key"], name: "idx_rs_root_switchable_anonymous_device_scope", unique: true, where: "(actor_id IS NULL)"
     t.index ["root_recording_id"], name: "idx_rs_root_switchable_root_recording"
+  end
+
+  create_table "recording_studio_terms_and_conditions_acceptances", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "actor_type", null: false
+    t.uuid "actor_id", null: false
+    t.uuid "terms_recording_id", null: false
+    t.uuid "terms_id", null: false
+    t.datetime "accepted_at", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "provenance", default: {}, null: false
+    t.string "body_digest"
+    t.index ["actor_type", "actor_id", "terms_recording_id", "terms_id"], name: "index_rstac_acceptances_on_actor_and_version", unique: true
+    t.index ["actor_type", "actor_id"], name: "index_rstac_acceptances_on_actor"
+    t.index ["terms_id"], name: "index_rstac_acceptances_on_terms_id"
+    t.index ["terms_recording_id"], name: "index_rstac_acceptances_on_terms_recording_id"
+  end
+
+  create_table "recording_studio_terms_and_conditions_terms", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "title", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.string "kind", default: "terms_and_condition", null: false
   end
 
   create_table "recording_studio_user_identities", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -298,7 +343,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000010) do
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
-    t.check_constraint "registered_with::text = ANY (ARRAY['password'::character varying, 'otp'::character varying]::text[])", name: "users_registered_with_check"
+    t.check_constraint "registered_with::text = ANY (ARRAY['password'::character varying::text, 'otp'::character varying::text])", name: "users_registered_with_check"
   end
 
   create_table "workspaces", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -312,6 +357,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000010) do
   add_foreign_key "recording_studio_access_invitations", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_onboarding_step_progresses", "recording_studio_onboarding_flow_runs", column: "flow_run_id"
+  add_foreign_key "recording_studio_publishable_publishables", "recording_studio_recordings", column: "social_image_attachment_recording_id", name: "fk_rs_publishables_social_image_attachment_recording"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
   add_foreign_key "recording_studio_user_identities", "users"

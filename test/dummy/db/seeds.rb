@@ -117,6 +117,50 @@ ensure
   Current.actor = previous_actor
 end
 
+# Published Terms so the Agree gate can demonstrate terms-before-onboarding.
+# Seed users accept so normal demo logins are not stuck on Agree; tests create
+# pending actors when they need the terms-due path.
+if defined?(RecordingStudioTermsAndConditions) && defined?(RecordingStudioPublishable)
+  Current.actor = user
+  begin
+    terms_recording = RecordingStudioTermsAndConditions::KindPresence
+                      .recordings_for(root_recording, kind: RecordingStudioTermsAndConditions::Terms::KIND_TERMS)
+                      .max_by { |recording| recording.created_at || Time.at(0) }
+
+    if terms_recording.blank?
+      terms_recording = root_recording.record(
+        RecordingStudioTermsAndConditions::Terms,
+        actor: user
+      ) do |terms|
+        terms.title = RecordingStudioTermsAndConditions::SampleTerms::TITLE
+        terms.body = RecordingStudioTermsAndConditions::SampleTerms::BODY
+        terms.kind = RecordingStudioTermsAndConditions::Terms::KIND_TERMS
+      end
+    end
+
+    unless terms_recording.currently_published?
+      RecordingStudioPublishable::Services::Publishables::Update.call(
+        parent_recording: terms_recording,
+        attributes: { slug: "studio-terms", status: "published" }
+      ).value!
+      terms_recording = terms_recording.reload
+    end
+
+    accept_actors = [user] + User.where("email LIKE ?", "onboarding-%@example.com").to_a
+    accept_actors.uniq.each do |actor|
+      next unless RecordingStudioTermsAndConditions.requires_acceptance?(actor, workspace)
+
+      RecordingStudioTermsAndConditions.pending_published_list(actor, workspace).each do |terms|
+        RecordingStudioTermsAndConditions.accept!(actor, terms, { "source" => "seed" })
+      end
+    end
+
+    puts "Seeded: published Terms under '#{workspace.name}' (accepted for seed users)"
+  ensure
+    Current.actor = previous_actor
+  end
+end
+
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"
 puts "Seeded: Workspace '#{accessible_workspace.name}' with root recording ##{accessible_root_recording.id}"

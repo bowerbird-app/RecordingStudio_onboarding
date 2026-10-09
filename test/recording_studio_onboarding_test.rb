@@ -52,6 +52,9 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.1"'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.196"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_publishable", tag: "v0.4.2"'
+    assert_includes gemfile,
+                    'github: "bowerbird-app/RecordingStudio_terms_and_conditions", tag: "v0.9.0"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.2.1"'
     refute_includes gemfile, 'tag: "v4.2.0"'
@@ -164,6 +167,8 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes initializer_source, '"RecordingStudioUser::People"'
     assert_includes initializer_source, '"RecordingStudioUser::Profile"'
     assert_includes initializer_source, '"RecordingStudioAttachable::Attachment"'
+    assert_includes initializer_source, '"RecordingStudioTermsAndConditions::Terms"'
+    assert_includes initializer_source, '"RecordingStudioPublishable::Publishable"'
     refute_includes initializer_source, "config.include_children"
     refute_includes initializer_source, "config.features."
     refute_includes initializer_source, "v3"
@@ -185,12 +190,18 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes readme, "RecordingStudioOnboarding"
     assert_includes readme, "Provisioning"
     assert_includes readme, "Terms & Conditions"
+    assert_includes readme, "before_onboarding"
+    assert_includes readme, "store_location_for"
+    assert_includes readme, "visible_steps"
+    assert_includes readme, "complete_when"
     assert_includes readme, "v4.2.2"
     assert_includes readme, "v0.1.196"
     assert_includes readme, "v0.11.1"
     assert_includes readme, "v0.18.0"
     assert_includes readme, "v0.5.1"
     assert_includes readme, "v2.0.5"
+    assert_includes readme, "v0.9.0"
+    assert_includes readme, "v0.4.2"
     assert_includes readme, "Admin integration"
     assert_includes readme, "registration.completed.recording_studio_user"
     refute_includes readme, "ExampleService"
