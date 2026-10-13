@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Continue placement.
 - Dummy layout gallery at `/demos/onboarding` (splash, top-card, no-image,
   buttons left/right/full) with review screenshots under `docs/review/`.
+  Splash and top-card demos share `Dummy::Onboarding::DemoImage::URL` (Pexels).
 
 ### Changed
 - `ControlsComponent` only renders bottom Continue actions; Back/Skip moved to

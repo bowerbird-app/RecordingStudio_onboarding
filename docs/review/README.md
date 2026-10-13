@@ -3,6 +3,9 @@
 Screenshots for the permanent chrome + `PageComponent` layouts. Capture at
 desktop (`1440×900`) and mobile (`390×844`).
 
+Splash and top-card demos use the shared Pexels photo
+(`Dummy::Onboarding::DemoImage::URL`).
+
 | Variant | Route | Desktop | Mobile |
 |---------|-------|---------|--------|
 | Splash | `/demos/onboarding/splash` | `splash-desktop.png` | `splash-mobile.png` |

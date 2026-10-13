@@ -24,16 +24,16 @@ class PageComponentTest < ViewComponent::TestCase
       step: @step,
       title: "Splash title",
       content: "<p>Hello <strong>there</strong></p>",
-      splash_image_url: "/demos/onboarding/splash.jpg",
-      image_url: "/demos/onboarding/top-card.jpg"
+      splash_image_url: Dummy::Onboarding::DemoImage::URL,
+      image_url: "https://example.com/should-not-appear.jpg"
     )
 
     html = rendered_content
     assert_includes html, 'data-layout="splash"'
     assert_includes html, "Splash title"
     assert_includes html, "<strong>there</strong>"
-    assert_includes html, "/demos/onboarding/splash.jpg"
-    refute_includes html, "/demos/onboarding/top-card.jpg"
+    assert_includes html, Dummy::Onboarding::DemoImage::URL
+    refute_includes html, "should-not-appear.jpg"
   end
 
   test "image_url renders top-card layout" do
@@ -42,12 +42,12 @@ class PageComponentTest < ViewComponent::TestCase
       step: @step,
       title: "Card title",
       content: "<p>Body copy</p>",
-      image_url: "/demos/onboarding/top-card.jpg"
+      image_url: Dummy::Onboarding::DemoImage::URL
     )
 
     html = rendered_content
     assert_includes html, 'data-layout="top-card"'
-    assert_includes html, "/demos/onboarding/top-card.jpg"
+    assert_includes html, Dummy::Onboarding::DemoImage::URL
     assert_includes html, "Card title"
     assert_includes html, "Body copy"
   end

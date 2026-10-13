@@ -9,7 +9,7 @@ module Dummy
           step: step,
           title: "A photo up top, details below",
           content: "<p>The image sits in a top card with rounded corners. Title and copy follow.</p>",
-          image_url: "/demos/onboarding/top-card.jpg"
+          image_url: DemoImage::URL
         )
       end
     end

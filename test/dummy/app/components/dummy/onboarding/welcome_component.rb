@@ -10,7 +10,7 @@ module Dummy
           step: step,
           title: "Welcome aboard",
           content: "<p>A wide first step — set up your account in a few minutes.</p>",
-          splash_image_url: "/demos/onboarding/splash.jpg"
+          splash_image_url: DemoImage::URL
         )
       end
     end
