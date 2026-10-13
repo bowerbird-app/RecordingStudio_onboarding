@@ -81,11 +81,11 @@ module RecordingStudioOnboarding
       ) { text_control_fields(&label) }
     end
 
-    def text_control_fields(&label)
+    def text_control_fields(&)
       safe_join(
         [
           helpers.hidden_field_tag(:from, @run.current_step_key),
-          helpers.button_tag(type: "submit", class: text_link_classes, &label)
+          helpers.button_tag(type: "submit", class: text_link_classes, &)
         ]
       )
     end
