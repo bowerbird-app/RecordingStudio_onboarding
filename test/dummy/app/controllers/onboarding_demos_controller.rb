@@ -27,17 +27,24 @@ class OnboardingDemosController < ApplicationController
 
   private
 
-  def move_to!(run, step_key)
+  def move_to!(run, step_key) # rubocop:disable Metrics/MethodLength
     keys = run.definition.step_keys
     target_index = keys.index(step_key)
     raise ActionController::RoutingError, "Unknown step" unless target_index
 
-    current_index = keys.index(run.current_step_key.to_sym)
-    if current_index && current_index > target_index
-      RecordingStudioOnboarding.reset(run, actor: current_user)
-      run.reload
-    end
+    rewind_if_past!(run, keys, target_index)
+    advance_until!(run, keys, step_key, target_index)
+  end
 
+  def rewind_if_past!(run, keys, target_index)
+    current_index = keys.index(run.current_step_key.to_sym)
+    return unless current_index && current_index > target_index
+
+    RecordingStudioOnboarding.reset(run, actor: current_user)
+    run.reload
+  end
+
+  def advance_until!(run, keys, step_key, target_index)
     while run.reload.current_step_key.to_sym != step_key && run.open?
       current = run.current_step_key.to_sym
       index = keys.index(current)

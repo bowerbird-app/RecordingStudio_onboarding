@@ -2,7 +2,7 @@
 
 module RecordingStudioOnboarding
   # Immutable-ish configuration object for a named onboarding flow.
-  class FlowDefinition
+  class FlowDefinition # rubocop:disable Metrics/ClassLength
     SCOPES = %i[user workspace subject].freeze
     # Line progress only — numbered segment headers were removed.
     PROGRESS_MODES = %i[bar].freeze
@@ -67,7 +67,7 @@ module RecordingStudioOnboarding
       @after_dismiss = value
     end
 
-    # rubocop:disable-next Metrics/ParameterLists -- step DSL mirrors plan §7 config shape
+    # rubocop:disable-next Metrics/ParameterLists, Metrics/MethodLength -- step DSL mirrors plan §7
     def step(key, component:, controls: %i[continue], show_progress: true,
              skippable: true, complete_when: nil, button_positions: {})
       raise ArgumentError, "step key is required" if key.blank?
