@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-13
+
+### BREAKING
+- Removed the **Exit** control from onboarding chrome. `dismiss` stays available
+  on the public API and engine route for hosts that still need a programmatic
+  leave; it is no longer offered in the default UI.
+- Removed the **numbered segment progress** header (`progress :segments`).
+  Progress is always the line/bar (`progress :bar`), and step 1 already shows
+  colored progress (value is the 1-based current step).
+
+### Added
+- Permanent chrome: plain-text **`< Back`** (top-left) and **`Skip`** (top-right)
+  via `ChromeComponent`. Back hides on the first step; Skip follows `skippable`.
+- Default `PageComponent` page fields: `splash_image_url` (fullscreen + tinted
+  overlay), `image_url` (top card with bottom radius), `title`, and HTML
+  `content`. When both image fields are set, splash wins.
+- `button_positions` on each step (`:left`, `:right`, `:full`) for bottom
+  Continue placement.
+- Dummy layout gallery at `/demos/onboarding` (splash, top-card, no-image,
+  buttons left/right/full) with review screenshots under `docs/review/`.
+
+### Changed
+- `ControlsComponent` only renders bottom Continue actions; Back/Skip moved to
+  chrome. `:exit` in `controls` is ignored.
+- Default step `controls` is `%i[continue]` (was `%i[back continue]`).
+- Gem version `0.3.0` → `0.4.0`.
+
+### Upgrade notes
+- Drop `:exit` from step `controls` and any Exit UI copy.
+- Replace `progress :segments` with `progress :bar` (or omit — bar is default).
+- Back/Skip are chrome, not bottom buttons. Set `skippable: false` to hide Skip;
+  Back hides automatically on the first step.
+- Prefer `RecordingStudioOnboarding::PageComponent` (or a subclass) for title /
+  content / image layouts. Pass `button_positions: { continue: :full }` (or
+  `:left` / `:right`) when the Continue placement matters.
+
 ## [0.3.0] - 2026-10-08
 
 ### Added

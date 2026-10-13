@@ -1,0 +1,18 @@
+<% dummy_page_nav(title: "Onboarding layouts", back_url: root_path) %>
+
+<div class="flex w-full flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Onboarding layout gallery",
+    subtitle: "Splash, top-card, plain, and button positions — desktop and mobile.",
+    variant: :h1
+  ) %>
+
+  <ul class="flex flex-col gap-3 text-sm leading-6">
+    <% @variants.each do |variant| %>
+      <li>
+        <%= link_to variant.tr("-", " ").humanize, onboarding_demo_path(variant), class: "underline" %>
+        <span class="opacity-60">· /demos/onboarding/<%= variant %></span>
+      </li>
+    <% end %>
+  </ul>
+</div>
