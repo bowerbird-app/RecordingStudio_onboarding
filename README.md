@@ -93,7 +93,8 @@ end
 
 Full-screen and embedded shells always use:
 
-- **`< Back`** — plain text link, top-left (hidden on the first step)
+- **Back** — plain text link with a Heroicons chevron-left icon, top-left
+  (hidden on the first step)
 - **`Skip`** — plain text link, top-right (hidden when `skippable: false`)
 - **Line progress** — Flatpack Progress bar; step 1 already shows color
 - **No Exit** — removed from the UI (call `dismiss` in host code if needed)

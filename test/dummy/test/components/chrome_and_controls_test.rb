@@ -29,7 +29,9 @@ class ChromeAndControlsTest < ViewComponent::TestCase
 
     html = rendered_content
     assert_includes html, "onboarding-chrome"
-    assert_includes html, "&lt; Back"
+    assert_includes html, "Back"
+    refute_includes html, "&lt; Back"
+    assert_includes html, 'data-flat-pack--icon-name-value="chevron-left"'
     assert_includes html, "Skip"
   end
 

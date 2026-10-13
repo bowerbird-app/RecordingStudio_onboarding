@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module RecordingStudioOnboarding
-  # Permanent onboarding chrome: "< Back" (top-left) and "Skip" (top-right) as
-  # plain text links. Exit is not part of the chrome.
+  # Permanent onboarding chrome: Back (top-left, chevron-left + label) and Skip
+  # (top-right) as plain text links. Exit is not part of the chrome.
   class ChromeComponent < ViewComponent::Base
     include EngineRouting
 
@@ -47,48 +47,57 @@ module RecordingStudioOnboarding
     def back_link
       return empty_slot unless show_back?
 
-      text_control(label: "< Back", action: :back, testid: "control-back", align: :start)
+      text_control(action: :back, testid: "control-back", align: :start) { back_label }
     end
 
     def skip_link
       return empty_slot unless show_skip?
 
-      text_control(label: "Skip", action: :skip, testid: "control-skip", align: :end)
+      text_control(action: :skip, testid: "control-skip", align: :end) { "Skip" }
+    end
+
+    def back_label
+      safe_join(
+        [
+          render(FlatPack::Shared::IconComponent.new(name: "chevron-left", size: :sm)),
+          "Back"
+        ]
+      )
     end
 
     def empty_slot
       content_tag(:span, "", class: "min-w-0 flex-1", "aria-hidden": "true")
     end
 
-    def text_control(label:, action:, testid:, align:)
+    def text_control(action:, testid:, align:, &label)
       wrapper = align == :end ? "ms-auto" : "me-auto"
-      return preview_text(label, testid, wrapper) if @preview
+      return preview_text(testid, wrapper, &label) if @preview
 
       helpers.form_with(
         url: engine_path("#{action}_run_path"),
         method: :post,
         class: "inline-flex #{wrapper}",
         data: { testid: testid, turbo_frame: "_top" }
-      ) { text_control_fields(label) }
+      ) { text_control_fields(&label) }
     end
 
-    def text_control_fields(label)
+    def text_control_fields(&label)
       safe_join(
         [
           helpers.hidden_field_tag(:from, @run.current_step_key),
-          helpers.button_tag(label, type: "submit", class: text_link_classes)
+          helpers.button_tag(type: "submit", class: text_link_classes, &label)
         ]
       )
     end
 
-    def preview_text(label, testid, wrapper)
+    def preview_text(testid, wrapper, &label)
       content_tag(:div, class: "inline-flex #{wrapper}", data: { testid: testid, preview: true }) do
-        content_tag(:span, label, class: text_link_classes)
+        content_tag(:span, class: text_link_classes, &label)
       end
     end
 
     def text_link_classes
-      "border-0 bg-transparent p-0 text-sm font-medium " \
+      "inline-flex items-center gap-1 border-0 bg-transparent p-0 text-sm font-medium " \
         "text-[var(--surface-content-color)] underline-offset-4 " \
         "hover:underline focus-visible:underline " \
         "focus-visible:outline-none cursor-pointer"

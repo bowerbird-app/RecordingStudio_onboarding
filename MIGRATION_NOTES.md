@@ -21,7 +21,8 @@
 - Exit control removed from the UI; `dismiss` remains on the API/route.
 - `progress :segments` removed — use `:bar` (default). Step 1 shows colored
   progress immediately.
-- Back / Skip are permanent plain-text chrome (not bottom buttons).
+- Back / Skip are permanent plain-text chrome (not bottom buttons). Back uses
+  FlatPack `IconComponent` (`chevron-left`) beside the label.
 - Prefer `PageComponent` for splash / top-card / plain layouts; set
   `button_positions: { continue: :left|:right|:full }` for Continue placement.
   See `CHANGELOG.md` upgrade notes and `docs/review/`.
