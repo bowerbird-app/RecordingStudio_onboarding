@@ -11,7 +11,7 @@ class PreviewRunTest < Minitest::Test
       config.flow :preview_demo do
         scope :user
         version 1
-        step :welcome, component: "Object", controls: %i[continue exit]
+        step :welcome, component: "Object", controls: %i[continue]
         step :done, component: "Object", controls: %i[continue]
       end
     end

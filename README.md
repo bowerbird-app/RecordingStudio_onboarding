@@ -15,15 +15,16 @@ user-facing flow.
   `reset`, `restart`, `mark_viewed`, `preview` (no automatic redirect from `start`)
 - **Before-onboarding gates** — `config.before_onboarding` callables; RS Terms
   auto-registers when present
-- **Card UI** — `RunComponent`, `CardShellComponent`, `ControlsComponent`,
-  `ProgressComponent` (Flatpack Button / Progress; segment trail with labels
-  above the connector), shared `PageFrameComponent` width for admin / preview /
-  full-screen steps
+- **Card UI** — `RunComponent`, `CardShellComponent`, permanent chrome
+  (`ChromeComponent` Back / Skip text links), line `ProgressComponent`,
+  bottom `ControlsComponent` with left/right/full Continue, default
+  `PageComponent` (splash / top-card / plain), shared `PageFrameComponent`
 - **Engine routes** — `/onboarding/runs/:uuid` (+ advance/back/skip/dismiss)
 - **Admin + analytics** — soft `RecordingStudioAdmin.register_*` section/screens
   for flows, card previews, runs, drop-off funnel, and provisioning
-- **Dummy app** — provisioning, flow launcher, card layouts, host form steps,
-  admin, optional RS Terms Agree-before-onboarding demo
+- **Dummy app** — provisioning, flow launcher, layout gallery
+  (`/demos/onboarding`), host form steps, admin, optional RS Terms
+  Agree-before-onboarding demo
 
 ## Quick Start
 
@@ -38,6 +39,7 @@ user-facing flow.
 
 - `/` — demo home
 - `/flows` — start flows; embedded `RunComponent` when an account_setup run is open
+- `/demos/onboarding` — layout gallery (splash, top-card, plain, button positions)
 - `/onboarding/runs/:uuid` — full-screen card shell for the current step
 - `/recording_studio_terms_and_conditions/acceptance` — RS Terms Agree (when installed)
 - `/admin` — RS Admin root section (onboarding hub + screens)
@@ -68,43 +70,70 @@ RecordingStudioOnboarding.configure do |config|
 
   config.flow :account_setup do
     scope :user
-    progress :segments # or :bar
+    progress :bar
     dismissible true
     version 1
     after_complete "/"
     after_dismiss "/flows"
     step :welcome,
       component: "Host::Onboarding::WelcomeComponent",
-      controls: %i[continue exit]
+      controls: %i[continue],
+      button_positions: { continue: :full },
+      skippable: false
     step :details,
       component: "Host::Onboarding::DetailsComponent",
-      controls: %i[back continue skip exit],
+      controls: %i[continue],
+      button_positions: { continue: :right },
       skippable: true
   end
 end
 ```
+
+### Page chrome (permanent)
+
+Full-screen and embedded shells always use:
+
+- **Back** — plain text link with a Heroicons chevron-left icon, top-left
+  (hidden on the first step)
+- **`Skip`** — plain text link, top-right (hidden when `skippable: false`)
+- **Line progress** — Flatpack Progress bar; step 1 already shows color
+- **No Exit** — removed from the UI (call `dismiss` in host code if needed)
+
+### Default page element (`PageComponent`)
+
+Subclass or instantiate `RecordingStudioOnboarding::PageComponent` with:
+
+| Field | Meaning |
+|--------|---------|
+| `splash_image_url` | Full-bleed image; title + content overlay with a dark gradient tint |
+| `image_url` | Top card image with border-radius on all corners; title + content below |
+| `title` | Page title |
+| `content` | HTML body (sanitized) |
+
+If both image fields are set, **splash wins**.
 
 ### Flow and step options
 
 | Option | Where | Meaning |
 |--------|--------|---------|
 | `scope` | flow | `:user`, `:workspace`, or `:subject` — how the run is keyed |
-| `progress` | flow | `:segments` (numbered trail) or `:bar` (Flatpack Progress) |
-| `dismissible` | flow | When true, Exit dismisses the run; when false, Exit leaves the screen open |
+| `progress` | flow | `:bar` only (line progress; numbered segments removed) |
+| `dismissible` | flow | When true, programmatic `dismiss` marks the run dismissed |
 | `version` | flow | Integer definition version; open runs reconcile when it changes |
 | `after_complete` | flow | Path, URL, or callable → destination after completion |
 | `after_dismiss` | flow | Path, URL, or callable → destination after dismiss |
 | `step :key` | flow | Ordered step; key is stable in `StepProgress` |
 | `component` | step | ViewComponent class name string (required) |
-| `controls` | step | Subset of `:back`, `:continue`, `:skip`, `:exit` (default `%i[back continue]`) |
-| `show_progress` | step | When false, step is omitted from the progress count/trail (default true) |
-| `skippable` | step | When false, Skip is rejected even if listed in controls (default true) |
+| `controls` | step | Bottom actions — typically `%i[continue]` (default). `:exit` ignored. Back/Skip are chrome. |
+| `button_positions` | step | Hash of control → `:left`, `:right`, or `:full` (default Continue is `:left`) |
+| `show_progress` | step | When false, step is omitted from the progress count (default true) |
+| `skippable` | step | When false, Skip chrome is hidden and skip is rejected (default true) |
 | `complete_when` | step | Optional callable `(run) → truthy` to auto-advance on render |
 
 **Step count / progress:** `FlowDefinition#visible_steps` keeps steps with
-`show_progress: true`. `ProgressComponent` uses that list for segment markers and
-the bar (`done of visible`). Steps with `show_progress: false` still run; they
-do not advance the visible index.
+`show_progress: true`. `ProgressComponent` fills the bar to the 1-based current
+visible step. Steps with `show_progress: false` still run; they do not advance
+the visible index.
 
 ### Presentation modes
 

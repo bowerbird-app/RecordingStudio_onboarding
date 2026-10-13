@@ -11,15 +11,16 @@ class FlowsTest < ActionDispatch::IntegrationTest
     RecordingStudioOnboarding.configure do |config|
       config.flow :account_setup do
         scope :user
-        progress :segments
+        progress :bar
         dismissible true
         version 1
         step :welcome,
           component: "Dummy::Onboarding::WelcomeComponent",
-          controls: %i[continue exit]
+          controls: %i[continue],
+          skippable: true
         step :details,
           component: "Dummy::Onboarding::WorkspaceDetailsComponent",
-          controls: %i[back continue skip],
+          controls: %i[continue],
           skippable: true
         step :finish,
           component: "Dummy::Onboarding::CompleteComponent",
@@ -39,7 +40,7 @@ class FlowsTest < ActionDispatch::IntegrationTest
 
       config.flow :first_presskit do
         scope :subject
-        progress :segments
+        progress :bar
         dismissible true
         version 1
         step :intro, component: "Dummy::Onboarding::PresskitIntroductionComponent"

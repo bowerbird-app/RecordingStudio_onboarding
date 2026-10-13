@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RecordingStudioOnboarding
-  # Minimal outer presentation: progress, body, controls. Page width comes from PageFrame.
+  # Permanent chrome (Back / Skip / line progress), body, then bottom controls.
   class CardShellComponent < ViewComponent::Base
     def initialize(run:, embedded: false, preview: false)
       super()
@@ -12,7 +12,7 @@ module RecordingStudioOnboarding
 
     def call
       content_tag(:div, class: shell_classes, data: shell_data) do
-        safe_join([progress_region, body_region, controls_region].compact)
+        safe_join([chrome_region, progress_region, body_region, controls_region].compact)
       end
     end
 
@@ -30,6 +30,10 @@ module RecordingStudioOnboarding
 
     def shell_classes
       "flex w-full flex-col gap-6"
+    end
+
+    def chrome_region
+      render ChromeComponent.new(run: @run, preview: @preview)
     end
 
     def body_region

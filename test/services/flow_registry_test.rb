@@ -10,22 +10,23 @@ class FlowRegistryTest < Minitest::Test
   def test_flow_registers_named_definition
     @configuration.flow :account_setup do
       scope :user
-      progress :segments
+      progress :bar
       dismissible true
       version 2
-      step :welcome, component: "Dummy::Welcome"
+      step :welcome, component: "Dummy::Welcome", button_positions: { continue: :full }
       step :done, component: "Dummy::Done", show_progress: false
     end
 
     definition = @configuration.flow_for(:account_setup)
     assert @configuration.flow_registered?(:account_setup)
     assert_equal :user, definition.scope
-    assert_equal :segments, definition.progress
+    assert_equal :bar, definition.progress
     assert_equal true, definition.dismissible
     assert_equal 2, definition.version
     assert_equal %i[welcome done], definition.step_keys
     assert_equal :welcome, definition.first_step_key
     assert_equal 1, definition.visible_steps.size
+    assert_equal({ continue: :full }, definition.step_for(:welcome).button_positions)
   end
 
   def test_flow_requires_name_block_and_steps
@@ -48,8 +49,28 @@ class FlowRegistryTest < Minitest::Test
 
     assert_raises(ArgumentError) do
       @configuration.flow :bad_progress do
+        progress :segments
+        step :a, component: "X"
+      end
+    end
+
+    assert_raises(ArgumentError) do
+      @configuration.flow :bad_progress_pie do
         progress :pie
         step :a, component: "X"
+      end
+    end
+  end
+
+  def test_step_strips_exit_and_rejects_bad_button_positions
+    @configuration.flow :no_exit do
+      step :welcome, component: "X", controls: %i[continue exit]
+    end
+    assert_equal %i[continue], @configuration.flow_for(:no_exit).step_for(:welcome).controls
+
+    assert_raises(ArgumentError) do
+      @configuration.flow :bad_position do
+        step :welcome, component: "X", button_positions: { continue: :center }
       end
     end
   end

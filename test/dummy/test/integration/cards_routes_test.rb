@@ -13,22 +13,26 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
       config.current_actor = ->(controller) { controller.current_user }
       config.flow :account_setup do
         scope :user
-        progress :segments
+        progress :bar
         dismissible true
         version 1
         after_complete "/"
         after_dismiss "/flows"
         step :welcome,
           component: "Dummy::Onboarding::WelcomeComponent",
-          controls: %i[continue exit]
+          controls: %i[continue],
+          button_positions: { continue: :full },
+          skippable: false
         step :workspace_details,
           component: "Dummy::Onboarding::WorkspaceDetailsComponent",
-          controls: %i[back skip exit],
+          controls: %i[],
           skippable: true
         step :complete,
           component: "Dummy::Onboarding::CompleteComponent",
           controls: %i[continue],
-          show_progress: false
+          button_positions: { continue: :right },
+          show_progress: false,
+          skippable: false
       end
 
       config.flow :workspace_setup do
@@ -40,10 +44,11 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
         after_dismiss "/"
         step :name_workspace,
           component: "Dummy::Onboarding::NameWorkspaceComponent",
-          controls: %i[continue]
+          controls: %i[continue],
+          skippable: false
         step :invite_teammate,
           component: "Dummy::Onboarding::InviteTeammateComponent",
-          controls: %i[back continue skip],
+          controls: %i[continue],
           skippable: true
       end
     end
@@ -65,7 +70,7 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     RecordingStudioOnboarding.instance_variable_set(:@configuration, @original)
   end
 
-  test "full screen run shows card shell progress and controls" do
+  test "full screen run shows chrome progress and continue without exit" do
     sign_in @user
     run = RecordingStudioOnboarding.start(:account_setup, actor: @user)
 
@@ -73,21 +78,17 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "[data-testid='onboarding-page-frame']"
     assert_select "[data-testid='onboarding-card-shell']"
-    assert_select "[data-testid='card-welcome']"
-    assert_select "[data-testid='onboarding-progress'][data-mode='segments']"
-    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='current'] > p",
-                  text: "Welcome"
-    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='current'] > div > span > svg > text",
-                  text: "1"
-    assert_select "[data-testid='onboarding-progress'] ol[aria-label='Progress'] > li[data-status='upcoming'] > div > span > svg > text",
-                  text: "2"
+    assert_select "[data-testid='onboarding-page'][data-layout='splash']"
+    assert_select "[data-testid='onboarding-progress'][data-mode='bar']"
+    assert_select "[data-testid='onboarding-progress'] [role='progressbar'][aria-valuenow=?]", "1.0"
     assert_select "[data-testid='onboarding-controls']"
     assert_select "[data-testid='control-advance']"
-    assert_select "[data-testid='control-exit']"
+    assert_select "[data-testid='control-exit']", count: 0
     assert_select "[data-testid='control-back']", count: 0
+    assert_select "[data-testid='control-skip']", count: 0
   end
 
-  test "advance back skip and dismiss through engine routes" do
+  test "advance back and skip through chrome and engine routes" do
     sign_in @user
     run = RecordingStudioOnboarding.start(:account_setup, actor: @user)
 
@@ -95,20 +96,20 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_redirected_to recording_studio_onboarding.run_path(run)
     follow_redirect!
     assert_select "[data-testid='card-workspace-details']"
+    assert_select "[data-testid='onboarding-chrome']"
     assert_select "[data-testid='control-back']"
     assert_select "[data-testid='control-skip']"
+    assert_select "[data-testid='control-exit']", count: 0
 
     post recording_studio_onboarding.back_run_path(run), params: {from: "workspace_details"}
     follow_redirect!
-    assert_select "[data-testid='card-welcome']"
+    assert_select "[data-testid='onboarding-page'][data-layout='splash']"
 
-    post recording_studio_onboarding.skip_run_path(run), params: {from: "welcome"}
+    post recording_studio_onboarding.advance_run_path(run), params: {from: "welcome"}
     follow_redirect!
-    assert_select "[data-testid='card-workspace-details']"
-
-    post recording_studio_onboarding.dismiss_run_path(run)
-    assert_redirected_to "/flows"
-    assert_equal "dismissed", run.reload.status
+    post recording_studio_onboarding.skip_run_path(run), params: {from: "workspace_details"}
+    follow_redirect!
+    assert_select "[data-testid='card-complete']"
   end
 
   test "form step validation error re-renders card with alert" do
@@ -177,7 +178,7 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "non-dismissible exit leaves run in progress and redirects" do
+  test "non-dismissible dismiss leaves run in progress and redirects" do
     sign_in @user
     run = RecordingStudioOnboarding.start(:workspace_setup, actor: @user, subject: @workspace)
 
@@ -194,7 +195,7 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "[data-testid='embedded-run']"
     assert_select "[data-testid='onboarding-run']"
-    assert_select "[data-testid='card-welcome']"
+    assert_select "[data-testid='onboarding-page'][data-layout='splash']"
   end
 
   test "stale from is a no-op re-render" do

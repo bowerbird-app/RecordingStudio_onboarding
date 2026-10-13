@@ -52,10 +52,13 @@ module RecordingStudioOnboarding
     #
     #   config.flow :account_setup do
     #     scope :user
-    #     progress :segments
+    #     progress :bar
     #     dismissible true
     #     version 1
-    #     step :welcome, component: "Dummy::Onboarding::WelcomeComponent"
+    #     step :welcome,
+    #       component: "Dummy::Onboarding::WelcomeComponent",
+    #       controls: %i[continue],
+    #       button_positions: { continue: :full }
     #   end
     def flow(name, &block)
       raise ArgumentError, "flow name is required" if name.blank?

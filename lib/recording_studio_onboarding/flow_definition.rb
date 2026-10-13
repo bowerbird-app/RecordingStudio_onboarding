@@ -2,16 +2,18 @@
 
 module RecordingStudioOnboarding
   # Immutable-ish configuration object for a named onboarding flow.
-  class FlowDefinition
+  class FlowDefinition # rubocop:disable Metrics/ClassLength
     SCOPES = %i[user workspace subject].freeze
-    PROGRESS_MODES = %i[segments bar].freeze
+    # Line progress only — numbered segment headers were removed.
+    PROGRESS_MODES = %i[bar].freeze
+    BUTTON_POSITIONS = %i[left right full].freeze
 
     attr_reader :key, :steps
 
     def initialize(key)
       @key = key.to_sym
       @scope = :user
-      @progress = :segments
+      @progress = :bar
       @dismissible = true
       @version = 1
       @steps = []
@@ -32,7 +34,11 @@ module RecordingStudioOnboarding
       return @progress if value.nil?
 
       mode = value.to_sym
-      raise ArgumentError, "Unsupported progress #{value.inspect}" unless PROGRESS_MODES.include?(mode)
+      unless PROGRESS_MODES.include?(mode)
+        raise ArgumentError,
+              "Unsupported progress #{value.inspect}. " \
+              "Numbered segment headers were removed; use :bar."
+      end
 
       @progress = mode
     end
@@ -61,21 +67,40 @@ module RecordingStudioOnboarding
       @after_dismiss = value
     end
 
-    # rubocop:disable-next Metrics/ParameterLists -- step DSL mirrors plan §7 config shape
-    def step(key, component:, controls: %i[back continue], show_progress: true,
-             skippable: true, complete_when: nil)
+    # rubocop:disable-next Metrics/ParameterLists, Metrics/MethodLength -- step DSL mirrors plan §7
+    def step(key, component:, controls: %i[continue], show_progress: true,
+             skippable: true, complete_when: nil, button_positions: {})
       raise ArgumentError, "step key is required" if key.blank?
       raise ArgumentError, "step component is required" if component.blank?
 
       @steps << StepDefinition.new(
         key: key.to_sym,
         component: component,
-        controls: Array(controls).map(&:to_sym),
+        controls: normalize_controls(controls),
         show_progress: show_progress,
         skippable: skippable,
-        complete_when: complete_when
+        complete_when: complete_when,
+        button_positions: normalize_button_positions(button_positions)
       )
     end
+
+    def normalize_controls(controls)
+      Array(controls).map(&:to_sym).reject { |control| control == :exit }
+    end
+
+    def normalize_button_positions(raw)
+      Hash(raw).each_with_object({}) do |(key, value), memo|
+        position = value.to_sym
+        unless BUTTON_POSITIONS.include?(position)
+          raise ArgumentError,
+                "Unsupported button position #{value.inspect} " \
+                "(expected one of #{BUTTON_POSITIONS.join(', ')})"
+        end
+
+        memo[key.to_sym] = position
+      end
+    end
+    private :normalize_controls, :normalize_button_positions
 
     def step_keys
       @steps.map(&:key)
@@ -101,6 +126,7 @@ module RecordingStudioOnboarding
 
     StepDefinition = Struct.new(
       :key, :component, :controls, :show_progress, :skippable, :complete_when,
+      :button_positions,
       keyword_init: true
     ) do
       def show_progress?

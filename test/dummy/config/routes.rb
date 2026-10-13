@@ -41,6 +41,9 @@ Rails.application.routes.draw do
 
   get "provisioning", to: "provisioning#show", as: :provisioning
 
+  get "demos/onboarding", to: "onboarding_demos#index", as: :onboarding_demos
+  get "demos/onboarding/:variant", to: "onboarding_demos#show", as: :onboarding_demo
+
   resources :flows, only: [:index] do
     collection do
       post :start

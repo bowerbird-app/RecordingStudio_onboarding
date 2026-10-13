@@ -17,22 +17,24 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
       config.provision :new_registration, with: "Dummy::ProvisionRegistration"
       config.flow :account_setup do
         scope :user
-        progress :segments
+        progress :bar
         dismissible true
         version 1
         after_complete "/"
         after_dismiss "/flows"
         step :welcome,
           component: "Dummy::Onboarding::WelcomeComponent",
-          controls: %i[continue exit]
+          controls: %i[continue],
+          skippable: false
         step :workspace_details,
           component: "Dummy::Onboarding::WorkspaceDetailsComponent",
-          controls: %i[back skip exit],
+          controls: %i[],
           skippable: true
         step :complete,
           component: "Dummy::Onboarding::CompleteComponent",
           controls: %i[continue],
-          show_progress: false
+          show_progress: false,
+          skippable: false
       end
     end
 
