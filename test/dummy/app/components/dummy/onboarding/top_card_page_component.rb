@@ -8,7 +8,7 @@ module Dummy
           run: run,
           step: step,
           title: "A photo up top, details below",
-          content: "<p>The image sits in a top card with a soft bottom radius. Title and copy follow.</p>",
+          content: "<p>The image sits in a top card with rounded corners. Title and copy follow.</p>",
           image_url: "/demos/onboarding/top-card.jpg"
         )
       end

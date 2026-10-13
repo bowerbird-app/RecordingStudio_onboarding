@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Permanent chrome: plain-text **`< Back`** (top-left) and **`Skip`** (top-right)
   via `ChromeComponent`. Back hides on the first step; Skip follows `skippable`.
 - Default `PageComponent` page fields: `splash_image_url` (fullscreen + tinted
-  overlay), `image_url` (top card with bottom radius), `title`, and HTML
+  overlay), `image_url` (top card with full border-radius), `title`, and HTML
   `content`. When both image fields are set, splash wins.
 - `button_positions` on each step (`:left`, `:right`, `:full`) for bottom
   Continue placement.

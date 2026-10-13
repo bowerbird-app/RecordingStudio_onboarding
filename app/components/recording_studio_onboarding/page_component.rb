@@ -71,7 +71,7 @@ module RecordingStudioOnboarding
     def top_image_frame
       content_tag(
         :div,
-        class: "w-full overflow-hidden rounded-b-[var(--radius-lg)] bg-[var(--surface-muted-background-color)]"
+        class: "w-full overflow-hidden rounded-[var(--radius-lg)] bg-[var(--surface-muted-background-color)]"
       ) { helpers.image_tag(@image_url, alt: @image_alt, class: "block h-56 w-full object-cover sm:h-72") }
     end
 

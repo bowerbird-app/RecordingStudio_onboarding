@@ -105,7 +105,7 @@ Subclass or instantiate `RecordingStudioOnboarding::PageComponent` with:
 | Field | Meaning |
 |--------|---------|
 | `splash_image_url` | Full-bleed image; title + content overlay with a dark gradient tint |
-| `image_url` | Top card image with bottom border-radius; title + content below |
+| `image_url` | Top card image with border-radius on all corners; title + content below |
 | `title` | Page title |
 | `content` | HTML body (sanitized) |
 
