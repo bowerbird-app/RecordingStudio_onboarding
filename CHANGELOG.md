@@ -40,6 +40,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Missing `config/recording_studio_onboarding.yml` is still ignored. Broken YAML
   and `config.x` errors now fail boot.
 
+## [0.4.1] - 2026-11-02
+
+### Changed
+- Dummy default database names are `recording_studio_onboarding_development`
+  and `recording_studio_onboarding_test`.
+- Dummy home subtitle no longer says Admin arrives later. Admin is already in
+  the dummy.
+- README and `UPDATE_SUMMARY.md` recap the GitHub tags from the root and dummy
+  Gemfiles (and the gemspec `recording_studio` / `recording_studio_user`
+  constraints) instead of a frozen 4.2 kit list.
+- Dummy credentials tests no longer require a `gem_template` API key. They
+  still require `secret_key_base`, SMTP, and AWS placeholders when the shared
+  master key is present.
+- Only non-ruby-version-matrix `ruby/setup-ruby` steps request Ruby `3.3`
+  (`ci.yml` lint; `security.yml` jobs) so GitHub `ubuntu-latest` (26.04) can
+  install a current 3.3 patch. The `ci.yml` test job still uses
+  `${{ matrix.ruby-version }}`.
+
+### Upgrade notes
+- Local dummy databases that used the old default names `app_development` /
+  `app_test` need the new names, or set `DB_NAME`.
+
 ## [0.4.0] - 2026-10-13
 
 ### BREAKING
