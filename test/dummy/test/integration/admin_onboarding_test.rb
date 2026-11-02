@@ -19,6 +19,7 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
     )
     raise result.error if result.failure?
 
+    accept_live_terms_for_tests!(@user)
     sign_in @user
     switch_to_admin_root!
   end
@@ -252,6 +253,13 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
 
     get "/admin/screens/onboarding_provisioning"
     assert_response :success
+
+    get "/admin/screens/onboarding_flows"
+    assert_response :success
+  end
+
+  test "admin register can run twice without raising" do
+    2.times { RecordingStudioOnboarding::Admin.register! }
 
     get "/admin/screens/onboarding_flows"
     assert_response :success

@@ -12,6 +12,7 @@ class OnboardingDemosTest < ActionDispatch::IntegrationTest
       password_confirmation: "Password123!",
       confirmed_at: Time.current
     )
+    accept_live_terms_for_tests!(@user)
     sign_in @user
   end
 

@@ -159,12 +159,15 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
     end
     RecordingStudioOnboarding.configuration.provision :flaky, with: exploding
 
-    assert_raises(StandardError) do
+    error = assert_raises(RecordingStudioOnboarding::ProvisionFailed) do
       RecordingStudioOnboarding.provision(:flaky, actor: user, subject: user)
     end
+    assert_kind_of StandardError, error.cause
 
     execution = RecordingStudioOnboarding::ProvisioningExecution.find_by!(provisioner: "flaky", actor: user)
     assert_equal "failed", execution.status
+    assert_equal "flaky:User:#{user.id}", execution.idempotency_key
+    assert_equal execution, error.execution
     assert_includes execution.failure_details, "password=[FILTERED]"
     refute_includes execution.failure_details, "secret-value"
 
@@ -215,6 +218,7 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
     }
 
     user = User.find_by!(email: email)
+    accept_live_terms_for_tests!(user)
     sign_in user
     get provisioning_path
 
@@ -231,6 +235,7 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       password_confirmation: "Password123!"
     )
+    accept_live_terms_for_tests!(user)
     sign_in user
     get root_path
 

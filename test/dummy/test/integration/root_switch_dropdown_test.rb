@@ -25,6 +25,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
       record.password_confirmation = "Password123!"
     end
 
+    accept_live_terms_for_tests!(user)
     sign_in user
 
     workspace = Workspace.create!(name: "Dropdown Workspace")
@@ -43,6 +44,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
       record.password_confirmation = "Password123!"
     end
 
+    accept_live_terms_for_tests!(user)
     sign_in user
 
     workspace = Workspace.create!(name: "Switch Page Workspace")
@@ -61,6 +63,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
       record.password_confirmation = "Password123!"
     end
 
+    accept_live_terms_for_tests!(user)
     sign_in user
 
     source_workspace = Workspace.create!(name: "Source Workspace")
@@ -85,6 +88,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
       record.password_confirmation = "Password123!"
     end
 
+    accept_live_terms_for_tests!(user)
     sign_in user
 
     source_workspace = Workspace.create!(name: "Fallback Source Workspace")

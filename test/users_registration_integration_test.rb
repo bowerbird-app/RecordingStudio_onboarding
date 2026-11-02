@@ -26,12 +26,12 @@ class UsersRegistrationIntegrationTest < Minitest::Test
   end
 
   def test_install_is_idempotent
-    RecordingStudioOnboarding::UsersRegistrationIntegration.instance_variable_set(:@installed, false)
+    RecordingStudioOnboarding::UsersRegistrationIntegration.reset_for_tests!
     RecordingStudioOnboarding::UsersRegistrationIntegration.install!
     RecordingStudioOnboarding::UsersRegistrationIntegration.install!
-    assert RecordingStudioOnboarding::UsersRegistrationIntegration.instance_variable_get(:@installed)
+    assert RecordingStudioOnboarding::UsersRegistrationIntegration.installed?
   ensure
-    RecordingStudioOnboarding::UsersRegistrationIntegration.instance_variable_set(:@installed, false)
+    RecordingStudioOnboarding::UsersRegistrationIntegration.reset_for_tests!
   end
 
   def test_supported_methods_cover_password_oauth_and_otp

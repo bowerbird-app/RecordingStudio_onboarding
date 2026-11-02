@@ -6,7 +6,7 @@ require "recording_studio_onboarding/services/preview_run"
 class PreviewRunTest < Minitest::Test
   def setup
     RecordingStudioOnboarding.configure do |config|
-      config.instance_variable_set(:@flows, {})
+      config.clear_flows
       config.preview_context = ->(**) { { actor: :preview_actor, subject: nil } }
       config.flow :preview_demo do
         scope :user

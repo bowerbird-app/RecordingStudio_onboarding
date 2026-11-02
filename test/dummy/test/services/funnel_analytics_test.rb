@@ -6,7 +6,7 @@ require "recording_studio_onboarding/services/funnel_analytics"
 class FunnelAnalyticsTest < ActiveSupport::TestCase
   setup do
     RecordingStudioOnboarding.configure do |config|
-      config.instance_variable_get(:@flows).delete(:funnel_demo)
+      config.delete_flow(:funnel_demo)
       config.flow :funnel_demo do
         scope :user
         version 1

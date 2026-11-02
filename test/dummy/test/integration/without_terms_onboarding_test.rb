@@ -49,6 +49,7 @@ class WithoutTermsOnboardingTest < ActionDispatch::IntegrationTest
 
   test "user goes straight to onboarding without terms" do
     run = RecordingStudioOnboarding.start(:account_setup, actor: @user)
+    accept_live_terms_for_tests!(@user)
     sign_in @user
 
     get recording_studio_onboarding.run_path(run)
@@ -58,6 +59,7 @@ class WithoutTermsOnboardingTest < ActionDispatch::IntegrationTest
   end
 
   test "flows start redirects to the run page immediately" do
+    accept_live_terms_for_tests!(@user)
     sign_in @user
 
     post start_flows_path, params: { flow_key: "account_setup" }

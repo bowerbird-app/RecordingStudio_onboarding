@@ -25,15 +25,15 @@ class TermsAndConditionsGateTest < Minitest::Test
 
   def setup
     @configuration = RecordingStudioOnboarding::Configuration.new
-    @previous = RecordingStudioOnboarding.instance_variable_get(:@configuration)
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, @configuration)
+    @previous = RecordingStudioOnboarding.configuration
+    RecordingStudioOnboarding.reset_for_tests!(configuration: @configuration)
     @controller = FakeController.new
     @actor = Object.new
     @root = Object.new
   end
 
   def teardown
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, @previous)
+    RecordingStudioOnboarding.reset_for_tests!(configuration: @previous)
   end
 
   def test_not_installed_style_gate_leaves_onboarding_unchanged
