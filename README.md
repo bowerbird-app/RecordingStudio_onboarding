@@ -245,10 +245,12 @@ and return 404 rather than error pages.
 
 - No gemspec dependency on RS Terms & Conditions (soft optional gate)
 - Flatpack ViewComponents only; no React or Vue
-- Dummy GitHub tag pins: RecordingStudio `v4.2.2`, Accessible `v0.11.1`,
+- Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v4.2.2`,
+  Accessible `v0.11.1`, Admin `v2.0.5`, Attachable `v0.7.1`,
   RecordingStudio_users `v0.18.0`, Metrics `v0.2.0`, Root Switchable `v0.5.1`,
-  Flatpack `v0.1.196`, Admin `v2.0.5`, Publishable `v0.4.2`,
-  Terms & Conditions `v0.9.0`
+  Flatpack `v0.1.196`. Dummy also pins Publishable `v0.4.2` and
+  Terms & Conditions `v0.9.0`. Gemspec: `recording_studio` `~> 4.2`,
+  `recording_studio_user` `>= 0.18.0`.
 - CI also runs against `gemfiles/without_terms.gemfile` (no Terms / Publishable)
 
 ## Development

@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioOnboardingTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.4.0", ::RecordingStudioOnboarding::VERSION
+    assert_equal "0.4.1", ::RecordingStudioOnboarding::VERSION
   end
 
   def test_engine_exists
@@ -211,14 +211,24 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes readme, "store_location_for"
     assert_includes readme, "visible_steps"
     assert_includes readme, "complete_when"
-    assert_includes readme, "v4.2.2"
-    assert_includes readme, "v0.1.196"
-    assert_includes readme, "v0.11.1"
-    assert_includes readme, "v0.18.0"
-    assert_includes readme, "v0.5.1"
-    assert_includes readme, "v2.0.5"
-    assert_includes readme, "v0.9.0"
-    assert_includes readme, "v0.4.2"
+    dummy_tags = github_tags_from(File.expand_path("dummy/Gemfile", __dir__))
+    root_tags = github_tags_from(File.expand_path("../Gemfile", __dir__))
+    update_summary = File.read(File.expand_path("../UPDATE_SUMMARY.md", __dir__))
+    dummy_tags.each_value do |tag|
+      assert_includes readme, tag
+      assert_includes update_summary, tag
+    end
+    root_tags.each_value do |tag|
+      assert_includes readme, tag
+      assert_includes update_summary, tag
+    end
+    gemspec = File.read(File.expand_path("../recording_studio_onboarding.gemspec", __dir__))
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.18.0"'
+    assert_includes readme, "~> 4.2"
+    assert_includes readme, ">= 0.18.0"
+    assert_includes update_summary, "~> 4.2"
+    assert_includes update_summary, ">= 0.18.0"
     assert_includes readme, "Admin integration"
     assert_includes readme, "registration.completed.recording_studio_user"
     refute_includes readme, "ExampleService"
@@ -232,7 +242,9 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes view_source, 'title: "Recording Studio Onboarding"'
     assert_includes view_source, "registration.completed.recording_studio_user"
     assert_includes view_source, "provision"
+    assert_includes view_source, "Admin screens"
     assert_includes view_source, "dummy_page_nav"
+    refute_includes view_source, "PR 4"
     refute_includes view_source, "FlatPack::Card::Component"
     refute_includes view_source, "FlatPack::Breadcrumb::Component"
   end
@@ -281,9 +293,24 @@ class RecordingStudioOnboardingTest < Minitest::Test
     refute_includes recordings_tree_view, "This tree is generated from RecordingStudio::Recording records"
   end
 
+  def test_dummy_database_yml_uses_onboarding_database_names
+    database_yml = File.read(File.expand_path("dummy/config/database.yml", __dir__))
+
+    assert_includes database_yml, 'ENV.fetch("DB_NAME") { "recording_studio_onboarding_development" }'
+    assert_includes database_yml, 'ENV.fetch("DB_NAME") { "recording_studio_onboarding_test" }'
+    refute_includes database_yml, "app_development"
+    refute_includes database_yml, "app_test"
+  end
+
   def test_engine_does_not_ship_a_home_view
     view_path = File.expand_path("../app/views/recording_studio_onboarding/home/index.html.erb", __dir__)
 
     refute File.exist?(view_path)
+  end
+
+  private
+
+  def github_tags_from(path)
+    File.read(path).scan(/github:\s+"([^"]+)",\s+tag:\s+"([^"]+)"/).to_h
   end
 end
