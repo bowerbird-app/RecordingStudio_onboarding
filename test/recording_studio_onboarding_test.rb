@@ -43,24 +43,18 @@ class RecordingStudioOnboardingTest < Minitest::Test
   end
 
   def test_dummy_gemfile_pins_verified_4x_github_tags
-    gemfile_path = File.expand_path("dummy/Gemfile", __dir__)
-    gemfile = File.read(gemfile_path)
-    tags = github_tags_from(gemfile_path)
+    gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    %w[
-      bowerbird-app/RecordingStudio
-      bowerbird-app/RecordingStudio_accessible
-      bowerbird-app/RecordingStudio_users
-      bowerbird-app/RecordingStudio_admin
-      bowerbird-app/RecordingStudio_attachable
-      bowerbird-app/RecordingStudio_root_switchable
-      bowerbird-app/flatpack
-      bowerbird-app/RecordingStudio_publishable
-      bowerbird-app/RecordingStudio_terms_and_conditions
-    ].each do |repo|
-      assert tags[repo], "dummy Gemfile must pin #{repo} with a GitHub tag"
-      assert_includes gemfile, %(github: "#{repo}", tag: "#{tags[repo]}")
-    end
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.11.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.0.5"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.196"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_publishable", tag: "v0.4.2"'
+    assert_includes gemfile,
+                    'github: "bowerbird-app/RecordingStudio_terms_and_conditions", tag: "v0.9.0"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.2.1"'
     refute_includes gemfile, 'tag: "v4.2.0"'
@@ -84,12 +78,8 @@ class RecordingStudioOnboardingTest < Minitest::Test
     refute_includes gemfile, "recording_studio_publishable"
     refute_includes lock, "recording_studio_terms_and_conditions"
     refute_includes lock, "recording_studio_publishable"
-    without_terms_tags = github_tags_from(gemfile_path)
-    dummy_tags = github_tags_from(File.expand_path("dummy/Gemfile", __dir__))
-    assert_equal dummy_tags.fetch("bowerbird-app/RecordingStudio"),
-                 without_terms_tags.fetch("bowerbird-app/RecordingStudio")
-    assert_equal dummy_tags.fetch("bowerbird-app/RecordingStudio_users"),
-                 without_terms_tags.fetch("bowerbird-app/RecordingStudio_users")
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
   end
 
   def test_dummy_schema_includes_accessible_depends_on_recording_id

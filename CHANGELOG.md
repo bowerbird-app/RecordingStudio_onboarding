@@ -20,9 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dummy credentials tests no longer require a `gem_template` API key. They
   still require `secret_key_base`, SMTP, and AWS placeholders when the shared
   master key is present.
-- Security and CI lint `ruby/setup-ruby` steps request Ruby `3.3` so GitHub
-  `ubuntu-latest` (26.04) can install a current 3.3 patch. Matrix jobs are
-  unchanged.
+- Only non-ruby-version-matrix `ruby/setup-ruby` steps request Ruby `3.3`
+  (`ci.yml` lint; `security.yml` jobs) so GitHub `ubuntu-latest` (26.04) can
+  install a current 3.3 patch. The `ci.yml` test job still uses
+  `${{ matrix.ruby-version }}`.
 
 ### Upgrade notes
 - Local dummy databases that used the old default names `app_development` /
