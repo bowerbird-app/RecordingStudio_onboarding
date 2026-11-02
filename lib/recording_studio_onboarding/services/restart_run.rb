@@ -28,15 +28,12 @@ module RecordingStudioOnboarding
 
       private
 
-      def close_open_run! # rubocop:disable Metrics/MethodLength
+      def close_open_run!
         @run.with_lock do
           @run.reload
           return unless @run.open?
 
-          @run.update!(
-            status: "dismissed",
-            dismissed_at: Time.current
-          )
+          @run.update!(status: "dismissed", dismissed_at: Time.current)
           Instrumenter.instrument(
             "flow.dismissed",
             Instrumenter.flow_payload(@run, actor: @actor).merge(reason: "admin_restart")

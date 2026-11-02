@@ -6,8 +6,8 @@ class FlowsTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   setup do
-    @original_configuration = RecordingStudioOnboarding.instance_variable_get(:@configuration)
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, RecordingStudioOnboarding::Configuration.new)
+    @original_configuration = RecordingStudioOnboarding.configuration
+    RecordingStudioOnboarding.reset_for_tests!
     RecordingStudioOnboarding.configure do |config|
       config.flow :account_setup do
         scope :user
@@ -60,10 +60,12 @@ class FlowsTest < ActionDispatch::IntegrationTest
     )
     @workspace = create_owned_workspace(@user, "Flow Workspace")
     @page = Page.create!(title: "Press kit draft")
+    accept_live_terms_for_tests!(@user)
+    accept_live_terms_for_tests!(@other)
   end
 
   teardown do
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, @original_configuration)
+    RecordingStudioOnboarding.reset_for_tests!(configuration: @original_configuration)
   end
 
   test "start returns the same open run for the same user scope" do
@@ -188,7 +190,7 @@ class FlowsTest < ActionDispatch::IntegrationTest
     run.reload
     assert_equal "details", run.current_step_key
 
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, RecordingStudioOnboarding::Configuration.new)
+    RecordingStudioOnboarding.reset_for_tests!
     RecordingStudioOnboarding.configure do |config|
       config.flow :account_setup do
         scope :user
@@ -210,7 +212,7 @@ class FlowsTest < ActionDispatch::IntegrationTest
     end
     assert_equal "completed", run.status
 
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, RecordingStudioOnboarding::Configuration.new)
+    RecordingStudioOnboarding.reset_for_tests!
     RecordingStudioOnboarding.configure do |config|
       config.flow :account_setup do
         scope :user

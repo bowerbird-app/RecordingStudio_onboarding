@@ -16,6 +16,17 @@
 - CI also exercises `gemfiles/without_terms.gemfile` where those gems are absent
 - Public RubyGems and GitHub access for dependency installation
 
+## 0.5.0 boot, provision, and test helpers
+
+- `provision` raises `RecordingStudioOnboarding::ProvisionFailed` after it
+  records a failed execution. The handler error is `#cause`. Admin retry and
+  the registration subscriber still log and swallow unexpected errors so
+  sign-up is not broken.
+- Optional `config_for(:recording_studio_onboarding)` still ignores a missing
+  YAML file. Other load errors raise.
+- Tests: `RecordingStudioOnboarding.reset_for_tests!` and dummy
+  `accept_live_terms_for_tests!(actor)` before `sign_in`.
+
 ## 0.4.0 chrome / page breaking changes
 
 - Exit control removed from the UI; `dismiss` remains on the API/route.

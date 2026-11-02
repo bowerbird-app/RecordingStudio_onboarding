@@ -9,9 +9,8 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
   setup do
     skip "RS Terms not in this bundle" unless defined?(RecordingStudioTermsAndConditions)
 
-    Thread.current[:leave_terms_pending] = true
-    @original_configuration = RecordingStudioOnboarding.instance_variable_get(:@configuration)
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, RecordingStudioOnboarding::Configuration.new)
+    @original_configuration = RecordingStudioOnboarding.configuration
+    RecordingStudioOnboarding.reset_for_tests!
     RecordingStudioOnboarding.configure do |config|
       config.current_actor = ->(controller) { controller.current_user }
       config.provision :new_registration, with: "Dummy::ProvisionRegistration"
@@ -56,10 +55,9 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
   teardown do
     # skip-in-setup still runs teardown; only restore when setup replaced config.
     if defined?(@original_configuration) && @original_configuration
-      RecordingStudioOnboarding.instance_variable_set(:@configuration, @original_configuration)
+      RecordingStudioOnboarding.reset_for_tests!(configuration: @original_configuration)
     end
     Current.actor = nil
-    Thread.current[:leave_terms_pending] = false
   end
 
   test "terms installed and due sends run page to Agree then back after accept" do
@@ -85,10 +83,7 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
     user = pending_terms_user("terms-clear")
     accept_all_terms!(user)
     run = RecordingStudioOnboarding.start(:account_setup, actor: user)
-    # Accept on every live root (seed may publish under Studio Workspace too).
-    Thread.current[:leave_terms_pending] = false
     accept_live_terms_for_tests!(user)
-    Thread.current[:leave_terms_pending] = true
     sign_in user
 
     get recording_studio_onboarding.run_path(run)

@@ -22,15 +22,12 @@ module RecordingStudioOnboarding
         @context = context || resolve_preview_context
       end
 
-      def build # rubocop:disable Metrics/MethodLength
+      def build
         definition = RecordingStudioOnboarding.configuration.flow_for(@flow_key)
         raise KeyError, "No flow registered for #{@flow_key.inspect}" unless definition
         raise KeyError, "Unknown step #{@step_key.inspect}" unless definition.step_for(@step_key)
 
-        @id = "preview-#{@flow_key}-#{@step_key}"
-        @flow_version = definition.version
-        @current_step_key = @step_key
-        @status = "in_progress"
+        assign_identity!(definition)
         assign_scope_and_actor!
         @started_at = Time.current
         @step_progresses = preview_progresses(definition)
@@ -65,6 +62,13 @@ module RecordingStudioOnboarding
 
       private
 
+      def assign_identity!(definition)
+        @id = "preview-#{@flow_key}-#{@step_key}"
+        @flow_version = definition.version
+        @current_step_key = @step_key
+        @status = "in_progress"
+      end
+
       def resolve_preview_context
         resolver = RecordingStudioOnboarding.configuration.preview_context
         if resolver.respond_to?(:call)
@@ -78,11 +82,7 @@ module RecordingStudioOnboarding
         keys = definition.step_keys
         current_index = keys.index(@step_key.to_sym) || 0
         keys.each_with_index.map do |key, index|
-          status = if index < current_index
-                     "completed"
-                   else
-                     "pending"
-                   end
+          status = index < current_index ? "completed" : "pending"
           PreviewProgress.new(step_key: key.to_s, status: status)
         end
       end
@@ -96,7 +96,6 @@ module RecordingStudioOnboarding
         @initiating_actor_id = polymorphic_id(@initiating_actor)
       end
 
-      # Match ActiveRecord polymorphic columns on FlowRun.
       def polymorphic_type(record)
         return if record.nil?
         return record.class.base_class.name if record.class.respond_to?(:base_class)

@@ -7,15 +7,9 @@ module RecordingStudioOnboarding
     attr_reader :title, :content_html, :splash_image_url, :image_url, :image_alt
 
     # `content:` is reserved by ViewComponent; pass HTML via **fields (`content:` / `body:`).
-    def initialize(run:, step:, title: nil, splash_image_url: nil, image_url: nil, image_alt: nil, **fields) # rubocop:disable Metrics/ParameterLists
+    def initialize(run:, step:, **fields)
       super(run: run, step: step)
-      @title = title
-      @content_html = fields.delete(:content) || fields.delete(:body)
-      raise ArgumentError, "Unknown page fields: #{fields.keys.map(&:inspect).join(', ')}" if fields.any?
-
-      @splash_image_url = sanitize_url(splash_image_url)
-      @image_url = sanitize_url(image_url)
-      @image_alt = image_alt.presence || title.to_s
+      assign_page_fields!(fields)
     end
 
     def call
@@ -26,6 +20,15 @@ module RecordingStudioOnboarding
     end
 
     private
+
+    def assign_page_fields!(fields)
+      @title = fields.delete(:title)
+      @splash_image_url = sanitize_url(fields.delete(:splash_image_url))
+      @image_url = sanitize_url(fields.delete(:image_url))
+      @image_alt = fields.delete(:image_alt).presence || @title.to_s
+      @content_html = fields.delete(:content) || fields.delete(:body)
+      raise ArgumentError, "Unknown page fields: #{fields.keys.map(&:inspect).join(', ')}" if fields.any?
+    end
 
     def splash? = @splash_image_url.present?
     def top_image? = @image_url.present?

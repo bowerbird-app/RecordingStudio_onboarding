@@ -79,12 +79,20 @@ module RecordingStudioOnboarding
       @flows.key?(name.to_sym)
     end
 
+    def clear_flows
+      @flows = {}
+    end
+
+    def delete_flow(name)
+      @flows.delete(name.to_sym)
+    end
+
     def to_h
       {
         provisioners: @provisioners.keys,
         flows: @flows.keys,
         before_onboarding_gates: @before_onboarding_gates.size,
-        hooks_registered: @hooks.instance_variable_get(:@registry).transform_values(&:size)
+        hooks_registered: @hooks.registered_counts
       }
     end
 

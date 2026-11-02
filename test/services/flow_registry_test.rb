@@ -75,6 +75,22 @@ class FlowRegistryTest < Minitest::Test
     end
   end
 
+  def test_flow_definition_step_definition_still_resolves
+    assert_equal(
+      RecordingStudioOnboarding::StepDefinition,
+      RecordingStudioOnboarding::FlowDefinition::StepDefinition
+    )
+  end
+
+  def test_step_rejects_unknown_keywords
+    error = assert_raises(ArgumentError) do
+      @configuration.flow :typo_step do
+        step :welcome, component: "X", skipable: true
+      end
+    end
+    assert_match(/Unknown keywords: :skipable/, error.message)
+  end
+
   def test_to_h_includes_flow_keys
     @configuration.flow :account_setup do
       step :welcome, component: "X"

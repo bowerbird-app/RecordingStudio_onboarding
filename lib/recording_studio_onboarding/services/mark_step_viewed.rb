@@ -12,32 +12,35 @@ module RecordingStudioOnboarding
         @actor = actor
       end
 
-      def call # rubocop:disable Metrics/MethodLength
+      def call
         return @run unless @run.open?
 
         @run.with_lock do
           ReconcileRun.call(@run)
-          progress = StepProgress.find_or_create_by!(
-            flow_run: @run,
-            step_key: @run.current_step_key
-          ) do |row|
-            row.status = "pending"
-          end
-
-          if progress.first_viewed_at.blank?
-            progress.update!(first_viewed_at: Time.current)
-            Instrumenter.instrument(
-              "step.viewed",
-              Instrumenter.flow_payload(@run, actor: @actor, step_key: @run.current_step_key)
-            )
-          end
-
+          record_first_view!
           auto_advance_if_complete!
           @run.reload
         end
       end
 
       private
+
+      def record_first_view!
+        progress = current_progress
+        return if progress.first_viewed_at.present?
+
+        progress.update!(first_viewed_at: Time.current)
+        Instrumenter.instrument(
+          "step.viewed",
+          Instrumenter.flow_payload(@run, actor: @actor, step_key: @run.current_step_key)
+        )
+      end
+
+      def current_progress
+        StepProgress.find_or_create_by!(flow_run: @run, step_key: @run.current_step_key) do |row|
+          row.status = "pending"
+        end
+      end
 
       def auto_advance_if_complete!
         step = @run.current_step

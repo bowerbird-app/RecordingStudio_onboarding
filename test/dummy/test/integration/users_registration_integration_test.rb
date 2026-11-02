@@ -60,6 +60,38 @@ class UsersRegistrationIntegrationIntegrationTest < ActionDispatch::IntegrationT
     assert_equal "new_registration:User:#{user.id}", execution.idempotency_key
   end
 
+  test "provision handler failure is recorded and does not raise from the subscriber" do
+    user = create_user!("fail-provision")
+    exploding = Class.new do
+      def self.call(**)
+        raise RuntimeError, "registration boom"
+      end
+    end
+    RecordingStudioOnboarding.configuration.provision :new_registration, with: exploding
+
+    emit_registration_completed!(user_id: user.id, method: :password)
+
+    execution = RecordingStudioOnboarding::ProvisioningExecution.find_by!(
+      provisioner: "new_registration",
+      actor: user
+    )
+    assert_equal "failed", execution.status
+    assert_equal "new_registration:User:#{user.id}", execution.idempotency_key
+  end
+
+  test "non-ProvisionFailed errors in the subscriber do not break sign-up" do
+    user = create_user!("race")
+    original = RecordingStudioOnboarding.method(:provision)
+    RecordingStudioOnboarding.define_singleton_method(:provision) do |*|
+      raise ActiveRecord::RecordNotUnique, "dup"
+    end
+
+    emit_registration_completed!(user_id: user.id, method: :password)
+    assert_nil RecordingStudioOnboarding::ProvisioningExecution.find_by(actor: user)
+  ensure
+    RecordingStudioOnboarding.define_singleton_method(:provision, original)
+  end
+
   private
 
   def create_user!(label)

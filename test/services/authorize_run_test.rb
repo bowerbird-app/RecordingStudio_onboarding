@@ -22,12 +22,12 @@ class AuthorizeRunTest < Minitest::Test
   end
 
   def setup
-    @original = RecordingStudioOnboarding.instance_variable_get(:@configuration)
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, RecordingStudioOnboarding::Configuration.new)
+    @original = RecordingStudioOnboarding.configuration
+    RecordingStudioOnboarding.reset_for_tests!
   end
 
   def teardown
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, @original)
+    RecordingStudioOnboarding.reset_for_tests!(configuration: @original)
   end
 
   def test_nil_actor_is_denied
@@ -50,6 +50,36 @@ class AuthorizeRunTest < Minitest::Test
 
     assert RecordingStudioOnboarding::Services::AuthorizeRun.call(run_a, actor: user_a)
     refute RecordingStudioOnboarding::Services::AuthorizeRun.call(run_a, actor: user_b)
+  end
+
+  def test_missing_recording_is_denied
+    skip "Accessible recording lookup is required" unless defined?(RecordingStudioAccessible)
+
+    actor = build_record("User", 1)
+    workspace = Object.new
+    run = FakeRun.new(definition: FakeDefinition.new(:workspace), scope: workspace)
+    authorizer = RecordingStudioOnboarding::Services::AuthorizeRun.new(run, actor: actor)
+
+    RecordingStudio.stub(:root_allowed?, true) do
+      RecordingStudio.stub(:root_recording_for, ->(*) { raise ActiveRecord::RecordNotFound, "missing" }) do
+        refute authorizer.call
+      end
+    end
+  end
+
+  def test_unexpected_lookup_error_is_denied
+    skip "Accessible recording lookup is required" unless defined?(RecordingStudioAccessible)
+
+    actor = build_record("User", 1)
+    workspace = Object.new
+    run = FakeRun.new(definition: FakeDefinition.new(:workspace), scope: workspace)
+    authorizer = RecordingStudioOnboarding::Services::AuthorizeRun.new(run, actor: actor)
+
+    RecordingStudio.stub(:root_allowed?, true) do
+      RecordingStudio.stub(:root_recording_for, ->(*) { raise ArgumentError, "blown call" }) do
+        refute authorizer.call
+      end
+    end
   end
 
   private

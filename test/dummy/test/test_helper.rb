@@ -9,11 +9,10 @@ OmniAuth.config.test_mode = true
 
 module TermsAcceptanceTestSupport
   # Ordinary integration tests should not be blocked by the soft Terms gate.
-  # Opt out with Thread.current[:leave_terms_pending] = true (see terms-gate tests).
+  # Call this before sign_in in tests that should pass the gate.
   def accept_live_terms_for_tests!(actor)
     return unless defined?(RecordingStudioTermsAndConditions)
     return if actor.blank?
-    return if Thread.current[:leave_terms_pending]
 
     RecordingStudio::Recording.where(parent_recording_id: nil).find_each do |root_recording|
       root = root_recording.recordable
@@ -28,19 +27,6 @@ module TermsAcceptanceTestSupport
   end
 end
 
-module AutoAcceptTermsOnSignIn
-  def sign_in(resource, *args, **kwargs)
-    accept_live_terms_for_tests!(resource)
-    super
-  end
-end
-
 class ActionDispatch::IntegrationTest
   include TermsAcceptanceTestSupport
-  prepend AutoAcceptTermsOnSignIn
-
-  def self.inherited(subclass)
-    super
-    subclass.prepend(AutoAcceptTermsOnSignIn)
-  end
 end

@@ -63,4 +63,31 @@ class ConfigurationTest < Minitest::Test
     assert_empty @configuration.provisioners
     assert_empty @configuration.flows
   end
+
+  def test_reset_for_tests_replaces_configuration
+    original = RecordingStudioOnboarding.configuration
+    replacement = RecordingStudioOnboarding::Configuration.new
+    returned = RecordingStudioOnboarding.reset_for_tests!(configuration: replacement)
+
+    assert_same replacement, returned
+    assert_same replacement, RecordingStudioOnboarding.configuration
+  ensure
+    RecordingStudioOnboarding.reset_for_tests!(configuration: original)
+  end
+
+  def test_delete_and_clear_flows
+    @configuration.flow :account_setup do
+      step :welcome, component: "X"
+    end
+    @configuration.flow :workspace_setup do
+      step :name, component: "X"
+    end
+
+    @configuration.delete_flow(:account_setup)
+    refute @configuration.flow_registered?(:account_setup)
+    assert @configuration.flow_registered?(:workspace_setup)
+
+    @configuration.clear_flows
+    assert_empty @configuration.flows
+  end
 end

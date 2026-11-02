@@ -26,12 +26,12 @@ class UsersRegistrationIntegrationTest < Minitest::Test
   end
 
   def test_install_is_idempotent
-    RecordingStudioOnboarding::UsersRegistrationIntegration.instance_variable_set(:@installed, false)
+    RecordingStudioOnboarding::UsersRegistrationIntegration.reset_for_tests!
     RecordingStudioOnboarding::UsersRegistrationIntegration.install!
     RecordingStudioOnboarding::UsersRegistrationIntegration.install!
-    assert RecordingStudioOnboarding::UsersRegistrationIntegration.instance_variable_get(:@installed)
+    assert RecordingStudioOnboarding::UsersRegistrationIntegration.installed?
   ensure
-    RecordingStudioOnboarding::UsersRegistrationIntegration.instance_variable_set(:@installed, false)
+    RecordingStudioOnboarding::UsersRegistrationIntegration.reset_for_tests!
   end
 
   def test_supported_methods_cover_password_oauth_and_otp
@@ -44,6 +44,28 @@ class UsersRegistrationIntegrationTest < Minitest::Test
 
     refute RecordingStudioOnboarding::UsersRegistrationIntegration.supported_method?(method: :sms)
     refute RecordingStudioOnboarding::UsersRegistrationIntegration.supported_method?({})
+  end
+
+  def test_handle_registration_completed_swallows_non_provision_failed_errors
+    original = RecordingStudioOnboarding.configuration
+    RecordingStudioOnboarding.reset_for_tests!
+    RecordingStudioOnboarding.configure do |config|
+      config.provision :new_registration, with: "Unused"
+    end
+    user = Object.new
+
+    result = nil
+    RecordingStudioOnboarding::UsersRegistrationIntegration.stub(:resolve_user, user) do
+      RecordingStudioOnboarding.stub(:provision, ->(*) { raise "db race" }) do
+        result = RecordingStudioOnboarding::UsersRegistrationIntegration.handle_registration_completed(
+          user_id: 1,
+          method: :password
+        )
+      end
+    end
+    assert_nil result
+  ensure
+    RecordingStudioOnboarding.reset_for_tests!(configuration: original)
   end
 
   def test_legacy_otp_event_constant_is_documented_but_not_subscribed

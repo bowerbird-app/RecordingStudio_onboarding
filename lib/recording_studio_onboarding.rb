@@ -3,6 +3,7 @@
 require "recording_studio"
 require "view_component"
 require "recording_studio_onboarding/version"
+require "recording_studio_onboarding/provision_failed"
 require "recording_studio_onboarding/engine"
 require "recording_studio_onboarding/configuration"
 require "recording_studio_onboarding/gates/terms_and_conditions"
@@ -14,6 +15,13 @@ module RecordingStudioOnboarding
   class << self
     def configuration
       @configuration ||= Configuration.new
+    end
+
+    # Replace configuration (and registration install state) between tests.
+    def reset_for_tests!(configuration: Configuration.new)
+      @configuration = configuration
+      UsersRegistrationIntegration.reset_for_tests!
+      configuration
     end
 
     def configure

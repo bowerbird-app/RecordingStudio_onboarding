@@ -7,15 +7,9 @@ module RecordingStudioOnboarding
 
       def show; end
 
-      def retry # rubocop:disable Metrics/MethodLength
+      def retry
         return unless authorize_resource_action!("onboarding_provisioning", :retry, @execution)
-
-        unless @execution.failed?
-          return redirect_to(
-            admin_provisioning_execution_path(@execution),
-            alert: "Only failed executions can be retried."
-          )
-        end
+        return redirect_not_failed unless @execution.failed?
 
         perform_retry!
         @execution.reload
@@ -24,24 +18,32 @@ module RecordingStudioOnboarding
         redirect_to admin_provisioning_execution_path(@execution), alert: e.message
       end
 
-      def perform_retry! # rubocop:disable Metrics/MethodLength
+      def perform_retry!
         perform_recording_studio_admin_action!(
           "onboarding_provisioning",
           :retry,
           @execution,
           audit_action: :retry
-        ) do
-          RecordingStudioOnboarding.provision(
-            @execution.provisioner,
-            actor: @execution.actor,
-            subject: @execution.subject,
-            idempotency_key: @execution.idempotency_key
-          )
-          true
-        end
+        ) { execute_retry }
+      end
+
+      def execute_retry
+        RecordingStudioOnboarding.provision(
+          @execution.provisioner,
+          actor: @execution.actor,
+          subject: @execution.subject,
+          idempotency_key: @execution.idempotency_key
+        )
       end
 
       private
+
+      def redirect_not_failed
+        redirect_to(
+          admin_provisioning_execution_path(@execution),
+          alert: "Only failed executions can be retried."
+        )
+      end
 
       def set_execution
         @execution = ProvisioningExecution.find(params[:id])

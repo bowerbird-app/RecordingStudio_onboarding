@@ -6,8 +6,8 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   setup do
-    @original = RecordingStudioOnboarding.instance_variable_get(:@configuration)
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, RecordingStudioOnboarding::Configuration.new)
+    @original = RecordingStudioOnboarding.configuration
+    RecordingStudioOnboarding.reset_for_tests!
 
     RecordingStudioOnboarding.configure do |config|
       config.current_actor = ->(controller) { controller.current_user }
@@ -64,10 +64,12 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
       password_confirmation: "Password123!"
     )
     @workspace = create_owned_workspace(@user, "Card Workspace")
+    accept_live_terms_for_tests!(@user)
+    accept_live_terms_for_tests!(@other)
   end
 
   teardown do
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, @original)
+    RecordingStudioOnboarding.reset_for_tests!(configuration: @original)
   end
 
   test "full screen run shows chrome progress and continue without exit" do

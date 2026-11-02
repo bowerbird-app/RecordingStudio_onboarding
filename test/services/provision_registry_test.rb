@@ -25,13 +25,13 @@ class ProvisionRegistryTest < Minitest::Test
   end
 
   def setup
-    @original = RecordingStudioOnboarding.instance_variable_get(:@configuration)
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, RecordingStudioOnboarding::Configuration.new)
+    @original = RecordingStudioOnboarding.configuration
+    RecordingStudioOnboarding.reset_for_tests!
     FakeHandler.calls = []
   end
 
   def teardown
-    RecordingStudioOnboarding.instance_variable_set(:@configuration, @original)
+    RecordingStudioOnboarding.reset_for_tests!(configuration: @original)
   end
 
   def test_unregistered_provisioner_is_detectable
@@ -48,7 +48,7 @@ class ProvisionRegistryTest < Minitest::Test
       subject: subject
     )
 
-    assert_equal "new_registration:User:aaa", service.send(:default_idempotency_key)
+    assert_equal "new_registration:User:aaa", service.idempotency_key
   end
 
   def test_default_idempotency_key_includes_distinct_subject
@@ -60,7 +60,19 @@ class ProvisionRegistryTest < Minitest::Test
       subject: subject
     )
 
-    assert_equal "workspace_setup:User:aaa:Workspace:bbb", service.send(:default_idempotency_key)
+    assert_equal "workspace_setup:User:aaa:Workspace:bbb", service.idempotency_key
+  end
+
+  def test_initialize_rejects_unknown_keywords
+    actor = build_record("User", "aaa")
+    error = assert_raises(ArgumentError) do
+      RecordingStudioOnboarding::Services::Provision.new(
+        :new_registration,
+        actor: actor,
+        idempotency_ky: "typo"
+      )
+    end
+    assert_match(/Unknown keywords: :idempotency_ky/, error.message)
   end
 
   def test_configure_provision_api

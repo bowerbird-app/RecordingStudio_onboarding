@@ -14,18 +14,11 @@ module RecordingStudioOnboarding
         @subject = subject
       end
 
-      def call # rubocop:disable Metrics/MethodLength
+      def call
         case @definition.scope
-        when :user
-          raise ArgumentError, "actor is required for user-scoped flows" if @actor.nil?
-
-          @actor
-        when :workspace
-          resolve_workspace
-        when :subject
-          raise ArgumentError, "subject is required for subject-scoped flows" if @subject.nil?
-
-          @subject
+        when :user then resolve_user
+        when :workspace then resolve_workspace
+        when :subject then resolve_subject
         else
           raise ArgumentError, "Unsupported scope #{@definition.scope.inspect}"
         end
@@ -33,9 +26,20 @@ module RecordingStudioOnboarding
 
       private
 
+      def resolve_user
+        raise ArgumentError, "actor is required for user-scoped flows" if @actor.nil?
+
+        @actor
+      end
+
+      def resolve_subject
+        raise ArgumentError, "subject is required for subject-scoped flows" if @subject.nil?
+
+        @subject
+      end
+
       def resolve_workspace
         raise ArgumentError, "subject (workspace) is required for workspace-scoped flows" if @subject.nil?
-
         unless root_recordable?(@subject)
           raise ArgumentError, "workspace-scoped flows require a root recordable subject"
         end
