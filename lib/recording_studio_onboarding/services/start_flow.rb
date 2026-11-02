@@ -39,27 +39,33 @@ module RecordingStudioOnboarding
         end
       end
 
-      def create_run!(definition, scope) # rubocop:disable Metrics/MethodLength
+      def create_run!(definition, scope)
+        run = insert_run_and_steps!(definition, scope)
+        Instrumenter.instrument("flow.started", Instrumenter.flow_payload(run, actor: @actor))
+        run
+      end
+
+      def insert_run_and_steps!(definition, scope)
         run = nil
-        # requires_new so a uniqueness conflict rolls back to a savepoint and
-        # leaves an outer (test) transaction usable for the find retry.
         ActiveRecord::Base.transaction(requires_new: true) do
-          run = FlowRun.create!(
-            flow_key: definition.key.to_s,
-            flow_version: definition.version,
-            scope: scope,
-            initiating_actor: @actor,
-            status: "in_progress",
-            current_step_key: definition.first_step_key.to_s,
-            started_at: Time.current
-          )
+          run = FlowRun.create!(run_attributes(definition, scope))
           definition.step_keys.each do |key|
             StepProgress.create!(flow_run: run, step_key: key.to_s, status: "pending")
           end
         end
-
-        Instrumenter.instrument("flow.started", Instrumenter.flow_payload(run, actor: @actor))
         run
+      end
+
+      def run_attributes(definition, scope)
+        {
+          flow_key: definition.key.to_s,
+          flow_version: definition.version,
+          scope: scope,
+          initiating_actor: @actor,
+          status: "in_progress",
+          current_step_key: definition.first_step_key.to_s,
+          started_at: Time.current
+        }
       end
     end
   end

@@ -27,7 +27,7 @@ class OnboardingDemosController < ApplicationController
 
   private
 
-  def move_to!(run, step_key) # rubocop:disable Metrics/MethodLength
+  def move_to!(run, step_key)
     keys = run.definition.step_keys
     target_index = keys.index(step_key)
     raise ActionController::RoutingError, "Unknown step" unless target_index

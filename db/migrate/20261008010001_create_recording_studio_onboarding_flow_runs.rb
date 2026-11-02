@@ -1,7 +1,15 @@
 # frozen_string_literal: true
 
 class CreateRecordingStudioOnboardingFlowRuns < ActiveRecord::Migration[8.1]
-  def change # rubocop:disable Metrics/AbcSize
+  def change
+    create_flow_runs_table
+    add_flow_run_indexes
+    add_check_constraint :recording_studio_onboarding_flow_runs,
+                         "status IN ('pending', 'in_progress', 'completed', 'dismissed')",
+                         name: "rso_flow_runs_status_check"
+  end
+
+  def create_flow_runs_table
     create_table :recording_studio_onboarding_flow_runs, id: :uuid do |t|
       t.string :flow_key, null: false
       t.integer :flow_version, null: false, default: 1
@@ -17,27 +25,22 @@ class CreateRecordingStudioOnboardingFlowRuns < ActiveRecord::Migration[8.1]
 
       t.timestamps
     end
+  end
 
+  def add_flow_run_indexes
     add_index :recording_studio_onboarding_flow_runs,
               %i[flow_key scope_type scope_id],
               unique: true,
               where: "status IN ('pending', 'in_progress')",
               name: "idx_rso_flow_runs_open_scope"
-
     add_index :recording_studio_onboarding_flow_runs,
               %i[flow_key status],
               name: "idx_rso_flow_runs_flow_status"
-
     add_index :recording_studio_onboarding_flow_runs,
               %i[scope_type scope_id],
               name: "idx_rso_flow_runs_scope"
-
     add_index :recording_studio_onboarding_flow_runs,
               %i[initiating_actor_type initiating_actor_id],
               name: "idx_rso_flow_runs_actor"
-
-    add_check_constraint :recording_studio_onboarding_flow_runs,
-                         "status IN ('pending', 'in_progress', 'completed', 'dismissed')",
-                         name: "rso_flow_runs_status_check"
   end
 end

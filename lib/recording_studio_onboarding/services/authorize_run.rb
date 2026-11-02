@@ -56,7 +56,7 @@ module RecordingStudioOnboarding
         else
           RecordingStudio::Recording.find_by(recordable: record)
         end
-      rescue StandardError
+      rescue ActiveRecord::RecordNotFound
         nil
       end
 

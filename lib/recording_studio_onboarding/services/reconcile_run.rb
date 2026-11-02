@@ -13,7 +13,7 @@ module RecordingStudioOnboarding
         @run = run
       end
 
-      def call # rubocop:disable Metrics/MethodLength
+      def call
         return @run unless @run.open?
 
         definition = @run.definition
@@ -22,16 +22,19 @@ module RecordingStudioOnboarding
         keys = definition.step_keys
         return complete_empty!(definition) if keys.empty?
 
-        unless keys.include?(@run.current_step_key.to_sym)
-          next_key = next_existing_step(keys)
-          @run.update!(current_step_key: next_key.to_s) if next_key
-        end
-
+        reposition_current_step!(keys)
         ensure_step_rows!(definition)
         @run
       end
 
       private
+
+      def reposition_current_step!(keys)
+        return if keys.include?(@run.current_step_key.to_sym)
+
+        next_key = next_existing_step(keys)
+        @run.update!(current_step_key: next_key.to_s) if next_key
+      end
 
       def next_existing_step(keys)
         done = @run.step_progresses

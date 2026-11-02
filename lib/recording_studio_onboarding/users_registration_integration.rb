@@ -18,13 +18,21 @@ module RecordingStudioOnboarding
     module_function
 
     def install!
-      return if @installed
+      return if installed?
       return unless defined?(ActiveSupport::Notifications)
 
       ActiveSupport::Notifications.subscribe(EVENT) do |_name, _start, _finish, _id, payload|
         handle_registration_completed(payload)
       end
       @installed = true
+    end
+
+    def installed?
+      @installed == true
+    end
+
+    def reset_for_tests!
+      @installed = false
     end
 
     def handle_registration_completed(payload)
@@ -35,7 +43,7 @@ module RecordingStudioOnboarding
       return if user.nil?
 
       provision_new_registration(user, payload)
-    rescue StandardError => e
+    rescue ProvisionFailed => e
       log_provisioning_failure(e)
     end
 
