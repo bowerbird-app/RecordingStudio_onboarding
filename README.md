@@ -253,6 +253,11 @@ and return 404 rather than error pages.
 
 ## Development
 
+Tests replace configuration with `RecordingStudioOnboarding.reset_for_tests!`.
+Dummy integration tests that sign in call `accept_live_terms_for_tests!(actor)`
+when they should pass the Terms gate. Handler failures from `provision` raise
+`RecordingStudioOnboarding::ProvisionFailed` after the execution is marked failed.
+
 ```bash
 bundle exec rake test
 bundle exec rake test:all

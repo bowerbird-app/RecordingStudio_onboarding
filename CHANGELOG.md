@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-02
+
+### Added
+- `RecordingStudioOnboarding.reset_for_tests!` replaces configuration (and the
+  registration subscriber install flag) between tests.
+- `Configuration#clear_flows` and `Configuration#delete_flow` for test setup.
+- `UsersRegistrationIntegration.installed?` / `reset_for_tests!`.
+- `RecordingStudioOnboarding::ProvisionFailed`, raised after a provisioner
+  handler fails and the execution row is marked failed. The original error is
+  `#cause`.
+
+### Changed
+- Optional YAML load rescues only Rails' missing-file `RuntimeError`. Other
+  boot errors raise. `config.x` merge errors raise.
+- `AuthorizeRun` recording lookup rescues `ActiveRecord::RecordNotFound` only.
+- Registration provisioning and admin retry rescue `ProvisionFailed` only.
+- Admin `register!` is idempotent. The engine `require`s `admin.rb` instead of
+  `load`ing it on every `to_prepare`.
+- `Configuration#to_h` uses `RecordingStudio::Hooks#registered_counts`.
+- Dummy integration tests call `accept_live_terms_for_tests!` explicitly.
+
+### Upgrade notes
+- Rescue `RecordingStudioOnboarding::ProvisionFailed` around `provision` if you
+  previously rescued the handler's original exception. Failure rows are still
+  written before the raise.
+- Missing `config/recording_studio_onboarding.yml` is still ignored. Broken YAML
+  and `config.x` errors now fail boot.
+
 ## [0.4.0] - 2026-10-13
 
 ### BREAKING
