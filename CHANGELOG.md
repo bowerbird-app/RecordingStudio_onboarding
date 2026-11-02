@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.4.2] - 2026-11-02
+## [0.5.0] - 2026-11-02
 
 ### Added
 - `RecordingStudioOnboarding.reset_for_tests!` replaces configuration (and the
@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dummy integration tests call `accept_live_terms_for_tests!` explicitly.
 
 ### Upgrade notes
+- Hosts now see boot/config errors and provision failures instead of swallowed
+  `StandardError`. `ProvisionFailed#cause` holds the original handler error.
 - Rescue `RecordingStudioOnboarding::ProvisionFailed` around `provision` if you
   previously rescued the handler's original exception. Failure rows are still
   written before the raise.
@@ -263,7 +265,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.4.0...v0.5.0
 [0.3.0]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.3.0
 [0.2.3]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.2.3
 [0.2.2]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.2.2
