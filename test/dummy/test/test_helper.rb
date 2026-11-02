@@ -9,6 +9,7 @@ OmniAuth.config.test_mode = true
 
 module TermsAcceptanceTestSupport
   # Ordinary integration tests should not be blocked by the soft Terms gate.
+  # Call this before sign_in in tests that should pass the gate.
   def accept_live_terms_for_tests!(actor)
     return unless defined?(RecordingStudioTermsAndConditions)
     return if actor.blank?

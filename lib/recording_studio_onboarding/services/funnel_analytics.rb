@@ -76,6 +76,7 @@ module RecordingStudioOnboarding
         keys[index + 1]
       end
 
+      # Reached = viewed, completed, or skipped (SQL, not Ruby enumeration).
       def reached_count(step_key, runs)
         StepProgress
           .where(flow_run_id: runs.select(:id), step_key: step_key.to_s)

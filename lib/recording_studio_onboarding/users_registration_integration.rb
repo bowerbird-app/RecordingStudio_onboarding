@@ -43,7 +43,7 @@ module RecordingStudioOnboarding
       return if user.nil?
 
       provision_new_registration(user, payload)
-    rescue ProvisionFailed => e
+    rescue StandardError => e
       log_provisioning_failure(e)
     end
 

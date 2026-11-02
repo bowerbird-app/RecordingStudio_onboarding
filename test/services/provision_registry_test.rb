@@ -63,6 +63,18 @@ class ProvisionRegistryTest < Minitest::Test
     assert_equal "workspace_setup:User:aaa:Workspace:bbb", service.idempotency_key
   end
 
+  def test_initialize_rejects_unknown_keywords
+    actor = build_record("User", "aaa")
+    error = assert_raises(ArgumentError) do
+      RecordingStudioOnboarding::Services::Provision.new(
+        :new_registration,
+        actor: actor,
+        idempotency_ky: "typo"
+      )
+    end
+    assert_match(/Unknown keywords: :idempotency_ky/, error.message)
+  end
+
   def test_configure_provision_api
     RecordingStudioOnboarding.configure do |config|
       config.provision :new_registration, with: FakeHandler

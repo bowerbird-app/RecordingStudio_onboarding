@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 require "test_helper"
+# recording_studio loads ActiveRecord. ActionController is required so the
+# descendant-filter tests run in this suite instead of skipping.
+require "active_record"
+require "action_controller"
 
 class EngineTest < Minitest::Test
   def setup
@@ -154,8 +158,6 @@ class EngineTest < Minitest::Test
   end
 
   def test_model_extension_initializer_skips_abstract_models
-    skip "ActiveRecord is required for descendant filtering" unless defined?(ActiveRecord::Base)
-
     to_prepare_blocks = []
     config_stub = Object.new
     config_stub.define_singleton_method(:to_prepare) do |&block|
@@ -188,8 +190,6 @@ class EngineTest < Minitest::Test
   end
 
   def test_controller_extension_initializer_applies_all_controllers
-    skip "ActionController is required for descendant filtering" unless defined?(ActionController::Base)
-
     to_prepare_blocks = []
     config_stub = Object.new
     config_stub.define_singleton_method(:to_prepare) do |&block|
@@ -252,11 +252,70 @@ class EngineTest < Minitest::Test
     assert_equal :applied, instance.template_controller_extension
   end
 
-  def test_register_admin_requires_admin_without_reloading_the_file
+  def test_register_admin_loads_admin_rb_on_prepare
     source = File.read(File.expand_path("../lib/recording_studio_onboarding/engine.rb", __dir__))
 
-    assert_includes source, "require \"recording_studio_onboarding/admin\""
-    refute_includes source, "load File.expand_path(\"admin.rb\""
+    assert_includes source, "load File.expand_path(\"admin.rb\""
+  end
+
+  def test_apply_model_returns_without_target
+    assert_nil RecordingStudioOnboarding::ExtensionApplier.apply_model(nil)
+  end
+
+  def test_apply_model_flattens_compacts_and_dedupes_by_identity
+    target = Class.new do
+      def self.name
+        "ExampleRecord"
+      end
+    end
+    applied = []
+    extension = proc { applied << :once }
+
+    RecordingStudioOnboarding.configuration.hooks.stub(
+      :model_extensions_for,
+      ->(_name) { [nil, [extension, extension]] }
+    ) do
+      RecordingStudioOnboarding::ExtensionApplier.apply_model(target)
+    end
+
+    assert_equal [:once], applied
+  end
+
+  def test_apply_controller_matches_demodulized_name
+    controller_class = Class.new do
+      def self.name
+        "Admin::ReportsController"
+      end
+    end
+    RecordingStudioOnboarding.configuration.hooks.extend_controller(:ReportsController) do
+      def demodulized_extension
+        :applied
+      end
+    end
+
+    RecordingStudioOnboarding::ExtensionApplier.apply_controller(controller_class)
+
+    assert_equal :applied, controller_class.new.demodulized_extension
+  end
+
+  def test_apply_controller_drops_duplicate_extension_keys
+    controller_class = Class.new do
+      def self.name
+        "ReportsController"
+      end
+    end
+    names = []
+    RecordingStudioOnboarding.configuration.hooks.stub(
+      :controller_extensions_for,
+      lambda { |name|
+        names << name
+        []
+      }
+    ) do
+      RecordingStudioOnboarding::ExtensionApplier.apply_controller(controller_class)
+    end
+
+    assert_equal [:ReportsController], names
   end
 
   private

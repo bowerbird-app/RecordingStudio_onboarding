@@ -13,7 +13,6 @@ class AdminRegistrationTest < Minitest::Test
     source = File.read(File.expand_path("../lib/recording_studio_onboarding/engine.rb", __dir__))
     assert_includes source, "defined?(RecordingStudioAdmin)"
     assert_includes source, "RecordingStudioOnboarding::Admin.register!"
-    assert_includes source, "require \"recording_studio_onboarding/admin\""
-    refute_includes source, "load File.expand_path(\"admin.rb\""
+    assert_includes source, "load File.expand_path(\"admin.rb\""
   end
 end

@@ -21,12 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Optional YAML load rescues only Rails' missing-file `RuntimeError`. Other
   boot errors raise. `config.x` merge errors raise.
-- `AuthorizeRun` recording lookup rescues `ActiveRecord::RecordNotFound` only.
-- Registration provisioning and admin retry rescue `ProvisionFailed` only.
-- Admin `register!` is idempotent. The engine `require`s `admin.rb` instead of
-  `load`ing it on every `to_prepare`.
+- `provision` keyword args and flow `step` keywords reject unknown names.
 - `Configuration#to_h` uses `RecordingStudio::Hooks#registered_counts`.
 - Dummy integration tests call `accept_live_terms_for_tests!` explicitly.
+
+### Compatibility
+- `RecordingStudioOnboarding::Admin` path helpers (`engine_mount_path`,
+  `engine_helpers`, `admin_*_path`) stay on `Admin`.
+- `FlowDefinition::StepDefinition` still resolves to the top-level
+  `StepDefinition`.
 
 ### Upgrade notes
 - Hosts now see boot/config errors and provision failures instead of swallowed

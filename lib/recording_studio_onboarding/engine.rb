@@ -46,12 +46,13 @@ module RecordingStudioOnboarding
     end
 
     # Soft register with RecordingStudioAdmin when the host mounts it.
-    # register! is idempotent; Admin's registry replaces Zeitwerk-reloaded classes.
+    # Controllers also live under RecordingStudioOnboarding::Admin; load (not
+    # require) so register! is redefined after Zeitwerk reloads that namespace.
     initializer "recording_studio_onboarding.register_admin" do
       config.to_prepare do
         next unless defined?(RecordingStudioAdmin)
 
-        require "recording_studio_onboarding/admin"
+        load File.expand_path("admin.rb", __dir__)
         next unless RecordingStudioOnboarding::Admin.respond_to?(:register!)
 
         RecordingStudioOnboarding::Admin.register!

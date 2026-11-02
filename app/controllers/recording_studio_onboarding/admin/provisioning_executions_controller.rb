@@ -14,7 +14,7 @@ module RecordingStudioOnboarding
         perform_retry!
         @execution.reload
         redirect_to admin_provisioning_execution_path(@execution), notice: "Provisioning retried."
-      rescue ProvisionFailed => e
+      rescue StandardError => e
         redirect_to admin_provisioning_execution_path(@execution), alert: e.message
       end
 

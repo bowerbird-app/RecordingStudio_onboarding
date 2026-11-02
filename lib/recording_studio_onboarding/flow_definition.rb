@@ -9,6 +9,7 @@ module RecordingStudioOnboarding
     # Line progress only — numbered segment headers were removed.
     PROGRESS_MODES = %i[bar].freeze
     BUTTON_POSITIONS = %i[left right full].freeze
+    StepDefinition = ::RecordingStudioOnboarding::StepDefinition
 
     attr_reader :key, :steps
 

@@ -56,7 +56,8 @@ module RecordingStudioOnboarding
         else
           RecordingStudio::Recording.find_by(recordable: record)
         end
-      rescue ActiveRecord::RecordNotFound
+      rescue StandardError
+        # Lookup failures must deny the run (404), not raise into the request.
         nil
       end
 

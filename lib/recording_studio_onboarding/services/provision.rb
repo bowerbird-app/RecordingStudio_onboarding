@@ -15,13 +15,13 @@ module RecordingStudioOnboarding
         new(name, **).call
       end
 
+      ALLOWED_KEYWORDS = %i[subject root context idempotency_key].freeze
+
       def initialize(name, actor:, **options)
+        reject_unknown_keywords!(options)
         @name = name.to_sym
         @actor = actor
-        @subject = options[:subject]
-        @root = options[:root]
-        @context = options[:context] || {}
-        @idempotency_key = options[:idempotency_key].presence || default_idempotency_key
+        assign_options(options)
       end
 
       def call
@@ -36,6 +36,18 @@ module RecordingStudioOnboarding
       end
 
       private
+
+      def reject_unknown_keywords!(options)
+        unknown = options.keys - ALLOWED_KEYWORDS
+        raise ArgumentError, "Unknown keywords: #{unknown.map(&:inspect).join(', ')}" if unknown.any?
+      end
+
+      def assign_options(options)
+        @subject = options[:subject]
+        @root = options[:root]
+        @context = options[:context] || {}
+        @idempotency_key = options[:idempotency_key].presence || default_idempotency_key
+      end
 
       def run_handler!(execution)
         instrument("provision.started", execution)

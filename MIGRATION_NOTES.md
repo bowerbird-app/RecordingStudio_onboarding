@@ -16,11 +16,12 @@
 - CI also exercises `gemfiles/without_terms.gemfile` where those gems are absent
 - Public RubyGems and GitHub access for dependency installation
 
-## 0.4.2 boot, provision, and test helpers
+## 0.5.0 boot, provision, and test helpers
 
 - `provision` raises `RecordingStudioOnboarding::ProvisionFailed` after it
   records a failed execution. The handler error is `#cause`. Admin retry and
-  the registration subscriber rescue that class only.
+  the registration subscriber still log and swallow unexpected errors so
+  sign-up is not broken.
 - Optional `config_for(:recording_studio_onboarding)` still ignores a missing
   YAML file. Other load errors raise.
 - Tests: `RecordingStudioOnboarding.reset_for_tests!` and dummy

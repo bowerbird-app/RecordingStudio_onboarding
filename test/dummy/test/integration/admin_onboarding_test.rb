@@ -264,4 +264,36 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
     get "/admin/screens/onboarding_flows"
     assert_response :success
   end
+
+  test "admin engine_mount_path stays on Admin" do
+    assert_equal "/onboarding", RecordingStudioOnboarding::Admin.engine_mount_path
+  end
+
+  test "admin engine_helpers stays on Admin" do
+    assert_respond_to RecordingStudioOnboarding::Admin, :engine_helpers
+  end
+
+  test "admin admin_preview_path stays on Admin" do
+    assert_respond_to RecordingStudioOnboarding::Admin, :admin_preview_path
+  end
+
+  test "admin admin_run_path stays on Admin" do
+    assert_respond_to RecordingStudioOnboarding::Admin, :admin_run_path
+  end
+
+  test "admin admin_reset_run_path stays on Admin" do
+    assert_respond_to RecordingStudioOnboarding::Admin, :admin_reset_run_path
+  end
+
+  test "admin admin_restart_run_path stays on Admin" do
+    assert_respond_to RecordingStudioOnboarding::Admin, :admin_restart_run_path
+  end
+
+  test "admin admin_provisioning_path stays on Admin" do
+    assert_respond_to RecordingStudioOnboarding::Admin, :admin_provisioning_path
+  end
+
+  test "admin admin_retry_provisioning_path stays on Admin" do
+    assert_respond_to RecordingStudioOnboarding::Admin, :admin_retry_provisioning_path
+  end
 end

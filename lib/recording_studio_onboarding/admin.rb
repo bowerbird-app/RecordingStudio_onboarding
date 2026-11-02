@@ -20,6 +20,15 @@ module RecordingStudioOnboarding
   module Admin
     module_function
 
+    def engine_mount_path = Paths.engine_mount_path
+    def engine_helpers = Paths.engine_helpers
+    def admin_preview_path(...) = Paths.admin_preview_path(...)
+    def admin_run_path(...) = Paths.admin_run_path(...)
+    def admin_reset_run_path(...) = Paths.admin_reset_run_path(...)
+    def admin_restart_run_path(...) = Paths.admin_restart_run_path(...)
+    def admin_provisioning_path(...) = Paths.admin_provisioning_path(...)
+    def admin_retry_provisioning_path(...) = Paths.admin_retry_provisioning_path(...)
+
     def flow_rows
       counts = FlowRun.group(:flow_key, :status).count
       RecordingStudioOnboarding.configuration.flows.values.map do |definition|

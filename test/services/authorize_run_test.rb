@@ -52,9 +52,8 @@ class AuthorizeRunTest < Minitest::Test
     refute RecordingStudioOnboarding::Services::AuthorizeRun.call(run_a, actor: user_b)
   end
 
-  def test_missing_recording_is_denied_without_swallowing_other_errors
+  def test_missing_recording_is_denied
     skip "Accessible recording lookup is required" unless defined?(RecordingStudioAccessible)
-    skip "ActiveRecord is required for recording lookup" unless defined?(ActiveRecord::RecordNotFound)
 
     actor = build_record("User", 1)
     workspace = Object.new
@@ -66,11 +65,19 @@ class AuthorizeRunTest < Minitest::Test
         refute authorizer.call
       end
     end
+  end
+
+  def test_unexpected_lookup_error_is_denied
+    skip "Accessible recording lookup is required" unless defined?(RecordingStudioAccessible)
+
+    actor = build_record("User", 1)
+    workspace = Object.new
+    run = FakeRun.new(definition: FakeDefinition.new(:workspace), scope: workspace)
+    authorizer = RecordingStudioOnboarding::Services::AuthorizeRun.new(run, actor: actor)
 
     RecordingStudio.stub(:root_allowed?, true) do
       RecordingStudio.stub(:root_recording_for, ->(*) { raise ArgumentError, "blown call" }) do
-        error = assert_raises(ArgumentError) { authorizer.call }
-        assert_equal "blown call", error.message
+        refute authorizer.call
       end
     end
   end

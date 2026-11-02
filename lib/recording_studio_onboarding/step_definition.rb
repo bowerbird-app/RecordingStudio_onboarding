@@ -1,21 +1,16 @@
 # frozen_string_literal: true
 
 module RecordingStudioOnboarding
+  STEP_KEYWORDS = %i[controls show_progress skippable complete_when button_positions].freeze
+
   StepDefinition = Struct.new(
     :key, :component, :controls, :show_progress, :skippable, :complete_when,
     :button_positions,
     keyword_init: true
   ) do
     def self.build(key, component:, **options)
-      new(
-        key: key.to_sym,
-        component: component,
-        controls: normalize_controls(options.fetch(:controls, %i[continue])),
-        show_progress: options.fetch(:show_progress, true),
-        skippable: options.fetch(:skippable, true),
-        complete_when: options[:complete_when],
-        button_positions: normalize_button_positions(options.fetch(:button_positions, {}))
-      )
+      reject_unknown_keywords!(options)
+      new(attributes_for(key, component, options))
     end
 
     def show_progress?
@@ -24,6 +19,23 @@ module RecordingStudioOnboarding
 
     def skippable?
       skippable
+    end
+
+    def self.reject_unknown_keywords!(options)
+      unknown = options.keys - STEP_KEYWORDS
+      raise ArgumentError, "Unknown keywords: #{unknown.map(&:inspect).join(', ')}" if unknown.any?
+    end
+
+    def self.attributes_for(key, component, options)
+      {
+        key: key.to_sym,
+        component: component,
+        controls: normalize_controls(options.fetch(:controls, %i[continue])),
+        show_progress: options.fetch(:show_progress, true),
+        skippable: options.fetch(:skippable, true),
+        complete_when: options[:complete_when],
+        button_positions: normalize_button_positions(options.fetch(:button_positions, {}))
+      }
     end
 
     def self.normalize_controls(controls)
