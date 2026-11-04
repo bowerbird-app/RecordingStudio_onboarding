@@ -24,8 +24,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: with_terms
-            gemfile: test/dummy/Gemfile
           - label: without_terms
             gemfile: gemfiles/without_terms.gemfile
 

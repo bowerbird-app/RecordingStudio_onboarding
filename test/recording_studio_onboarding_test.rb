@@ -60,13 +60,12 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.12.2"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.11.4"'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.341"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_publishable", tag: "v0.13.0"'
-    assert_includes gemfile,
-                    'github: "bowerbird-app/RecordingStudio_terms_and_conditions", tag: "v0.14.2"'
-    assert_includes gemfile, "widen_family_requirements"
-    assert_includes lock, "recording_studio_terms_and_conditions"
-    assert_includes lock, "recording_studio_publishable"
-    assert File.exist?(File.expand_path("support/widen_family_requirements.rb", __dir__))
+    refute_includes gemfile, "recording_studio_terms_and_conditions"
+    refute_includes gemfile, "recording_studio_publishable"
+    refute_includes gemfile, "widen_family_requirements"
+    refute_includes lock, "recording_studio_terms_and_conditions"
+    refute_includes lock, "recording_studio_publishable"
+    refute File.exist?(File.expand_path("support/widen_family_requirements.rb", __dir__))
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.2.2"'
     refute_includes gemfile, 'tag: "v4.2.1"'

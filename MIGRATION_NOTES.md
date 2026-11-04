@@ -11,9 +11,9 @@
 - Accessible dummy tag `v0.24.0`, Attachable `v0.22.0`, Admin `v2.8.2`,
   Cache `v0.6.2`, Logs `v0.7.2`, Trashable `v0.12.2`, Root Switchable `v0.11.4`
 - FlatPack dummy tag `v0.1.341` (`view_component` `>= 4.14`, `< 5`)
-- Optional (dummy demo): RecordingStudio Terms & Conditions `v0.14.2` and
-  Publishable `v0.13.0` for Agree-before-onboarding (`config.before_onboarding`)
-- CI also exercises `gemfiles/without_terms.gemfile` where those gems are absent
+- Dummy and `gemfiles/without_terms.gemfile` omit Terms and Publishable.
+  Terms `v0.14.2` still declares `recording_studio ~> 4.2`. Agree-before-onboarding
+  is tested once Terms ships a 6.x-compatible tag.
 - Public RubyGems and GitHub access for dependency installation
 
 ## 0.6.0 core 6.x family
@@ -26,8 +26,9 @@
 - Hosts replace `UsesDefaultLayout` with `recording_studio_layout`.
 - Admin dummy pin is `v2.8.2` (policy floor `v2.5.1` cannot resolve core 6.3
   and FlatPack 0.1.341). Install Logs with Admin.
-- Terms `v0.14.2` still declares `recording_studio ~> 4.2`. Dummy resolution
-  uses `test/support/widen_family_requirements.rb`.
+- Terms `v0.14.2` still declares `recording_studio ~> 4.2`. Dummy does not
+  install it. Do not patch sibling gemspecs during Bundler resolution.
+- The with_terms CI lane is removed until Terms ships a core 6 tag.
 
 ## 0.5.0 boot, provision, and test helpers
 
