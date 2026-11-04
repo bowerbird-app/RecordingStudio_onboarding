@@ -3,6 +3,10 @@
 require "test_helper"
 
 class TermsAndConditionsGateTest < Minitest::Test
+  TERMS_BUNDLE_SKIP =
+    "Agree-gate tests need recording_studio_terms_and_conditions and " \
+    "recording_studio_publishable; dummy Gemfile omits both until Terms " \
+    "ships a 6.x-compatible tag"
   class FakeController
     attr_reader :stored
 
@@ -72,7 +76,7 @@ class TermsAndConditionsGateTest < Minitest::Test
   end
 
   def test_gate_returns_nil_when_nothing_due
-    skip "RS Terms 6.x tag is not in this bundle" unless defined?(::RecordingStudioTermsAndConditions)
+    skip TERMS_BUNDLE_SKIP unless defined?(::RecordingStudioTermsAndConditions)
 
     gate = RecordingStudioOnboarding::Gates::TermsAndConditions.new
     ::RecordingStudioTermsAndConditions::Gate.stub(:root_for_acceptance, ->(*) { @root }) do
@@ -84,7 +88,7 @@ class TermsAndConditionsGateTest < Minitest::Test
   end
 
   def test_gate_redirects_to_agree_and_stores_return_path_when_due
-    skip "RS Terms 6.x tag is not in this bundle" unless defined?(::RecordingStudioTermsAndConditions)
+    skip TERMS_BUNDLE_SKIP unless defined?(::RecordingStudioTermsAndConditions)
 
     gate = RecordingStudioOnboarding::Gates::TermsAndConditions.new
     ::RecordingStudioTermsAndConditions::Gate.stub(:root_for_acceptance, ->(*) { @root }) do
@@ -115,7 +119,7 @@ class TermsAndConditionsGateTest < Minitest::Test
   end
 
   def test_register_if_present_adds_gate_once_when_terms_defined
-    skip "RS Terms 6.x tag is not in this bundle" unless defined?(::RecordingStudioTermsAndConditions)
+    skip TERMS_BUNDLE_SKIP unless defined?(::RecordingStudioTermsAndConditions)
 
     assert_equal 0, @configuration.before_onboarding_gates.size
     RecordingStudioOnboarding::Gates::TermsAndConditions.register_if_present!

@@ -35,10 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   accept `controller:`.
 - Admin `v2.5.1` cannot resolve this kit. Dummy Admin is `v2.8.2`, which
   needs Logs `v0.7.2` and Trashable `v0.12.2`.
-- Terms `v0.14.2` still declares `recording_studio ~> 4.2`, so dummy and CI
-  omit Terms and Publishable. Terms-gated behavior is tested once Terms
-  ships a 6.x-compatible tag. Do not patch sibling gemspecs to force
-  resolution.
+- Terms `v0.14.2` still declares `recording_studio ~> 4.2`, so dummy omits
+  Terms and Publishable. Agree-gate tests skip with a message until Terms
+  ships a 6.x-compatible tag. GitHub workflows stay matching `main`. Do not
+  patch sibling gemspecs to force resolution.
 - See `MIGRATION_NOTES.md`.
 
 ## [0.5.0] - 2026-11-02
