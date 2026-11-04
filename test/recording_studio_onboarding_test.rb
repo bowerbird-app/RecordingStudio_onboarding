@@ -60,12 +60,13 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.12.2"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.11.4"'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.341"'
-    refute_includes gemfile, "recording_studio_terms_and_conditions"
-    refute_includes gemfile, "recording_studio_publishable"
-    refute_includes gemfile, "widen_family_requirements"
-    refute_includes lock, "recording_studio_terms_and_conditions"
-    refute_includes lock, "recording_studio_publishable"
-    refute File.exist?(File.expand_path("support/widen_family_requirements.rb", __dir__))
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_publishable", tag: "v0.13.0"'
+    assert_includes gemfile,
+                    'github: "bowerbird-app/RecordingStudio_terms_and_conditions", tag: "v0.14.2"'
+    assert_includes gemfile, "widen_family_requirements"
+    assert_includes lock, "recording_studio_terms_and_conditions"
+    assert_includes lock, "recording_studio_publishable"
+    assert File.exist?(File.expand_path("support/widen_family_requirements.rb", __dir__))
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.2.2"'
     refute_includes gemfile, 'tag: "v4.2.1"'
@@ -356,8 +357,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
     [gate, integration].each do |source|
       assert_includes source, "TERMS_BUNDLE_SKIP"
       assert_includes source, "Agree-gate tests need recording_studio_terms_and_conditions"
-      assert_includes source, "dummy Gemfile omits both until Terms"
-      assert_includes source, "ships a 6.x-compatible tag"
+      assert_includes source, "in this bundle"
     end
     assert_includes gate, "skip TERMS_BUNDLE_SKIP unless defined?(::RecordingStudioTermsAndConditions)"
     assert_equal 3, gate.scan("skip TERMS_BUNDLE_SKIP unless defined?").size

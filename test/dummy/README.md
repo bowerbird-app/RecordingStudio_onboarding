@@ -7,9 +7,10 @@ This Rails app exists to validate the Recording Studio addon template in a real 
 - RecordingStudio_users auth at `/users/sign_up` and `/users/sign_in` (Devise
   actor + People/Profile), with a seeded admin user; OTP off so OTP paths 404
 - Onboarding provisioning from `registration.completed.recording_studio_user`
-- Dummy omits RS Terms and Publishable. Terms `v0.14.2` still requires
-  Recording Studio 4.x. Agree-before-onboarding is tested once Terms ships
-  a 6.x-compatible tag. CI also runs `gemfiles/without_terms.gemfile`.
+- Dummy pins RS Terms `v0.14.2` and Publishable `v0.13.0`. Terms still
+  declares Recording Studio 4.x, so dummy Bundler uses
+  `test/support/widen_family_requirements.rb`. CI also runs
+  `gemfiles/without_terms.gemfile`.
 - `Current.actor` wiring for Recording Studio events
 - Root workspace plus seeded folder and page recordables
 - Recording Studio default layout, FlatPack assets, and Tailwind source scanning

@@ -21,8 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dummy and root pins: Accessible `v0.24.0`, Admin `v2.8.2`, Attachable
   `v0.22.0`, Cache `v0.6.2`, Logs `v0.7.2`, Metrics `v0.7.2`, Trashable
   `v0.12.2`, Root Switchable `v0.11.4`, RecordingStudio_users `v0.26.6`,
-  FlatPack `v0.1.341`. Dummy does not pin Terms or Publishable. Gemspec
-  `recording_studio_user` `>= 0.26.6`. `view_component` `>= 4.14`, `< 5`.
+  FlatPack `v0.1.341`. Dummy also pins Publishable `v0.13.0` and Terms
+  `v0.14.2`. Gemspec `recording_studio_user` `>= 0.26.6`. `view_component`
+  `>= 4.14`, `< 5`.
 - Registration provisioning failures log the error class only.
 
 ### Upgrade notes
@@ -35,10 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   accept `controller:`.
 - Admin `v2.5.1` cannot resolve this kit. Dummy Admin is `v2.8.2`, which
   needs Logs `v0.7.2` and Trashable `v0.12.2`.
-- Terms `v0.14.2` still declares `recording_studio ~> 4.2`, so dummy omits
-  Terms and Publishable. Agree-gate tests skip with a message until Terms
-  ships a 6.x-compatible tag. GitHub workflows stay matching `main`. Do not
-  patch sibling gemspecs to force resolution.
+- Terms `v0.14.2` still declares `recording_studio ~> 4.2`. Dummy resolution
+  uses `test/support/widen_family_requirements.rb` so the with_terms CI
+  matrix can keep Terms in `test/dummy/Gemfile.lock`. Hosts that bundle
+  Terms without a similar patch will not resolve.
 - See `MIGRATION_NOTES.md`.
 
 ## [0.5.0] - 2026-11-02

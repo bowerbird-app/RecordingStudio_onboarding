@@ -252,11 +252,11 @@ and return 404 rather than error pages.
   Accessible `v0.24.0`, Admin `v2.8.2`, Attachable `v0.22.0`, Cache `v0.6.2`,
   Logs `v0.7.2`, RecordingStudio_users `v0.26.6`, Metrics `v0.7.2`,
   Trashable `v0.12.2`, Root Switchable `v0.11.4`, Flatpack `v0.1.341`.
-  Dummy omits Terms and Publishable until Terms ships a 6.x-compatible tag
-  (`v0.14.2` still declares `recording_studio ~> 4.2`). Gemspec:
-  `recording_studio` `~> 6.1`, `recording_studio_user` `>= 0.26.6`.
-- CI also runs against `gemfiles/without_terms.gemfile`. Terms-gated dummy
-  behavior is tested once a 6.x Terms tag exists.
+  Dummy pins Terms `v0.14.2` and Publishable `v0.13.0`. Terms still declares
+  `recording_studio ~> 4.2`; dummy Bundler uses
+  `test/support/widen_family_requirements.rb`. Gemspec: `recording_studio`
+  `~> 6.1`, `recording_studio_user` `>= 0.26.6`.
+- CI also runs against `gemfiles/without_terms.gemfile`.
 
 ## Development
 

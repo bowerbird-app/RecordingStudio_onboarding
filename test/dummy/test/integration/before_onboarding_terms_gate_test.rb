@@ -6,8 +6,7 @@ require "test_helper"
 class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
   TERMS_BUNDLE_SKIP =
     "Agree-gate tests need recording_studio_terms_and_conditions and " \
-    "recording_studio_publishable; dummy Gemfile omits both until Terms " \
-    "ships a 6.x-compatible tag"
+    "recording_studio_publishable in this bundle"
 
   include Devise::Test::IntegrationHelpers
 
