@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "test/support/widen_family_requirements"
-
 source "https://rubygems.org"
 
 # Specify your gem's dependencies in recording_studio_onboarding.gemspec

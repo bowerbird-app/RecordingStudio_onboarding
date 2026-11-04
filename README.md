@@ -23,8 +23,8 @@ user-facing flow.
 - **Admin + analytics** — soft `RecordingStudioAdmin.register_*` section/screens
   for flows, card previews, runs, drop-off funnel, and provisioning
 - **Dummy app** — provisioning, flow launcher, layout gallery
-  (`/demos/onboarding`), host form steps, admin, optional RS Terms
-  Agree-before-onboarding demo
+  (`/demos/onboarding`), host form steps, and admin. Terms Agree-before-onboarding
+  waits on a 6.x Terms tag.
 
 ## Quick Start
 
@@ -251,10 +251,12 @@ and return 404 rather than error pages.
 - Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v6.3.0`,
   Accessible `v0.24.0`, Admin `v2.8.2`, Attachable `v0.22.0`, Cache `v0.6.2`,
   Logs `v0.7.2`, RecordingStudio_users `v0.26.6`, Metrics `v0.7.2`,
-  Trashable `v0.12.2`, Root Switchable `v0.11.4`, Flatpack `v0.1.341`. Dummy
-  also pins Publishable `v0.13.0` and Terms & Conditions `v0.14.2`. Gemspec:
+  Trashable `v0.12.2`, Root Switchable `v0.11.4`, Flatpack `v0.1.341`.
+  Dummy omits Terms and Publishable until Terms ships a 6.x-compatible tag
+  (`v0.14.2` still declares `recording_studio ~> 4.2`). Gemspec:
   `recording_studio` `~> 6.1`, `recording_studio_user` `>= 0.26.6`.
-- CI also runs against `gemfiles/without_terms.gemfile` (no Terms / Publishable)
+- CI also runs against `gemfiles/without_terms.gemfile`. Terms-gated dummy
+  behavior is tested once a 6.x Terms tag exists.
 
 ## Development
 

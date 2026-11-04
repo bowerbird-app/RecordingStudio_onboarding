@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-# Runs only when the dummy bundle includes RS Terms (default Gemfile).
+# Runs only when a 6.x-compatible Terms gem is in the dummy bundle.
 class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 

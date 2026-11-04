@@ -47,7 +47,7 @@ def internal_route?(path)
   routes.any? do |route_set|
     route_set.recognize_path(path, method: :get)
     true
-  rescue ActionController::RoutingError
+  rescue StandardError
     false
   end
 end

@@ -1,5 +1,3 @@
-require_relative "../test/support/widen_family_requirements"
-
 # Dummy app bundle WITHOUT RecordingStudio Terms & Conditions / Publishable.
 # Selected via BUNDLE_GEMFILE=gemfiles/without_terms.gemfile
 

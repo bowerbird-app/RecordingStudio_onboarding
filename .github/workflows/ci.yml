@@ -68,10 +68,10 @@ jobs:
       matrix:
         include:
           - ruby-version: "3.3"
-            label: with_terms
+            label: dummy
             gemfile: test/dummy/Gemfile
           - ruby-version: "3.4"
-            label: with_terms
+            label: dummy
             gemfile: test/dummy/Gemfile
           - ruby-version: "3.3"
             label: without_terms
@@ -100,21 +100,20 @@ jobs:
           BUNDLE_GEMFILE: ${{ matrix.gemfile }}
           BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
 
-      - name: Assert Terms presence matches matrix label
+      - name: Assert dummy bundles omit Terms until a 6.x tag ships
         run: |
           set -euo pipefail
-          if [ "${{ matrix.label }}" = "with_terms" ]; then
-            grep -q recording_studio_terms_and_conditions "${{ matrix.gemfile }}.lock"
-            grep -q recording_studio_publishable "${{ matrix.gemfile }}.lock"
-          else
-            if grep -q recording_studio_terms_and_conditions "${{ matrix.gemfile }}.lock"; then
-              echo "Terms must not appear in without_terms lockfile" >&2
-              exit 1
-            fi
-            if grep -q recording_studio_publishable "${{ matrix.gemfile }}.lock"; then
-              echo "Publishable must not appear in without_terms lockfile" >&2
-              exit 1
-            fi
+          if grep -q recording_studio_terms_and_conditions "${{ matrix.gemfile }}.lock"; then
+            echo "Terms v0.14.2 cannot resolve Recording Studio 6.x; omit it until a 6.x tag ships" >&2
+            exit 1
+          fi
+          if grep -q recording_studio_publishable "${{ matrix.gemfile }}.lock"; then
+            echo "Publishable is only needed for Terms; omit it until Terms ships a 6.x tag" >&2
+            exit 1
+          fi
+          if grep -q widen_family_requirements "${{ matrix.gemfile }}"; then
+            echo "Do not patch gemspecs during Bundler resolution" >&2
+            exit 1
           fi
 
       - name: Build dummy app Tailwind assets

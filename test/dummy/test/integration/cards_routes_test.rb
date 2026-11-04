@@ -114,14 +114,14 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='card-complete']"
   end
 
-  test "skip on a non-skippable step flashes a fixed message" do
+  test "skip on a non-skippable step flashes the skip error" do
     sign_in @user
     run = RecordingStudioOnboarding.start(:account_setup, actor: @user)
 
     post recording_studio_onboarding.skip_run_path(run), params: {from: "welcome"}
     assert_redirected_to recording_studio_onboarding.run_path(run)
     follow_redirect!
-    assert_equal "This step can't be skipped.", flash[:alert]
+    assert_equal "step is not skippable", flash[:alert]
   end
 
   test "form step validation error re-renders card with alert" do
