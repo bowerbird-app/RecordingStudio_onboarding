@@ -151,6 +151,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes controller_source, "RecordingStudioOnboarding.configuration.layout"
     refute_includes controller_source, "UsesDefaultLayout"
     refute_includes controller_source, '"recording_studio/default_layout"'
+    refute_includes controller_source, "def application_layout"
     refute_includes controller_source, "flat_pack_sidebar"
     refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
     refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
@@ -325,6 +326,43 @@ class RecordingStudioOnboardingTest < Minitest::Test
     view_path = File.expand_path("../app/views/recording_studio_onboarding/home/index.html.erb", __dir__)
 
     refute File.exist?(view_path)
+  end
+
+  def test_dummy_page_nav_swaps_removed_flatpack_apis_only
+    helper = File.read(File.expand_path("dummy/app/helpers/application_helper.rb", __dir__))
+
+    assert_includes helper, "content_for(:title, title)"
+    assert_includes helper, "flat_pack_page_nav"
+    assert_includes helper, "back_href: back_url"
+    assert_includes helper, "back_tooltip: back_label"
+    assert_includes helper, "recording_studio_page_nav_right"
+    assert_includes helper, "size: :md"
+    assert_includes helper, "href: main_app.destroy_user_session_path"
+    refute_includes helper, "recording_studio_page_nav("
+    refute_includes helper, "page_nav_back_url"
+    refute_includes helper, "url: main_app.destroy_user_session_path"
+    refute_includes helper, "subtitle:"
+    refute_includes helper, "round: true"
+    refute_includes helper, "register_page_nav"
+    refute_includes helper, "size: :sm"
+  end
+
+  def test_terms_dependent_examples_skip_with_a_bundle_message
+    gate = File.read(File.expand_path("gates/terms_and_conditions_gate_test.rb", __dir__))
+    integration = File.read(
+      File.expand_path("dummy/test/integration/before_onboarding_terms_gate_test.rb", __dir__)
+    )
+
+    [gate, integration].each do |source|
+      assert_includes source, "TERMS_BUNDLE_SKIP"
+      assert_includes source, "Agree-gate tests need recording_studio_terms_and_conditions"
+      assert_includes source, "dummy Gemfile omits both until Terms"
+      assert_includes source, "ships a 6.x-compatible tag"
+    end
+    assert_includes gate, "skip TERMS_BUNDLE_SKIP unless defined?(::RecordingStudioTermsAndConditions)"
+    assert_equal 3, gate.scan("skip TERMS_BUNDLE_SKIP unless defined?").size
+    assert_includes integration,
+                    "skip TERMS_BUNDLE_SKIP unless defined?(RecordingStudioTermsAndConditions)"
   end
 
   def test_gem_application_controller_uses_recording_studio_layout

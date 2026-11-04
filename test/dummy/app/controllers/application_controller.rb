@@ -20,10 +20,6 @@ class ApplicationController < ActionController::Base
 
   private
 
-  def application_layout
-    recording_studio_resolved_layout
-  end
-
   def set_current_actor
     Current.actor = current_user
   end
