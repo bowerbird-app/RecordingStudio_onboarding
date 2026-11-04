@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_072539) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_055753) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -68,10 +68,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_072539) do
     t.datetime "occurred_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "root_recording_id"
     t.index ["event_id"], name: "index_admin_audit_logs_on_event_id", unique: true
     t.index ["occurred_at"], name: "index_admin_audit_logs_on_occurred_at"
     t.index ["outcome"], name: "index_admin_audit_logs_on_outcome"
     t.index ["resource_key", "action_key"], name: "index_admin_audit_logs_on_resource_key_and_action_key"
+    t.index ["root_recording_id", "occurred_at"], name: "index_admin_audit_logs_on_root_and_occurred_at"
   end
 
   create_table "admin_roots", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -90,6 +92,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_072539) do
     t.datetime "created_at", null: false
     t.string "title"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "recording_studio_access_constraints", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "action", null: false
+    t.string "allowed_audiences", default: [], null: false, array: true
+    t.datetime "created_at", null: false
+    t.index ["action"], name: "index_recording_studio_access_constraints_on_action"
   end
 
   create_table "recording_studio_access_invitations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -111,6 +120,51 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_072539) do
     t.index ["recording_id"], name: "index_recording_studio_access_invitations_on_recording_id"
     t.index ["token_digest"], name: "idx_rs_access_invitations_token_digest", unique: true
     t.check_constraint "accepted_at IS NULL OR revoked_at IS NULL", name: "access_invitations_not_accepted_and_revoked"
+  end
+
+  create_table "recording_studio_access_request_intents", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "recording_id", null: false
+    t.uuid "user_id", null: false
+    t.uuid "otp_challenge_id", null: false
+    t.string "email", null: false
+    t.string "role"
+    t.string "action"
+    t.datetime "expires_at", null: false
+    t.datetime "fulfilled_at"
+    t.datetime "created_at", null: false
+    t.string "submitted_name"
+    t.index ["recording_id"], name: "index_recording_studio_access_request_intents_on_recording_id"
+    t.check_constraint "action IS NULL OR char_length(action::text) <= 120", name: "recording_studio_access_request_intents_action_length"
+    t.check_constraint "char_length(email::text) <= 255", name: "recording_studio_access_request_intents_email_length"
+    t.check_constraint "submitted_name IS NULL OR char_length(submitted_name::text) <= 120", name: "recording_studio_access_request_intents_name_length"
+  end
+
+  create_table "recording_studio_access_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "actor_type", null: false
+    t.uuid "actor_id", null: false
+    t.string "role"
+    t.string "action"
+    t.text "message"
+    t.string "status", default: "pending", null: false
+    t.uuid "access_recording_id"
+    t.text "review_note"
+    t.datetime "created_at", null: false
+    t.jsonb "gate_metadata", default: {}, null: false
+    t.uuid "target_recording_id", null: false
+    t.string "pending_key"
+    t.index ["actor_type", "actor_id"], name: "index_recording_studio_access_requests_on_actor"
+    t.index ["pending_key"], name: "index_recording_studio_access_requests_one_pending", unique: true, where: "(pending_key IS NOT NULL)"
+    t.check_constraint "action IS NULL OR char_length(action::text) <= 120", name: "recording_studio_access_requests_action_length"
+    t.check_constraint "message IS NULL OR char_length(message) <= 2000", name: "recording_studio_access_requests_message_length"
+    t.check_constraint "review_note IS NULL OR char_length(review_note) <= 2000", name: "recording_studio_access_requests_note_length"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'denied'::character varying]::text[])", name: "recording_studio_access_requests_status"
+  end
+
+  create_table "recording_studio_access_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "action", null: false
+    t.string "audience", null: false
+    t.datetime "created_at", null: false
+    t.index ["action"], name: "index_recording_studio_access_rules_on_action"
   end
 
   create_table "recording_studio_accesses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -160,6 +214,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_072539) do
     t.index ["recording_id", "idempotency_key"], name: "index_recording_studio_events_on_recording_and_idempotency_key", unique: true, where: "(idempotency_key IS NOT NULL)"
     t.index ["recording_id", "occurred_at", "created_at"], name: "index_rs_events_on_recording_and_timeline", order: { occurred_at: :desc, created_at: :desc }
     t.index ["recording_id"], name: "index_recording_studio_events_on_recording_id"
+  end
+
+  create_table "recording_studio_logs_aggregation_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "aggregation_name", null: false
+    t.string "status", null: false
+    t.text "error_message"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "period_start", null: false
+    t.index ["aggregation_name", "period_start"], name: "index_rs_logs_aggregation_runs_on_name_and_period", unique: true
+  end
+
+  create_table "recording_studio_logs_maintenance_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "task", null: false
+    t.string "subject", null: false
+    t.string "status", null: false
+    t.text "details"
+    t.datetime "finished_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["task", "subject", "finished_at"], name: "index_rs_logs_maintenance_runs_on_task_and_subject"
   end
 
   create_table "recording_studio_onboarding_flow_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

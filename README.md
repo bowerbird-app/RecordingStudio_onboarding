@@ -54,6 +54,9 @@ user-facing flow.
 RecordingStudioOnboarding.configure do |config|
   config.provision :new_registration, with: "Host::ProvisionRegistration"
   config.current_actor = ->(controller) { controller.current_user }
+  # Optional. nil uses RecordingStudio.configuration.layout, then
+  # recording_studio/default_layout. false skips the layout.
+  # config.layout = "application"
 
   # Optional override; default uses user identity or Accessible :view
   # config.authorize_run = ->(run, actor) { ... }
@@ -226,7 +229,7 @@ No separate analytics store.
 
 ## RecordingStudio_users integration
 
-Requires **RecordingStudio_users >= 0.18.0**.
+Requires **RecordingStudio_users >= 0.26.6**.
 
 Subscribes to `registration.completed.recording_studio_user` for every
 successful sign-up method (`:password`, `:oauth`, `:otp`). Provisioning is
@@ -238,19 +241,19 @@ is not subscribed; OTP is covered by the unified event.
 The dummy mounts RS Users auth (`recording_studio_user_auth_for :users` plus
 `RecordingStudioUser::Engine`) so `/users/sign_up` is the real users flow.
 Password and OAuth sign-up emit the unified event. OTP registration stays off
-in the dummy (`otp_enabled = false`); with Users 0.18+, OTP paths are absent
+in the dummy (`otp_enabled = false`); with Users 0.26+, OTP paths are absent
 and return 404 rather than error pages.
 
 ## Architecture notes
 
 - No gemspec dependency on RS Terms & Conditions (soft optional gate)
 - Flatpack ViewComponents only; no React or Vue
-- Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v4.2.2`,
-  Accessible `v0.11.1`, Admin `v2.0.5`, Attachable `v0.7.1`,
-  RecordingStudio_users `v0.18.0`, Metrics `v0.2.0`, Root Switchable `v0.5.1`,
-  Flatpack `v0.1.196`. Dummy also pins Publishable `v0.4.2` and
-  Terms & Conditions `v0.9.0`. Gemspec: `recording_studio` `~> 4.2`,
-  `recording_studio_user` `>= 0.18.0`.
+- Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v6.3.0`,
+  Accessible `v0.24.0`, Admin `v2.8.2`, Attachable `v0.22.0`, Cache `v0.6.2`,
+  Logs `v0.7.2`, RecordingStudio_users `v0.26.6`, Metrics `v0.7.2`,
+  Trashable `v0.12.2`, Root Switchable `v0.11.4`, Flatpack `v0.1.341`. Dummy
+  also pins Publishable `v0.13.0` and Terms & Conditions `v0.14.2`. Gemspec:
+  `recording_studio` `~> 6.1`, `recording_studio_user` `>= 0.26.6`.
 - CI also runs against `gemfiles/without_terms.gemfile` (no Terms / Publishable)
 
 ## Development

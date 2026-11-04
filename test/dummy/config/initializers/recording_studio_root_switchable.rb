@@ -5,8 +5,8 @@ RecordingStudioRootSwitchable.configure do |config|
     Current.actor || controller.current_user
   end
 
-  # Render the mounted switcher pages inside the app shell when users visit them.
-  config.layout = :application_layout
+  # nil uses RecordingStudio.configuration.layout, then recording_studio/default_layout.
+  # Root Switchable 0.11+ rejects :application_layout (Layout.accept).
 
   config.after_switch_redirect = lambda do |controller:, return_to:, **|
     candidate_path = return_to.presence
@@ -47,7 +47,7 @@ def internal_route?(path)
   routes.any? do |route_set|
     route_set.recognize_path(path, method: :get)
     true
-  rescue StandardError
+  rescue ActionController::RoutingError
     false
   end
 end

@@ -2,8 +2,12 @@
 
 module RecordingStudioOnboarding
   class ApplicationController < (defined?(::ApplicationController) ? ::ApplicationController : ActionController::Base)
+    include RecordingStudio::ControllerLayout
+
     protect_from_forgery with: :exception
     helper RecordingStudioOnboarding::ApplicationHelper
+
+    recording_studio_layout { RecordingStudioOnboarding.configuration.layout }
 
     private
 

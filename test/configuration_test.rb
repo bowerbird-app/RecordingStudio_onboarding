@@ -62,6 +62,18 @@ class ConfigurationTest < Minitest::Test
     assert_instance_of RecordingStudio::Hooks, @configuration.hooks
     assert_empty @configuration.provisioners
     assert_empty @configuration.flows
+    assert_nil @configuration.layout
+  end
+
+  def test_layout_accepts_nil_false_and_name
+    @configuration.layout = nil
+    assert_nil @configuration.layout
+
+    @configuration.layout = false
+    assert_equal false, @configuration.layout
+
+    @configuration.layout = "recording_studio/default_layout"
+    assert_equal "recording_studio/default_layout", @configuration.layout
   end
 
   def test_reset_for_tests_replaces_configuration

@@ -30,8 +30,8 @@ module RecordingStudioOnboarding
     def skip
       RecordingStudioOnboarding.skip(@run, from: params[:from], actor: current_onboarding_actor)
       after_transition!
-    rescue ArgumentError => e
-      redirect_to run_path(@run), alert: e.message
+    rescue ArgumentError
+      redirect_to run_path(@run), alert: "This step can't be skipped."
     end
 
     def dismiss

@@ -4,18 +4,20 @@ require "test_helper"
 
 class RecordingStudioOnboardingTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.5.0", ::RecordingStudioOnboarding::VERSION
+    assert_equal "0.6.0", ::RecordingStudioOnboarding::VERSION
   end
 
   def test_engine_exists
     assert_kind_of Class, ::RecordingStudioOnboarding::Engine
   end
 
-  def test_gemspec_pins_recording_studio_4_2
+  def test_gemspec_pins_recording_studio_6_1
     gemspec = File.read(File.expand_path("../recording_studio_onboarding.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.18.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 6.1"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.26.6"'
+    assert_includes gemspec, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'
+    refute_includes gemspec, '"~> 4.2"'
   end
 
   def test_gemspec_excludes_cursor_config
@@ -42,24 +44,30 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes install_script, "fetch-skills.sh"
   end
 
-  def test_dummy_gemfile_pins_verified_4x_github_tags
+  def test_dummy_gemfile_pins_verified_6x_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.11.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.0.5"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.196"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_publishable", tag: "v0.4.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.24.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.26.6"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.8.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.22.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_logs", tag: "v0.7.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.12.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.11.4"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.341"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_publishable", tag: "v0.13.0"'
     assert_includes gemfile,
-                    'github: "bowerbird-app/RecordingStudio_terms_and_conditions", tag: "v0.9.0"'
+                    'github: "bowerbird-app/RecordingStudio_terms_and_conditions", tag: "v0.14.2"'
+    assert_includes gemfile, "widen_family_requirements"
     refute_includes gemfile, "recording_studio/v3.0.0"
+    refute_includes gemfile, 'tag: "v4.2.2"'
     refute_includes gemfile, 'tag: "v4.2.1"'
     refute_includes gemfile, 'tag: "v4.2.0"'
-    refute_includes gemfile, 'tag: "v0.10.1"'
-    refute_includes gemfile, 'tag: "v0.9.1"'
+    refute_includes gemfile, 'tag: "v0.1.196"'
+    refute_includes gemfile, 'tag: "v2.0.5"'
     refute_includes gemfile, 'tag: "v0.5.0"'
     refute_includes gemfile, 'tag: "v0.1.177"'
     refute_includes gemfile, 'tag: "v0.1.133"'
@@ -78,8 +86,8 @@ class RecordingStudioOnboardingTest < Minitest::Test
     refute_includes gemfile, "recording_studio_publishable"
     refute_includes lock, "recording_studio_terms_and_conditions"
     refute_includes lock, "recording_studio_publishable"
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.26.6"'
   end
 
   def test_dummy_schema_includes_accessible_depends_on_recording_id
@@ -96,6 +104,10 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes migration, "add_column :recording_studio_accesses, :depends_on_recording_id, :uuid"
     assert_includes schema, 'create_table "recording_studio_access_invitations"'
     assert_includes schema, "idx_rs_access_invitations_token_digest"
+    assert_includes schema, 'create_table "recording_studio_access_constraints"'
+    assert_includes schema, "index_recording_studio_access_constraints_on_action"
+    assert_includes schema, 'create_table "recording_studio_access_rules"'
+    assert_includes schema, "index_recording_studio_access_rules_on_action"
     invitation_migration = File.read(
       File.expand_path(
         "dummy/db/migrate/20261001000011_create_recording_studio_access_invitations.rb",
@@ -129,9 +141,11 @@ class RecordingStudioOnboardingTest < Minitest::Test
     application_controller_path = File.expand_path("dummy/app/controllers/application_controller.rb", __dir__)
     controller_source = File.read(application_controller_path)
 
-    assert_includes controller_source, "include RecordingStudio::UsesDefaultLayout"
-    assert_includes controller_source, '"recording_studio/default_layout"'
-    assert_includes controller_source, "devise_controller? ? \"application\""
+    assert_includes controller_source, "recording_studio_layout"
+    assert_includes controller_source, "devise_controller?"
+    assert_includes controller_source, "RecordingStudioOnboarding.configuration.layout"
+    refute_includes controller_source, "UsesDefaultLayout"
+    refute_includes controller_source, '"recording_studio/default_layout"'
     refute_includes controller_source, "flat_pack_sidebar"
     refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
     refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
@@ -223,12 +237,12 @@ class RecordingStudioOnboardingTest < Minitest::Test
       assert_includes update_summary, tag
     end
     gemspec = File.read(File.expand_path("../recording_studio_onboarding.gemspec", __dir__))
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.18.0"'
-    assert_includes readme, "~> 4.2"
-    assert_includes readme, ">= 0.18.0"
-    assert_includes update_summary, "~> 4.2"
-    assert_includes update_summary, ">= 0.18.0"
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 6.1"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.26.6"'
+    assert_includes readme, "~> 6.1"
+    assert_includes readme, ">= 0.26.6"
+    assert_includes update_summary, "~> 6.1"
+    assert_includes update_summary, ">= 0.26.6"
     assert_includes readme, "Admin integration"
     assert_includes readme, "registration.completed.recording_studio_user"
     refute_includes readme, "ExampleService"
@@ -306,6 +320,17 @@ class RecordingStudioOnboardingTest < Minitest::Test
     view_path = File.expand_path("../app/views/recording_studio_onboarding/home/index.html.erb", __dir__)
 
     refute File.exist?(view_path)
+  end
+
+  def test_gem_application_controller_uses_recording_studio_layout
+    source = File.read(
+      File.expand_path("../app/controllers/recording_studio_onboarding/application_controller.rb", __dir__)
+    )
+
+    assert_includes source, "include RecordingStudio::ControllerLayout"
+    assert_includes source, "recording_studio_layout { RecordingStudioOnboarding.configuration.layout }"
+    refute_includes source, "UsesDefaultLayout"
+    refute_includes source, 'layout "recording_studio/default_layout"'
   end
 
   private

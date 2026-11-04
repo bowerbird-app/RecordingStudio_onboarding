@@ -15,14 +15,14 @@ class UsersRegistrationIntegrationTest < Minitest::Test
     refute_includes source, "Password registration and OmniAuth new-account creation do not emit a public"
   end
 
-  def test_gemspec_requires_recording_studio_user_0_18
+  def test_gemspec_requires_recording_studio_user_0_26_6
     gemspec = File.read(File.expand_path("../recording_studio_onboarding.gemspec", __dir__))
     gemfile = File.read(File.expand_path("../Gemfile", __dir__))
     dummy_gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.18.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
-    assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.18.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.26.6"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.26.6"'
+    assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.26.6"'
   end
 
   def test_install_is_idempotent

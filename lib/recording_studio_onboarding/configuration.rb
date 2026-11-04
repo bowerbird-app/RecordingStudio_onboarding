@@ -4,7 +4,7 @@ require "recording_studio_onboarding/flow_definition"
 
 module RecordingStudioOnboarding
   class Configuration
-    attr_reader :hooks, :provisioners, :flows, :before_onboarding_gates
+    attr_reader :hooks, :provisioners, :flows, :before_onboarding_gates, :layout
     attr_accessor :authorize_run, :preview_context, :current_actor
 
     def initialize
@@ -15,6 +15,11 @@ module RecordingStudioOnboarding
       @authorize_run = nil
       @preview_context = nil
       @current_actor = nil
+      @layout = nil
+    end
+
+    def layout=(value)
+      @layout = RecordingStudio::Layout.accept(value)
     end
 
     # Register a callable (or object responding to #call) that runs before the
