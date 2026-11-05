@@ -68,8 +68,7 @@ module RecordingStudioOnboarding
       return unless defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
 
       Rails.logger.error(
-        "[RecordingStudioOnboarding] Registration provisioning failed: " \
-        "#{error.class}: #{error.message}"
+        "[RecordingStudioOnboarding] Registration provisioning failed: #{error.class}"
       )
     end
 

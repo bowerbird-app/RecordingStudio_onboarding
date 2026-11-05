@@ -5,9 +5,9 @@ require "test_helper"
 class RecordingStudioTemplateTest < ActiveSupport::TestCase
   test "dummy app loads root switchable config and controller support" do
     assert_equal [ "all_workspaces" ], RecordingStudioRootSwitchable.configuration.scopes.keys
-    assert_equal :application_layout, RecordingStudioRootSwitchable.configuration.layout
+    assert_nil RecordingStudioRootSwitchable.configuration.layout
     assert_includes ApplicationController.ancestors, RecordingStudio::RootSwitchable::ControllerSupport
-    assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
+    assert_includes ApplicationController.ancestors, RecordingStudio::ControllerLayout
   end
 
   test "dummy app validates recordable declarations" do
@@ -78,6 +78,6 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     # register :example from its own template residue when that gem is loaded.
     example = RecordingStudio.registered_capabilities[:example]
     refute_match(/Onboarding/i, example&.dig(:source).to_s)
-    assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
+    assert_includes ApplicationController.ancestors, RecordingStudio::ControllerLayout
   end
 end

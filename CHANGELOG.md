@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-04
+
+### Changed
+- Require Recording Studio `~> 6.1` (dummy and root GitHub tag `v6.3.0`).
+- `RecordingStudioOnboarding::Configuration#layout` defaults to `nil` and is
+  validated by `RecordingStudio::Layout.accept`.
+- Engine `ApplicationController` includes `RecordingStudio::ControllerLayout`
+  and calls `recording_studio_layout`. `nil` uses
+  `RecordingStudio.configuration.layout`, then
+  `RecordingStudio::DEFAULT_LAYOUT`. Run screens still use the card shell.
+  Admin run/preview/provision screens still use the engine admin layout.
+- Dummy and root pins: Accessible `v0.24.0`, Admin `v2.8.2`, Attachable
+  `v0.22.0`, Cache `v0.6.2`, Logs `v0.7.2`, Metrics `v0.7.2`, Trashable
+  `v0.12.2`, Root Switchable `v0.11.4`, RecordingStudio_users `v0.26.6`,
+  FlatPack `v0.1.341`. Dummy does not pin Terms or Publishable. Gemspec
+  `recording_studio_user` `>= 0.26.6`. `view_component` `>= 4.14`, `< 5`.
+- Registration provisioning failures log the error class only.
+
+### Upgrade notes
+- Pin Recording Studio to tag `v6.3.0` and FlatPack to tag `v0.1.341`.
+  Lock `view_component` at `>= 4.14` (GHSA-8qw7-6phv-7q6p).
+- Replace `include RecordingStudio::UsesDefaultLayout` with
+  `recording_studio_layout { RecordingStudioOnboarding.configuration.layout }`.
+- Set `RecordingStudioOnboarding.configuration.layout` only when the host
+  must override the core default. `false` skips the layout. A callable must
+  accept `controller:`.
+- Admin `v2.5.1` cannot resolve this kit. Dummy Admin is `v2.8.2`, which
+  needs Logs `v0.7.2` and Trashable `v0.12.2`.
+- Terms `v0.14.2` still declares `recording_studio ~> 4.2`, so dummy and CI
+  omit Terms and Publishable. Terms-gated behavior is tested once Terms
+  ships a 6.x-compatible tag. Do not patch sibling gemspecs to force
+  resolution.
+- The with_terms CI lane is removed until Terms ships a core 6 tag.
+- See `MIGRATION_NOTES.md`.
+
 ## [0.5.0] - 2026-11-02
 
 ### Added
@@ -290,7 +325,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.4.0...v0.5.0
 [0.3.0]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.3.0
 [0.2.3]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.2.3

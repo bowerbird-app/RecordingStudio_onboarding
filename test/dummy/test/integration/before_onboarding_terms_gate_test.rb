@@ -2,12 +2,16 @@
 
 require "test_helper"
 
-# Runs only when the dummy bundle includes RS Terms (default Gemfile).
+# Runs only when a 6.x-compatible Terms gem is in the dummy bundle.
 class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
+  TERMS_BUNDLE_SKIP =
+    "Agree-gate tests need recording_studio_terms_and_conditions and " \
+    "recording_studio_publishable in this bundle"
+
   include Devise::Test::IntegrationHelpers
 
   setup do
-    skip "RS Terms not in this bundle" unless defined?(RecordingStudioTermsAndConditions)
+    skip TERMS_BUNDLE_SKIP unless defined?(RecordingStudioTermsAndConditions)
 
     @original_configuration = RecordingStudioOnboarding.configuration
     RecordingStudioOnboarding.reset_for_tests!

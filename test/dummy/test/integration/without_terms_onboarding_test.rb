@@ -7,7 +7,7 @@ class WithoutTermsOnboardingTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   setup do
-    skip "RS Terms is loaded — use the with-terms bundle for Agree-gate tests" if defined?(RecordingStudioTermsAndConditions)
+    skip "RS Terms is loaded — Agree-gate tests wait on a 6.x Terms tag" if defined?(RecordingStudioTermsAndConditions)
 
     RecordingStudioOnboarding::Gates::TermsAndConditions.register_if_present!
 
