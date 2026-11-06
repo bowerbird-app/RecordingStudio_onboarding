@@ -391,11 +391,11 @@ class FlowsTest < ActionDispatch::IntegrationTest
 
       count += 1
     end
-    # Creating pages clears AR query cache. Count both GETs uncached so the
-    # delta is extra-page SQL, not the whole index firing again.
-    ActiveRecord::Base.connection.uncached do
-      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { yield }
-    end
+    # Executor QueryCache re-enables caching inside `get`, so connection.uncached
+    # around the request does not stick. Clear the thread caches before each
+    # count so baseline and post-write GETs both start cold.
+    ActiveRecord::Base.clear_query_caches_for_current_thread
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { yield }
     count
   end
 
