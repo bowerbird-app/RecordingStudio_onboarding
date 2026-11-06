@@ -391,7 +391,11 @@ class FlowsTest < ActionDispatch::IntegrationTest
 
       count += 1
     end
-    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { yield }
+    # Creating pages clears AR query cache. Count both GETs uncached so the
+    # delta is extra-page SQL, not the whole index firing again.
+    ActiveRecord::Base.connection.uncached do
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { yield }
+    end
     count
   end
 
