@@ -20,6 +20,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     accept_live_terms_for_docs!(@user)
     sign_in @user
+    Current.actor = @user
   end
 
   def accept_live_terms_for_docs!(actor)
@@ -90,7 +91,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
   test "recordings tree page renders successfully" do
     workspace = Workspace.create!(name: "Tree Workspace")
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    root_recording = owned_root_for(workspace)
     folder = Folder.create!(name: "Reference")
     folder_recording = record_child(folder, root_recording, root_recording)
     page = Page.create!(title: "API")
@@ -152,7 +153,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
       RecordingStudio.root_recording_for(Workspace.create!(name: "Counted Workspace #{SecureRandom.hex(4)}"))
     end
 
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    root_recording = owned_root_for(workspace)
     folder = Folder.create!(name: "Counted Folder")
     record_child(folder, root_recording, root_recording)
 
@@ -173,12 +174,24 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
       "• #{ActionController::Base.helpers.pluralize(recordable_count, 'recordable')} in the database"
   end
 
+  def owned_root_for(workspace)
+    root_recording = RecordingStudio.root_recording_for(workspace)
+    result = RecordingStudioAccessible.bootstrap_owner_access!(
+      recording: root_recording,
+      actor: @user
+    )
+    raise result.error if result.failure?
+
+    root_recording
+  end
+
   def record_child(recordable, root_recording, parent_recording)
     RecordingStudio.record!(
       action: "created",
       recordable: recordable,
       root_recording: root_recording,
-      parent_recording: parent_recording
+      parent_recording: parent_recording,
+      actor: @user
     ).recording
   end
 end

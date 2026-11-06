@@ -59,7 +59,6 @@ module RecordingStudioOnboarding
       RecordingStudioOnboarding.provision(
         PROVISIONER,
         actor: user,
-        subject: user,
         context: { source: EVENT, method: method }
       )
     end

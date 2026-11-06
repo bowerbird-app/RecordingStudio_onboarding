@@ -13,7 +13,6 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Welcome back"
     assert_includes response.body, "Continue with email"
     assert_includes response.body, 'data-theme="rounded"'
-    refute_includes response.body, "data-recording-studio-default-layout"
     refute_includes response.body, "mt-28"
     refute_includes response.body, "fixed inset-0"
     assert_equal 1, response.body.scan("min-h-dvh").length

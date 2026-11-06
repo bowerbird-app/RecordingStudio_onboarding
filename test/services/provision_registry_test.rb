@@ -82,18 +82,4 @@ class ProvisionRegistryTest < Minitest::Test
 
     assert_equal FakeHandler, RecordingStudioOnboarding.configuration.provisioner_for(:new_registration)
   end
-
-  private
-
-  def build_record(type_name, id)
-    type = Class.new do
-      define_singleton_method(:base_class) { self }
-      define_singleton_method(:name) { type_name }
-    end
-
-    record = Object.new
-    record.define_singleton_method(:id) { id }
-    record.define_singleton_method(:class) { type }
-    record
-  end
 end

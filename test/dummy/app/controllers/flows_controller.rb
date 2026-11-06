@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "recording_studio_onboarding/services/accessible_authorization"
+
 # Dummy launcher for registered flows. Starts a run then redirects to engine routes.
 class FlowsController < ApplicationController
   def index
@@ -10,7 +12,7 @@ class FlowsController < ApplicationController
             .order(created_at: :desc)
             .limit(50)
     @workspaces = accessible_workspaces
-    @pages = Page.order(:created_at).limit(20)
+    @pages = accessible_pages
     @active_account_setup = RecordingStudioOnboarding.active_run(:account_setup, actor: current_user)
     defer_before_onboarding!(return_path: main_app.flows_path) if @active_account_setup
   end
@@ -26,6 +28,8 @@ class FlowsController < ApplicationController
     return if defer_before_onboarding!(return_path: run_path)
 
     redirect_to run_path
+  rescue RecordingStudioOnboarding::Unauthorized
+    head :not_found
   end
 
   private
@@ -45,10 +49,24 @@ class FlowsController < ApplicationController
   def resolve_subject
     case params[:scope_type]
     when "Workspace"
-      Workspace.find(params.require(:scope_id))
+      find_accessible_record!(Workspace, params.require(:scope_id))
     when "Page"
-      Page.find(params.require(:scope_id))
+      find_accessible_record!(Page, params.require(:scope_id))
     end
+  end
+
+  def find_accessible_record!(klass, id)
+    record = klass.find(id)
+    return record if accessible_record?(record)
+
+    raise ActiveRecord::RecordNotFound
+  end
+
+  def accessible_record?(record)
+    RecordingStudioOnboarding::Services::AccessibleAuthorization.allowed?(
+      actor: current_user,
+      record: record
+    )
   end
 
   def accessible_workspaces
@@ -56,5 +74,20 @@ class FlowsController < ApplicationController
     return [] if root_ids.blank?
 
     RecordingStudio::Recording.where(id: root_ids, recordable_type: "Workspace").filter_map(&:recordable)
+  end
+
+  def accessible_pages
+    root_ids = RecordingStudioAccessible.root_recording_ids_for(actor: current_user)
+    return [] if root_ids.blank?
+
+    page_ids = RecordingStudio::Recording
+               .where(root_recording_id: root_ids, recordable_type: "Page")
+               .order(:created_at)
+               .limit(20)
+               .pluck(:recordable_id)
+    return [] if page_ids.blank?
+
+    pages_by_id = Page.where(id: page_ids).index_by(&:id)
+    page_ids.filter_map { |id| pages_by_id[id] }
   end
 end

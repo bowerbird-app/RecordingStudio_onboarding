@@ -12,6 +12,10 @@ require "recording_studio_onboarding/services/instrumenter"
 require "recording_studio_onboarding/users_registration_integration"
 
 module RecordingStudioOnboarding
+  # Raised when start or provision is called without Accessible access on the
+  # workspace / subject / root. User-scoped flows still match actor identity.
+  class Unauthorized < StandardError; end
+
   class << self
     def configuration
       @configuration ||= Configuration.new
@@ -101,6 +105,7 @@ module RecordingStudioOnboarding
     private
 
     def require_flow_services!
+      require "recording_studio_onboarding/services/accessible_authorization"
       require "recording_studio_onboarding/services/scope_resolver"
       require "recording_studio_onboarding/services/reconcile_run"
       require "recording_studio_onboarding/services/start_flow"

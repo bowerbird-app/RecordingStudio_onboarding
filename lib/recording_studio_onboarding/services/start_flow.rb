@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "recording_studio_onboarding/services/accessible_authorization"
+
 module RecordingStudioOnboarding
   module Services
     class StartFlow
@@ -20,10 +22,21 @@ module RecordingStudioOnboarding
         raise KeyError, "No flow registered for #{@name.inspect}" unless definition
 
         scope = ScopeResolver.call(definition, actor: @actor, subject: @subject)
+        authorize_scope!(definition, scope)
         find_or_create_run!(definition, scope)
       end
 
       private
+
+      def authorize_scope!(definition, scope)
+        return if AccessibleAuthorization.allowed_for_scope?(
+          definition: definition,
+          scope: scope,
+          actor: @actor
+        )
+
+        raise RecordingStudioOnboarding::Unauthorized, "not authorized for this flow"
+      end
 
       def find_or_create_run!(definition, scope)
         existing = FlowRun.open_runs.find_by(
