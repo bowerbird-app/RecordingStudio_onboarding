@@ -20,6 +20,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     accept_live_terms_for_docs!(@user)
     sign_in @user
+    Current.actor = @user
   end
 
   def accept_live_terms_for_docs!(actor)
@@ -178,7 +179,8 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
       action: "created",
       recordable: recordable,
       root_recording: root_recording,
-      parent_recording: parent_recording
+      parent_recording: parent_recording,
+      actor: @user
     ).recording
   end
 end

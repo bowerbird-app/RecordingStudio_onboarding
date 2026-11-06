@@ -27,6 +27,17 @@ module TermsAcceptanceTestSupport
   end
 end
 
+module OnboardingActorTestSupport
+  def with_actor(actor)
+    previous = Current.actor
+    Current.actor = actor
+    yield
+  ensure
+    Current.actor = previous
+  end
+end
+
 class ActionDispatch::IntegrationTest
   include TermsAcceptanceTestSupport
+  include OnboardingActorTestSupport
 end

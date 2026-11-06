@@ -124,6 +124,40 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
     assert_equal "completed", execution.reload.status
   end
 
+  test "provision denies a workspace the actor cannot view" do
+    owner = User.create!(
+      email: "owner-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
+    stranger = User.create!(
+      email: "stranger-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
+    workspace = Workspace.create!(name: "Private provision workspace")
+    with_actor(owner) do
+      recording = RecordingStudio.root_recording_for(workspace)
+      result = RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: owner)
+      raise result.error if result.failure?
+    end
+
+    RecordingStudioOnboarding.configure do |config|
+      config.provision :touch_workspace, with: ->(**) { true }
+    end
+
+    assert_raises(RecordingStudioOnboarding::Unauthorized) do
+      RecordingStudioOnboarding.provision(:touch_workspace, actor: stranger, subject: workspace)
+    end
+    assert_raises(RecordingStudioOnboarding::Unauthorized) do
+      RecordingStudioOnboarding.provision(:touch_workspace, actor: stranger, root: workspace)
+    end
+    refute RecordingStudioOnboarding::ProvisioningExecution.exists?(provisioner: "touch_workspace")
+
+    execution = RecordingStudioOnboarding.provision(:touch_workspace, actor: owner, subject: workspace)
+    assert_equal "completed", execution.status
+  end
+
   test "existing user login does not provision" do
     user = User.create!(
       email: "existing-#{SecureRandom.hex(4)}@example.com",
