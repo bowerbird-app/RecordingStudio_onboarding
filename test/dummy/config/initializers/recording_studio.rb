@@ -27,9 +27,21 @@ RecordingStudio.configure do |config|
   # Actor resolver for events when no actor is explicitly supplied
   config.actor = -> { Current.actor }
 
-  # Recording Studio 6.5 fails closed without this. Dummy writes still go
-  # through Accessible for onboarding scopes; this gate only requires an actor.
-  config.authorize_write = ->(actor:, **) { actor.present? }
+  # Access rows may be written only inside AccessCreationContext (grant/bootstrap).
+  # Every other write needs Accessible :edit on the recording being written.
+  config.authorize_write = lambda { |actor:, recordable:, recording:, root_recording:, parent_recording:, **|
+    next false if actor.blank?
+    next false unless defined?(RecordingStudioAccessible)
+
+    if recordable.is_a?(RecordingStudio::Access)
+      RecordingStudioAccessible::AccessCreationContext.allowed?
+    else
+      target = recording || parent_recording || root_recording
+      next false if target.blank?
+
+      RecordingStudioAccessible.authorized?(actor: actor, recording: target, role: :edit)
+    end
+  }
 
   # Emit ActiveSupport::Notifications events
   config.event_notifications_enabled = true

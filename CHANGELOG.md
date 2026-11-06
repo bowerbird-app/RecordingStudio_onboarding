@@ -15,17 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   get `RecordingStudioOnboarding::Unauthorized`. User-scoped flows still match
   the actor by identity.
 - `active_run` returns `nil` when the actor cannot view the resolved scope.
-- `provision` checks Accessible `:view` on `subject` and `root` when they are
-  not the actor. Registration-style `subject: actor` is unchanged.
+- `provision` checks Accessible `:view` on `subject` and `root`. Matching the
+  actor by identity is only for `:user` flow scopes, not provision targets.
 - Default `authorize_run` still uses identity for `:user` and Accessible
   `:view` for `:workspace` / `:subject`. A host `authorize_run` callable can
   only further deny; it no longer replaces Accessible.
 - Dummy `/flows` launcher looks up workspaces and pages through Accessible and
   404s on a subject the actor cannot view.
-- Dummy sets Recording Studio `authorize_write` (actor present) so core 6.5
-  writes fail closed instead of raising `AuthorizationError`. Dummy Directory
-  creates set `Current.actor` for the new user so OmniAuth profile writes have
-  an actor before Warden signs in.
+- Dummy `authorize_write` allows `RecordingStudio::Access` writes only inside
+  `AccessCreationContext`, and requires Accessible `:edit` for every other
+  write. Dummy no longer prepends `Directory.create_user!`.
 - Dummy and root pins: Recording Studio `v6.5.0`, Accessible `v0.24.2`,
   Attachable `v0.22.1`, Cache `v0.6.3`, Logs `v0.7.4`, Metrics `v0.7.3`,
   Trashable `v0.12.3`, Root Switchable `v0.11.7`, RecordingStudio_users

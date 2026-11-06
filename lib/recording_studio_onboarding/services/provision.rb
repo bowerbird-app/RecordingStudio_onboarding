@@ -42,7 +42,6 @@ module RecordingStudioOnboarding
 
       def authorize_targets!
         [@subject, @root].compact.uniq.each do |record|
-          next if AccessibleAuthorization.same_record?(record, @actor)
           next if AccessibleAuthorization.allowed?(actor: @actor, record: record)
 
           raise RecordingStudioOnboarding::Unauthorized, "not authorized to provision this record"

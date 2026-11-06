@@ -198,6 +198,11 @@ class RecordingStudioOnboardingTest < Minitest::Test
 
     assert_includes initializer_source, "config.require_recordable_declarations = true"
     assert_includes initializer_source, "config.authorize_write"
+    assert_includes initializer_source, "AccessCreationContext"
+    assert_includes initializer_source, "authorized?"
+    assert_includes initializer_source, ":edit"
+    refute_includes initializer_source, "actor.present?"
+    refute File.exist?(File.expand_path("dummy/config/initializers/recording_studio_user_directory_actor.rb", __dir__))
     assert_includes initializer_source, '"Workspace"'
     assert_includes initializer_source, '"AdminRoot"'
     assert_includes initializer_source, '"RecordingStudioUser::People"'

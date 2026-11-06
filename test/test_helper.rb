@@ -14,3 +14,18 @@ require "rails"
 require "active_support/time"
 Time.zone ||= "UTC"
 require "recording_studio_onboarding"
+
+module BuildRecordHelper
+  def build_record(type_name, id)
+    type = Class.new do
+      define_singleton_method(:base_class) { self }
+      define_singleton_method(:name) { type_name }
+    end
+    record = Object.new
+    record.define_singleton_method(:id) { id }
+    record.define_singleton_method(:class) { type }
+    record
+  end
+end
+
+Minitest::Test.include(BuildRecordHelper)

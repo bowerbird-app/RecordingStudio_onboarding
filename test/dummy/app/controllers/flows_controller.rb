@@ -77,6 +77,17 @@ class FlowsController < ApplicationController
   end
 
   def accessible_pages
-    Page.order(:created_at).filter { |page| accessible_record?(page) }.first(20)
+    root_ids = RecordingStudioAccessible.root_recording_ids_for(actor: current_user)
+    return [] if root_ids.blank?
+
+    page_ids = RecordingStudio::Recording
+               .where(root_recording_id: root_ids, recordable_type: "Page")
+               .order(:created_at)
+               .limit(20)
+               .pluck(:recordable_id)
+    return [] if page_ids.blank?
+
+    pages_by_id = Page.where(id: page_ids).index_by(&:id)
+    page_ids.filter_map { |id| pages_by_id[id] }
   end
 end

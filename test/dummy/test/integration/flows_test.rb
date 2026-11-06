@@ -107,6 +107,26 @@ class FlowsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "flows index filters pages in SQL before ordering so extra pages do not explode queries" do
+    sign_in @user
+    get flows_path
+    assert_response :success
+    baseline = count_select_queries { get flows_path }
+
+    stranger_workspace = create_owned_workspace(@other, "Stranger Pages")
+    20.times do |index|
+      create_page_under(stranger_workspace, title: "Extra #{index}", actor: @other)
+    end
+    20.times do |index|
+      create_page_under(@workspace, title: "Own extra #{index}", actor: @user)
+    end
+
+    scaled = count_select_queries { get flows_path }
+    assert_response :success
+    assert_operator scaled - baseline, :<, 20,
+                    "expected extra pages not to add per-page authorized? SQL (#{baseline} -> #{scaled})"
+  end
+
   test "flow launcher 404s when the workspace or page is not Accessible" do
     sign_in @other
     get flows_path
@@ -338,16 +358,16 @@ class FlowsTest < ActionDispatch::IntegrationTest
     workspace
   end
 
-  def create_page_under(workspace, title:)
+  def create_page_under(workspace, title:, actor: @user)
     page = Page.create!(title: title)
-    with_actor(@user) do
+    with_actor(actor) do
       root = RecordingStudio.root_recording_for(workspace)
       RecordingStudio.record!(
         action: "created",
         recordable: page,
         root_recording: root,
         parent_recording: root,
-        actor: @user
+        actor: actor
       )
     end
     page
@@ -359,6 +379,20 @@ class FlowsTest < ActionDispatch::IntegrationTest
       result = RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
       raise result.error if result.failure?
     end
+  end
+
+  def count_select_queries
+    count = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql].to_s
+      next unless sql.match?(/\A\s*SELECT/i)
+      next if payload[:cached]
+      next if payload[:name].to_s == "SCHEMA"
+
+      count += 1
+    end
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { yield }
+    count
   end
 
   def grant_view(user, workspace)

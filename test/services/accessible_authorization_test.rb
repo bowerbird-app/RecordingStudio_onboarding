@@ -40,16 +40,12 @@ class AccessibleAuthorizationTest < Minitest::Test
     )
   end
 
-  private
+  def test_matching_actor_and_record_still_require_accessible
+    actor = build_record("User", 1)
 
-  def build_record(type_name, id)
-    type = Class.new do
-      define_singleton_method(:base_class) { self }
-      define_singleton_method(:name) { type_name }
-    end
-    record = Object.new
-    record.define_singleton_method(:id) { id }
-    record.define_singleton_method(:class) { type }
-    record
+    refute RecordingStudioOnboarding::Services::AccessibleAuthorization.allowed?(
+      actor: actor,
+      record: actor
+    )
   end
 end

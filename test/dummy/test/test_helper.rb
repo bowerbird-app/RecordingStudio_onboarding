@@ -37,6 +37,13 @@ module OnboardingActorTestSupport
   end
 end
 
+module UsersProfileWriteGap
+  MESSAGE =
+    "Users gap: Directory.create_user! / record_profile! have no API for a first Profile write " \
+    "when host authorize_write allows AccessCreationContext only for RecordingStudio::Access " \
+    "and Accessible :edit otherwise. See users_directory_profile_write_gap_test.rb."
+end
+
 class ActionDispatch::IntegrationTest
   include TermsAcceptanceTestSupport
   include OnboardingActorTestSupport

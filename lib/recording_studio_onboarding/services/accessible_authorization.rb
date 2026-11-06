@@ -22,7 +22,6 @@ module RecordingStudioOnboarding
       def allowed?(actor:, record:, role: :view)
         return false unless defined?(RecordingStudioAccessible)
         return false if actor.nil? || record.nil?
-        return true if same_record?(actor, record)
 
         recording = recording_for(record)
         return false if recording.nil?

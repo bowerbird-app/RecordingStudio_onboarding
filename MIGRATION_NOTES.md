@@ -21,11 +21,16 @@
 
 - `start` and `provision` raise `RecordingStudioOnboarding::Unauthorized` when
   the actor lacks Accessible `:view` on the workspace, subject, or root.
-  User-scoped flows and `provision(..., subject: actor)` stay identity checks.
+  User-scoped flows still match actor identity. Provision no longer skips
+  Accessible when `subject` or `root` is the actor.
 - `active_run` returns `nil` for those same misses.
 - Host `authorize_run` callables only further deny.
 - Dummy `/flows` 404s on a workspace or page the actor cannot view.
-- Dummy `config.authorize_write` requires a present actor (Recording Studio 6.5).
+- Dummy `config.authorize_write` allows Access rows only inside
+  `AccessCreationContext`, otherwise Accessible `:edit`.
+- Dummy does not prepend Users `Directory.create_user!`. First Profile writes
+  still need a Users-owned actor API that v0.27.1 does not provide for OmniAuth
+  (and Profile writes are not an AccessCreationContext path).
 
 ## 0.6.0 core 6.x family
 
