@@ -17,6 +17,9 @@ module Dummy
     end
 
     def call
+      previous_actor = Current.actor
+      Current.actor = @actor
+
       existing = existing_owned_workspace
       return existing if existing
 
@@ -30,6 +33,8 @@ module Dummy
       raise result.error if result.failure?
 
       workspace
+    ensure
+      Current.actor = previous_actor
     end
 
     private

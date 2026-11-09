@@ -4,17 +4,33 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio 6.x (`~> 6.1` in the gemspec; dummy GitHub tag `v6.3.0`)
-- RecordingStudio_users `>= 0.26.6` (dummy/root GitHub tag `v0.26.6`) for the
+- Recording Studio 6.x (`~> 6.1` in the gemspec; dummy GitHub tag `v6.5.0`)
+- RecordingStudio_users `>= 0.26.6` (dummy/root GitHub tag `v0.27.1`) for the
   registration-completed provisioning subscriber; dummy mounts users auth
-- RecordingStudio_metrics `v0.7.2`
-- Accessible dummy tag `v0.24.0`, Attachable `v0.22.0`, Admin `v2.8.2`,
-  Cache `v0.6.2`, Logs `v0.7.2`, Trashable `v0.12.2`, Root Switchable `v0.11.4`
+- RecordingStudio_metrics `v0.7.3`
+- Accessible dummy tag `v0.24.2`, Attachable `v0.22.1`, Admin `v2.8.2`
+  (off the 2.5.1 host policy; leave pinned), Cache `v0.6.3`, Logs `v0.7.4`,
+  Trashable `v0.12.3`, Root Switchable `v0.11.7`
 - FlatPack dummy tag `v0.1.341` (`view_component` `>= 4.14`, `< 5`)
 - Dummy and `gemfiles/without_terms.gemfile` omit Terms and Publishable.
   Terms `v0.14.2` still declares `recording_studio ~> 4.2`. Agree-before-onboarding
   is tested once Terms ships a 6.x-compatible tag.
 - Public RubyGems and GitHub access for dependency installation
+
+## 0.7.0 Accessible scoping
+
+- `start` and `provision` raise `RecordingStudioOnboarding::Unauthorized` when
+  the actor lacks Accessible `:view` on the workspace, subject, or root.
+  User-scoped flows still match actor identity. Provision no longer skips
+  Accessible when `subject` or `root` is the actor.
+- `active_run` returns `nil` for those same misses.
+- Host `authorize_run` callables only further deny.
+- Dummy `/flows` 404s on a workspace or page the actor cannot view.
+- Dummy `config.authorize_write` allows Access rows only inside
+  `AccessCreationContext`, otherwise Accessible `:edit`.
+- Dummy does not prepend Users `Directory.create_user!`. First Profile writes
+  still need a Users-owned actor API that v0.27.1 does not provide for OmniAuth
+  (and Profile writes are not an AccessCreationContext path).
 
 ## 0.6.0 core 6.x family
 

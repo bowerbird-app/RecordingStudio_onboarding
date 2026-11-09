@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "recording_studio_onboarding/provision_failed"
+require "recording_studio_onboarding/services/accessible_authorization"
 require "recording_studio_onboarding/services/provision_support"
 
 module RecordingStudioOnboarding
@@ -28,6 +29,8 @@ module RecordingStudioOnboarding
         raise ArgumentError, "actor is required" if @actor.nil?
         raise KeyError, "No provisioner registered for #{@name.inspect}" unless handler_source
 
+        authorize_targets!
+
         execution = find_or_create_execution!
         return execution if claim_completed?(execution)
         return execution unless claim_for_run!(execution)
@@ -36,6 +39,14 @@ module RecordingStudioOnboarding
       end
 
       private
+
+      def authorize_targets!
+        [@subject, @root].compact.uniq.each do |record|
+          next if AccessibleAuthorization.allowed?(actor: @actor, record: record)
+
+          raise RecordingStudioOnboarding::Unauthorized, "not authorized to provision this record"
+        end
+      end
 
       def reject_unknown_keywords!(options)
         unknown = options.keys - ALLOWED_KEYWORDS

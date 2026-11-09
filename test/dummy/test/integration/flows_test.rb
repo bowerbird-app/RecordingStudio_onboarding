@@ -59,7 +59,7 @@ class FlowsTest < ActionDispatch::IntegrationTest
       password_confirmation: "Password123!"
     )
     @workspace = create_owned_workspace(@user, "Flow Workspace")
-    @page = Page.create!(title: "Press kit draft")
+    @page = create_page_under(@workspace, title: "Press kit draft")
     accept_live_terms_for_tests!(@user)
     accept_live_terms_for_tests!(@other)
   end
@@ -80,6 +80,8 @@ class FlowsTest < ActionDispatch::IntegrationTest
   end
 
   test "workspace and subject uniqueness exclude initiating actor" do
+    grant_view(@other, @workspace)
+
     run_a = RecordingStudioOnboarding.start(:workspace_setup, actor: @user, subject: @workspace)
     run_b = RecordingStudioOnboarding.start(:workspace_setup, actor: @other, subject: @workspace)
     assert_equal run_a.id, run_b.id
@@ -89,6 +91,68 @@ class FlowsTest < ActionDispatch::IntegrationTest
     page_run_b = RecordingStudioOnboarding.start(:first_presskit, actor: @other, subject: @page)
     assert_equal page_run_a.id, page_run_b.id
     assert_equal @page, page_run_a.scope
+  end
+
+  test "start and active_run deny actors without Accessible view on the subject" do
+    assert_raises(RecordingStudioOnboarding::Unauthorized) do
+      RecordingStudioOnboarding.start(:workspace_setup, actor: @other, subject: @workspace)
+    end
+    assert_nil RecordingStudioOnboarding.active_run(:workspace_setup, actor: @other, subject: @workspace)
+
+    RecordingStudioOnboarding.start(:workspace_setup, actor: @user, subject: @workspace)
+    assert_nil RecordingStudioOnboarding.active_run(:workspace_setup, actor: @other, subject: @workspace)
+
+    assert_raises(RecordingStudioOnboarding::Unauthorized) do
+      RecordingStudioOnboarding.start(:first_presskit, actor: @other, subject: @page)
+    end
+  end
+
+  test "flows index filters pages in SQL before ordering so extra pages do not explode queries" do
+    sign_in @user
+    get flows_path
+    assert_response :success
+    baseline = count_select_queries { get flows_path }
+
+    stranger_workspace = create_owned_workspace(@other, "Stranger Pages")
+    20.times do |index|
+      create_page_under(stranger_workspace, title: "Extra #{index}", actor: @other)
+    end
+    20.times do |index|
+      create_page_under(@workspace, title: "Own extra #{index}", actor: @user)
+    end
+
+    scaled = count_select_queries { get flows_path }
+    assert_response :success
+    assert_operator scaled - baseline, :<, 20,
+                    "expected extra pages not to add per-page authorized? SQL (#{baseline} -> #{scaled})"
+  end
+
+  test "flow launcher 404s when the workspace or page is not Accessible" do
+    sign_in @other
+    get flows_path
+    assert_response :success
+
+    post start_flows_path, params: {
+      flow_key: "workspace_setup",
+      scope_type: "Workspace",
+      scope_id: @workspace.id
+    }
+    assert_response :not_found
+
+    post start_flows_path, params: {
+      flow_key: "first_presskit",
+      scope_type: "Page",
+      scope_id: @page.id
+    }
+    assert_response :not_found
+
+    sign_in @user
+    post start_flows_path, params: {
+      flow_key: "workspace_setup",
+      scope_type: "Workspace",
+      scope_id: @workspace.id
+    }
+    assert_response :redirect
   end
 
   test "completed and dismissed runs do not restart; explicit reset works" do
@@ -290,11 +354,62 @@ class FlowsTest < ActionDispatch::IntegrationTest
 
   def create_owned_workspace(user, name)
     workspace = Workspace.create!(name: name)
-    recording = RecordingStudio.root_recording_for(workspace)
-    result = RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
-    raise result.error if result.failure?
-
+    grant_owner(user, workspace)
     workspace
+  end
+
+  def create_page_under(workspace, title:, actor: @user)
+    page = Page.create!(title: title)
+    with_actor(actor) do
+      root = RecordingStudio.root_recording_for(workspace)
+      RecordingStudio.record!(
+        action: "created",
+        recordable: page,
+        root_recording: root,
+        parent_recording: root,
+        actor: actor
+      )
+    end
+    page
+  end
+
+  def grant_owner(user, workspace)
+    with_actor(user) do
+      recording = RecordingStudio.root_recording_for(workspace)
+      result = RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
+      raise result.error if result.failure?
+    end
+  end
+
+  def count_select_queries
+    count = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql].to_s
+      next unless sql.match?(/\A\s*SELECT/i)
+      next if payload[:cached]
+      next if payload[:name].to_s == "SCHEMA"
+
+      count += 1
+    end
+    # Executor QueryCache re-enables caching inside `get`, so connection.uncached
+    # around the request does not stick. Clear the thread caches before each
+    # count so baseline and post-write GETs both start cold.
+    ActiveRecord::Base.clear_query_caches_for_current_thread
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { yield }
+    count
+  end
+
+  def grant_view(user, workspace)
+    with_actor(@user) do
+      recording = RecordingStudio.root_recording_for(workspace)
+      result = RecordingStudioAccessible.grant_access(
+        recording: recording,
+        actor: user,
+        role: :view,
+        manager_actor: @user
+      )
+      raise result.error if result.failure?
+    end
   end
 
   # Tiny helpers so concurrency tests do not need extra gems.

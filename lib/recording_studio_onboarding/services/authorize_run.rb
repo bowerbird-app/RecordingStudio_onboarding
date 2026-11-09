@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+require "recording_studio_onboarding/services/accessible_authorization"
+
 module RecordingStudioOnboarding
   module Services
-    # Default and custom run authorisation. Unauthorised callers see 404.
+    # Default Accessible authorisation, plus an optional extra-deny host policy.
+    # Unauthorised callers see 404. A custom policy cannot widen past Accessible.
     class AuthorizeRun
       def self.call(...)
         new(...).call
@@ -15,56 +18,22 @@ module RecordingStudioOnboarding
 
       def call
         return false if @actor.nil? || @run.nil?
+        return false unless default_authorized?
 
         policy = RecordingStudioOnboarding.configuration.authorize_run
-        return policy.call(@run, @actor) if policy.respond_to?(:call)
+        return true unless policy.respond_to?(:call)
 
-        default_authorized?
+        policy.call(@run, @actor)
       end
 
       private
 
       def default_authorized?
-        definition = @run.definition
-        return false if definition.nil?
-
-        case definition.scope
-        when :user
-          same_record?(@run.scope, @actor)
-        when :workspace, :subject
-          accessible_to_actor?(@run.scope)
-        else
-          false
-        end
-      end
-
-      def accessible_to_actor?(record)
-        return false unless defined?(RecordingStudioAccessible)
-        return false if record.nil?
-
-        recording = recording_for(record)
-        return false if recording.nil?
-
-        RecordingStudioAccessible.authorized?(actor: @actor, recording: recording, role: :view)
-      end
-
-      def recording_for(record)
-        if record.is_a?(RecordingStudio::Recording)
-          record
-        elsif defined?(RecordingStudio) && RecordingStudio.root_allowed?(record)
-          RecordingStudio.root_recording_for(record)
-        else
-          RecordingStudio::Recording.find_by(recordable: record)
-        end
-      rescue StandardError
-        # Lookup failures must deny the run (404), not raise into the request.
-        nil
-      end
-
-      def same_record?(left, right)
-        return false if left.nil? || right.nil?
-
-        left.class.base_class == right.class.base_class && left.id == right.id
+        AccessibleAuthorization.allowed_for_scope?(
+          definition: @run.definition,
+          scope: @run.scope,
+          actor: @actor
+        )
       end
     end
   end

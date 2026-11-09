@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-06
+
+### Changed
+- Workspace- and subject-scoped `start` checks Accessible `:view` on the
+  resolved scope before creating or resuming a run. Actors without that grant
+  get `RecordingStudioOnboarding::Unauthorized`. User-scoped flows still match
+  the actor by identity.
+- `active_run` returns `nil` when the actor cannot view the resolved scope.
+- `provision` checks Accessible `:view` on `subject` and `root`. Matching the
+  actor by identity is only for `:user` flow scopes, not provision targets.
+- Default `authorize_run` still uses identity for `:user` and Accessible
+  `:view` for `:workspace` / `:subject`. A host `authorize_run` callable can
+  only further deny; it no longer replaces Accessible.
+- Dummy `/flows` launcher looks up workspaces and pages through Accessible and
+  404s on a subject the actor cannot view.
+- Dummy `authorize_write` allows `RecordingStudio::Access` writes only inside
+  `AccessCreationContext`, and requires Accessible `:edit` for every other
+  write. Dummy no longer prepends `Directory.create_user!`.
+- Dummy and root pins: Recording Studio `v6.5.0`, Accessible `v0.24.2`,
+  Attachable `v0.22.1`, Cache `v0.6.3`, Logs `v0.7.4`, Metrics `v0.7.3`,
+  Trashable `v0.12.3`, Root Switchable `v0.11.7`, RecordingStudio_users
+  `v0.27.1`. Admin stays `v2.8.2` (off the 2.5.1 host policy). FlatPack stays
+  `v0.1.341`.
+
+### Upgrade notes
+- Rescue `RecordingStudioOnboarding::Unauthorized` around `start` and
+  `provision` if the host used to start flows or provision against records the
+  actor could not view. Those calls used to succeed.
+- If you set `config.authorize_run`, keep it as an extra deny. Accessible (or
+  user identity) always runs first.
+- Pin Recording Studio to `v6.5.0` and Accessible to `v0.24.2`. Leave Admin at
+  `v2.8.2` until Marikit lifts the onboarding Admin pin.
+- See `MIGRATION_NOTES.md`.
+
 ## [0.6.0] - 2026-11-04
 
 ### Changed
@@ -325,7 +359,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.4.0...v0.5.0
 [0.3.0]: https://github.com/bowerbird-app/recording_studio_onboarding/releases/tag/v0.3.0

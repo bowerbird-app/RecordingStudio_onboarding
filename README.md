@@ -12,7 +12,9 @@ user-facing flow.
 - **Flow registry** — Ruby-configured sequences (`config.flow`)
 - **`FlowRun` / `StepProgress`** — scoped persistence with row-lock transitions
 - **Public API** — `start`, `active_run`, `advance`, `back`, `skip`, `dismiss`,
-  `reset`, `restart`, `mark_viewed`, `preview` (no automatic redirect from `start`)
+  `reset`, `restart`, `mark_viewed`, `preview` (no automatic redirect from `start`).
+  Workspace/subject `start` and `provision` need Accessible `:view` or they raise
+  `Unauthorized`. `active_run` returns `nil` in that case.
 - **Before-onboarding gates** — `config.before_onboarding` callables; RS Terms
   auto-registers when present
 - **Card UI** — `RunComponent`, `CardShellComponent`, permanent chrome
@@ -58,7 +60,7 @@ RecordingStudioOnboarding.configure do |config|
   # recording_studio/default_layout. false skips the layout.
   # config.layout = "application"
 
-  # Optional override; default uses user identity or Accessible :view
+  # Optional extra deny; default is user identity or Accessible :view
   # config.authorize_run = ->(run, actor) { ... }
 
   # Admin card preview context (fake actor/subject; never persisted)
@@ -248,10 +250,11 @@ and return 404 rather than error pages.
 
 - No gemspec dependency on RS Terms & Conditions (soft optional gate)
 - Flatpack ViewComponents only; no React or Vue
-- Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v6.3.0`,
-  Accessible `v0.24.0`, Admin `v2.8.2`, Attachable `v0.22.0`, Cache `v0.6.2`,
-  Logs `v0.7.2`, RecordingStudio_users `v0.26.6`, Metrics `v0.7.2`,
-  Trashable `v0.12.2`, Root Switchable `v0.11.4`, Flatpack `v0.1.341`.
+- Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v6.5.0`,
+  Accessible `v0.24.2`, Admin `v2.8.2` (off-policy pin; do not bump), Attachable
+  `v0.22.1`, Cache `v0.6.3`, Logs `v0.7.4`, RecordingStudio_users `v0.27.1`,
+  Metrics `v0.7.3`, Trashable `v0.12.3`, Root Switchable `v0.11.7`, Flatpack
+  `v0.1.341`.
   Dummy omits Terms and Publishable until Terms ships a 6.x-compatible tag
   (`v0.14.2` still declares `recording_studio ~> 4.2`). Gemspec:
   `recording_studio` `~> 6.1`, `recording_studio_user` `>= 0.26.6`.
