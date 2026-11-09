@@ -48,4 +48,26 @@ class AccessibleAuthorizationTest < Minitest::Test
       record: actor
     )
   end
+
+  def test_allowed_does_not_call_root_recording_for
+    skip "Accessible recording lookup is required" unless defined?(RecordingStudioAccessible)
+
+    actor = build_record("User", 1)
+    workspace = build_record("Workspace", 9)
+    called = false
+
+    RecordingStudio.stub(:root_allowed?, true) do
+      RecordingStudio.stub(:root_recording_for, lambda { |*|
+        called = true
+        raise "authorization must not create roots"
+      }) do
+        refute RecordingStudioOnboarding::Services::AccessibleAuthorization.allowed?(
+          actor: actor,
+          record: workspace
+        )
+      end
+    end
+
+    refute called, "authorization looked up by creating a root recording"
+  end
 end

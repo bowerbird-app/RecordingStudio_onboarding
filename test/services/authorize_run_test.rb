@@ -78,7 +78,7 @@ class AuthorizeRunTest < Minitest::Test
     authorizer = RecordingStudioOnboarding::Services::AuthorizeRun.new(run, actor: actor)
 
     RecordingStudio.stub(:root_allowed?, true) do
-      RecordingStudio.stub(:root_recording_for, ->(*) { raise ActiveRecord::RecordNotFound, "missing" }) do
+      RecordingStudio::Recording.stub(:find_by, ->(*) { raise ActiveRecord::RecordNotFound, "missing" }) do
         refute authorizer.call
       end
     end
@@ -93,7 +93,7 @@ class AuthorizeRunTest < Minitest::Test
     authorizer = RecordingStudioOnboarding::Services::AuthorizeRun.new(run, actor: actor)
 
     RecordingStudio.stub(:root_allowed?, true) do
-      RecordingStudio.stub(:root_recording_for, ->(*) { raise ArgumentError, "blown call" }) do
+      RecordingStudio::Recording.stub(:find_by, ->(*) { raise ArgumentError, "blown call" }) do
         refute authorizer.call
       end
     end

@@ -5,8 +5,11 @@ require_relative "test_helper"
 require_relative "dummy/config/environment"
 
 require "rails/test_help"
+require_relative "support/owned_root_helper"
 
 class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
+  include OwnedRootHelper
+
   setup do
     @actor = User.create!(
       email: "declarations-#{SecureRandom.hex(4)}@example.com",
@@ -107,17 +110,6 @@ class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
   end
 
   private
-
-  def owned_root_for(workspace)
-    root_recording = RecordingStudio.root_recording_for(workspace)
-    result = RecordingStudioAccessible.bootstrap_owner_access!(
-      recording: root_recording,
-      actor: @actor
-    )
-    raise result.error if result.failure?
-
-    root_recording
-  end
 
   def record_child(recordable, root_recording, parent_recording)
     RecordingStudio.record!(

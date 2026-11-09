@@ -30,10 +30,11 @@ module RecordingStudioOnboarding
       end
 
       def recording_for(record)
-        if record.is_a?(RecordingStudio::Recording)
-          record
-        elsif defined?(RecordingStudio) && RecordingStudio.root_allowed?(record)
-          RecordingStudio.root_recording_for(record)
+        return record if record.is_a?(RecordingStudio::Recording)
+        return unless defined?(RecordingStudio::Recording)
+
+        if defined?(RecordingStudio) && RecordingStudio.root_allowed?(record)
+          RecordingStudio::Recording.find_by(recordable: record, parent_recording_id: nil)
         else
           RecordingStudio::Recording.find_by(recordable: record)
         end

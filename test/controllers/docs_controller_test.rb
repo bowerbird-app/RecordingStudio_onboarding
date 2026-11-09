@@ -6,9 +6,11 @@ require_relative "../dummy/config/environment"
 
 require "devise/test/integration_helpers"
 require "rails/test_help"
+require_relative "../support/owned_root_helper"
 
 class DocsControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
+  include OwnedRootHelper
 
   TEST_PASSWORD = "DocsTestPassword!2026"
 
@@ -172,17 +174,6 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
   def recordable_type_summary(recording_count, recordable_count)
     "#{ActionController::Base.helpers.pluralize(recording_count, 'recording')} point to this type " \
       "• #{ActionController::Base.helpers.pluralize(recordable_count, 'recordable')} in the database"
-  end
-
-  def owned_root_for(workspace)
-    root_recording = RecordingStudio.root_recording_for(workspace)
-    result = RecordingStudioAccessible.bootstrap_owner_access!(
-      recording: root_recording,
-      actor: @user
-    )
-    raise result.error if result.failure?
-
-    root_recording
   end
 
   def record_child(recordable, root_recording, parent_recording)
