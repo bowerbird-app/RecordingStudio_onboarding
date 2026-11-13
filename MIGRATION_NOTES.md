@@ -4,14 +4,15 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio 6.x (`~> 6.1` in the gemspec; dummy GitHub tag `v6.5.0`)
-- RecordingStudio_users `>= 0.26.6` (dummy/root GitHub tag `v0.27.1`) for the
+- Recording Studio 6.x (`~> 6.1` in the gemspec; dummy GitHub tag `v6.7.0`)
+- RecordingStudio_users `>= 0.26.6` (dummy/root GitHub tag `v0.28.1`) for the
   registration-completed provisioning subscriber; dummy mounts users auth
-- RecordingStudio_metrics `v0.7.3`
-- Accessible dummy tag `v0.24.2`, Attachable `v0.22.1`, Admin `v2.8.2`
-  (off the 2.5.1 host policy; leave pinned), Cache `v0.6.3`, Logs `v0.7.4`,
-  Trashable `v0.12.3`, Root Switchable `v0.11.7`
-- FlatPack dummy tag `v0.1.341` (`view_component` `>= 4.14`, `< 5`)
+- RecordingStudio_metrics `v0.8.0`
+- Accessible dummy tag `v0.32.0`, Attachable `v0.23.0`, Admin `v2.13.0`,
+  API `v0.23.1` (`require: false`), Moveable `v4.1.1` (`require: false`),
+  Icons `v0.2.1` (`require: false`), Cache `v0.6.3`, Logs `v0.7.4`,
+  Trashable `v0.14.0` (dummy `purge_at` column), Root Switchable `v0.15.0`
+- FlatPack dummy tag `v0.1.357` (`view_component` `>= 4.14`, `< 5`)
 - Dummy and `gemfiles/without_terms.gemfile` omit Terms and Publishable.
   Terms `v0.14.2` still declares `recording_studio ~> 4.2`. Agree-before-onboarding
   is tested once Terms ships a 6.x-compatible tag.

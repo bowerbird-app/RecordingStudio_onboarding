@@ -6,6 +6,34 @@ require "devise/test/integration_helpers"
 class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
+  # Root Switchable 0.15 requires Accessible :view on the current root.
+  # The dummy scope lists every workspace, so the default root is a seeded
+  # workspace unless this actor can view the roots the switcher will select.
+  def grant_workspace_view!(user, *workspaces)
+    previous = Current.actor
+    manager = User.find_by(email: "admin@admin.com") || user
+    Current.actor = manager
+    (Workspace.order(:name).to_a + workspaces).uniq.each do |workspace|
+      recording = RecordingStudio.root_recording_for(workspace)
+      next if RecordingStudioAccessible.authorized?(actor: user, recording: recording, role: :view)
+
+      result = if manager != user &&
+                  RecordingStudioAccessible.authorized?(actor: manager, recording: recording, role: :admin)
+                 RecordingStudioAccessible.grant_access(
+                   recording: recording, actor: user, role: :view, manager_actor: manager
+                 )
+               else
+                 Current.actor = user
+                 RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
+               end
+      raise result.error if result.failure?
+
+      Current.actor = manager
+    end
+  ensure
+    Current.actor = previous
+  end
+
   test "sign in page uses RecordingStudio_users auth layout" do
     get new_user_session_path
 
@@ -47,7 +75,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     sign_in user
 
     workspace = Workspace.create!(name: "Switch Page Workspace")
-    RecordingStudio.root_recording_for(workspace)
+    grant_workspace_view!(user, workspace)
 
     get "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces"
 
@@ -67,8 +95,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     source_workspace = Workspace.create!(name: "Source Workspace")
     target_workspace = Workspace.create!(name: "Target Workspace")
+    grant_workspace_view!(user, source_workspace, target_workspace)
     target_root_recording = RecordingStudio.root_recording_for(target_workspace)
-    RecordingStudio.root_recording_for(source_workspace)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
       scope: "all_workspaces",
@@ -92,8 +120,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     source_workspace = Workspace.create!(name: "Fallback Source Workspace")
     target_workspace = Workspace.create!(name: "Fallback Target Workspace")
+    grant_workspace_view!(user, source_workspace, target_workspace)
     target_root_recording = RecordingStudio.root_recording_for(target_workspace)
-    RecordingStudio.root_recording_for(source_workspace)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
       scope: "all_workspaces",

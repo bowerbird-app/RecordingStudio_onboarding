@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-11-13
+
+### Fixed
+- Admin registration loads its screen, widget, resource, and registrar files
+  on each `to_prepare`. A Zeitwerk reload no longer leaves
+  `RecordingStudioOnboarding::Admin::Registrar` undefined, which aborted
+  `bin/rails db:prepare` in development.
+
+### Changed
+- Development Gemfile pins: Recording Studio `v6.7.0`, Accessible `v0.32.0`,
+  Admin `v2.13.0`, API `v0.23.1`, Attachable `v0.23.0`, Cache `v0.6.3`,
+  Icons `v0.2.1`, Logs `v0.7.4`, Metrics `v0.8.0`, Moveable `v4.1.1`,
+  Trashable `v0.14.0`, Root Switchable `v0.15.0`, RecordingStudio_users
+  `v0.28.1`, FlatPack `v0.1.357`. API, Moveable, and Icons stay
+  `require: false`. Dummy adds Trashable's `purge_at` column. Gemspec floors
+  stay `recording_studio` `~> 6.1` and `recording_studio_user` `>= 0.26.6`.
+
+### Upgrade notes
+- No host migration from this gem. Install Trashable `0.14.0`'s `purge_at`
+  migration in the host if that gem is mounted.
+- See `MIGRATION_NOTES.md`.
+
 ## [0.7.1] - 2026-11-13
 
 ### Fixed
@@ -379,7 +401,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.5.0...v0.6.0

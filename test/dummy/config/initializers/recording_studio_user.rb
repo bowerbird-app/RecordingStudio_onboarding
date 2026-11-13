@@ -45,6 +45,16 @@ module Dummy
   end
 end
 
+Rails.application.config.to_prepare do
+  # Users 0.28 finishes sign-in with public_send(:after_sign_in_path_for).
+  # Those methods are private on Auth::BaseController, so the call raises.
+  next unless defined?(RecordingStudioUser::Auth::BaseController)
+
+  RecordingStudioUser::Auth::BaseController.class_eval do
+    public :after_sign_in_path_for, :after_sign_up_path_for
+  end
+end
+
 RecordingStudioUser.configure do |config|
   config.user_class_name = "User"
   config.mount_path = "/recording_studio_users"

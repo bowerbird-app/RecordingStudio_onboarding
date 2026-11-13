@@ -10,7 +10,7 @@ class UsersDirectoryProfileWriteGapTest < ActionDispatch::IntegrationTest
 
     skip "Users gap: Directory.create_user! and record_profile! have no API for a first " \
          "Profile write when host authorize_write allows AccessCreationContext only for " \
-         "RecordingStudio::Access and Accessible :edit otherwise. Users v0.27.1 writes the " \
+         "RecordingStudio::Access and Accessible :edit otherwise. Users v0.28.1 writes the " \
          "Profile before bootstrap_owner_access! and OmniAuth omits actor:."
   end
 end
