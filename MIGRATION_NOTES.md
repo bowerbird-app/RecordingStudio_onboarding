@@ -17,6 +17,12 @@
   is tested once Terms ships a 6.x-compatible tag.
 - Public RubyGems and GitHub access for dependency installation
 
+## 0.7.1 full-screen frame
+
+- Full-screen run pages top-align the card at every breakpoint. A taller or
+  shorter step no longer moves Back, Skip, or the progress bar.
+- No host change. Embedded runs are unchanged.
+
 ## 0.7.0 Accessible scoping
 
 - `start` and `provision` raise `RecordingStudioOnboarding::Unauthorized` when

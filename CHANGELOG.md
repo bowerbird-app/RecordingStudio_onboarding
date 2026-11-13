@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-13
+
+### Fixed
+- Full-screen run pages top-align the card at every breakpoint. Step content
+  height no longer shifts Back, Skip, or the progress bar.
+
+### Upgrade notes
+- No host change. Embedded runs are unchanged.
+- See `MIGRATION_NOTES.md`.
+
 ## [0.7.0] - 2026-11-06
 
 ### Changed
@@ -359,7 +369,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.4.0...v0.5.0
