@@ -4,6 +4,8 @@ module Dummy
   module Onboarding
     # Form card — posts to the host controller; gem never persists host data.
     class WorkspaceDetailsComponent < ViewComponent::Base
+      include HostSubmit
+
       def initialize(run:, step:)
         @run = run
         @step = step
@@ -34,11 +36,7 @@ module Dummy
                          error: Array(helpers.flash[:form_error]).first,
                          required: true
                        )),
-                render(FlatPack::Button::Component.new(
-                         text: "Save and continue",
-                         style: :primary,
-                         type: "submit"
-                       ))
+                host_submit_button("Save and continue")
               ])
             end
           ])

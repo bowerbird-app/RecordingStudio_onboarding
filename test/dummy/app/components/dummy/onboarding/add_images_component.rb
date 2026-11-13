@@ -4,6 +4,8 @@ module Dummy
   module Onboarding
     # Host form step with complete_when auto-advance support.
     class AddImagesComponent < ViewComponent::Base
+      include HostSubmit
+
       def initialize(run:, step:)
         @run = run
         @step = step
@@ -32,11 +34,7 @@ module Dummy
                          value: @run.scope.try(:title),
                          required: true
                        )),
-                render(FlatPack::Button::Component.new(
-                         text: "Save title",
-                         style: :primary,
-                         type: "submit"
-                       ))
+                host_submit_button("Save title")
               ])
             end
           ])

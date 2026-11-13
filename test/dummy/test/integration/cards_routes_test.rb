@@ -102,6 +102,8 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_redirected_to recording_studio_onboarding.run_path(run)
     follow_redirect!
     assert_select "[data-testid='card-workspace-details']"
+    assert_select "[data-testid='host-submit'][class~='mt-10'][class~='justify-end'] button[type='submit']", text: "Save and continue"
+    assert_select "[data-testid='host-submit'] button[class~='w-full']", count: 0
     assert_select "[data-testid='onboarding-chrome']"
     assert_select "[data-testid='control-back']"
     assert_select "[data-testid='control-skip']"
