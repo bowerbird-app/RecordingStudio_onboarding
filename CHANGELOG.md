@@ -13,8 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full-screen run pages top-align the card at every breakpoint. Step content
   height no longer shifts Back, Skip, or the progress bar.
 
+### Changed
+- Continue is an auto-width button on the right on every step, with more
+  space above it. `button_positions` still accepts `:left`, `:right`, and
+  `:full`. `:left` and `:full` no longer move or stretch Continue. Back and
+  Skip are unchanged.
+
 ### Upgrade notes
-- No host change. Embedded runs are unchanged.
+- No host change is required for the top-aligned frame. Embedded runs keep
+  the same chrome.
+- A step that set `continue: :full` or `:left` now shows the same
+  right-aligned Continue as `:right`. Leave the existing step config in
+  place.
 - See `MIGRATION_NOTES.md`.
 
 ## [0.7.0] - 2026-11-06

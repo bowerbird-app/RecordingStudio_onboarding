@@ -17,11 +17,16 @@
   is tested once Terms ships a 6.x-compatible tag.
 - Public RubyGems and GitHub access for dependency installation
 
-## 0.7.1 full-screen frame
+## 0.7.1 full-screen frame and Continue
 
 - Full-screen run pages top-align the card at every breakpoint. A taller or
   shorter step no longer moves Back, Skip, or the progress bar.
-- No host change. Embedded runs are unchanged.
+- Continue is an auto-width button on the right on every step, with more
+  space above it. `button_positions` still accepts `:left`, `:right`, and
+  `:full`. `:left` and `:full` no longer move or stretch Continue. Back and
+  Skip are unchanged.
+- No host change is required. Leave existing `button_positions` values in
+  place.
 
 ## 0.7.0 Accessible scoping
 

@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 module RecordingStudioOnboarding
-  # Bottom step actions (Continue). Back / Skip live in ChromeComponent.
-  # Exit was removed. Each control can sit left, right, or full-width.
+  # Bottom Continue action. Back / Skip live in ChromeComponent.
+  # Continue is always an auto-width button on the right.
   class ControlsComponent < ViewComponent::Base
     include EngineRouting
 
     BOTTOM_CONTROLS = %i[continue].freeze
     POSITIONS = %i[left right full].freeze
-    DEFAULT_POSITION = :left
+    DEFAULT_POSITION = :right
 
     def initialize(run:, controls: nil, preview: false, button_positions: nil)
       super()
@@ -32,7 +32,7 @@ module RecordingStudioOnboarding
     end
 
     def call
-      content_tag(:div, class: "flex w-full flex-col gap-3", data: { testid: "onboarding-controls" }) do
+      content_tag(:div, class: "mt-10 flex w-full flex-col gap-3", data: { testid: "onboarding-controls" }) do
         safe_join([full_region, row_region].compact)
       end
     end
@@ -53,6 +53,8 @@ module RecordingStudioOnboarding
     end
 
     def position_for(control)
+      return :right if control == :continue
+
       @button_positions.fetch(control, DEFAULT_POSITION)
     end
 
