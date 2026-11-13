@@ -85,6 +85,10 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='onboarding-progress'] [role='progressbar'][aria-valuenow=?]", "1.0"
     assert_select "[data-testid='onboarding-controls']"
     assert_select "[data-testid='control-advance']"
+    assert_select "[data-testid='onboarding-controls'][class~='mt-10']"
+    assert_select "[data-testid='onboarding-controls'] .ms-auto [data-testid='control-advance'][class~='inline-flex']"
+    assert_select "[data-testid='control-advance'][class~='w-full']", count: 0
+    assert_select "[data-testid='control-advance'] [class~='w-full']", count: 0
     assert_select "[data-testid='control-exit']", count: 0
     assert_select "[data-testid='control-back']", count: 0
     assert_select "[data-testid='control-skip']", count: 0
@@ -98,6 +102,8 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_redirected_to recording_studio_onboarding.run_path(run)
     follow_redirect!
     assert_select "[data-testid='card-workspace-details']"
+    assert_select "[data-testid='host-submit'][class~='mt-10'][class~='justify-end'] button[type='submit']", text: "Save and continue"
+    assert_select "[data-testid='host-submit'] button[class~='w-full']", count: 0
     assert_select "[data-testid='onboarding-chrome']"
     assert_select "[data-testid='control-back']"
     assert_select "[data-testid='control-skip']"
@@ -210,6 +216,21 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='onboarding-page'][data-layout='splash']"
   end
 
+  test "full screen frame stays top aligned across tall and short steps" do
+    sign_in @user
+    run = RecordingStudioOnboarding.start(:account_setup, actor: @user)
+
+    get recording_studio_onboarding.run_path(run)
+    assert_response :success
+    assert_select "[data-testid='onboarding-page'][data-layout='splash']"
+    assert_full_screen_frame_is_top_aligned
+
+    post recording_studio_onboarding.advance_run_path(run), params: {from: "welcome"}
+    follow_redirect!
+    assert_select "[data-testid='card-workspace-details']"
+    assert_full_screen_frame_is_top_aligned
+  end
+
   test "stale from is a no-op re-render" do
     sign_in @user
     run = RecordingStudioOnboarding.start(:account_setup, actor: @user)
@@ -222,6 +243,15 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def assert_full_screen_frame_is_top_aligned
+    main = css_select("main").first
+    assert main, "expected a full-screen frame"
+    classes = main["class"].to_s.split
+    assert_includes classes, "items-start"
+    centered = classes.select { |name| name == "items-center" || name.end_with?(":items-center") }
+    assert_empty centered, "full-screen frame is vertically centered via #{centered.join(' ')}"
+  end
 
   def create_owned_workspace(user, name)
     workspace = Workspace.create!(name: name)

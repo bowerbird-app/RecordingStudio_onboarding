@@ -62,8 +62,7 @@ module RecordingStudioOnboarding
     #     version 1
     #     step :welcome,
     #       component: "Dummy::Onboarding::WelcomeComponent",
-    #       controls: %i[continue],
-    #       button_positions: { continue: :full }
+    #       controls: %i[continue]
     #   end
     def flow(name, &block)
       raise ArgumentError, "flow name is required" if name.blank?

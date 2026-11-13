@@ -83,12 +83,10 @@ RecordingStudioOnboarding.configure do |config|
     step :welcome,
       component: "Host::Onboarding::WelcomeComponent",
       controls: %i[continue],
-      button_positions: { continue: :full },
       skippable: false
     step :details,
       component: "Host::Onboarding::DetailsComponent",
       controls: %i[continue],
-      button_positions: { continue: :right },
       skippable: true
   end
 end
@@ -130,7 +128,7 @@ If both image fields are set, **splash wins**.
 | `step :key` | flow | Ordered step; key is stable in `StepProgress` |
 | `component` | step | ViewComponent class name string (required) |
 | `controls` | step | Bottom actions — typically `%i[continue]` (default). `:exit` ignored. Back/Skip are chrome. |
-| `button_positions` | step | Hash of control → `:left`, `:right`, or `:full` (default Continue is `:left`) |
+| `button_positions` | step | Still accepts `:left`, `:right`, or `:full`. Continue always renders as an auto-width button on the right. |
 | `show_progress` | step | When false, step is omitted from the progress count (default true) |
 | `skippable` | step | When false, Skip chrome is hidden and skip is rejected (default true) |
 | `complete_when` | step | Optional callable `(run) → truthy` to auto-advance on render |

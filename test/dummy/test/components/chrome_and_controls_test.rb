@@ -35,17 +35,16 @@ class ChromeAndControlsTest < ViewComponent::TestCase
     assert_includes html, "Skip"
   end
 
-  test "controls render full width continue and never exit" do
-    run = fake_run(step_key: :welcome)
-    render_inline RecordingStudioOnboarding::ControlsComponent.new(run: run, preview: true)
+  test "continue is right aligned and auto width for left right full and the default" do
+    %i[welcome details done].each do |step_key|
+      render_inline RecordingStudioOnboarding::ControlsComponent.new(run: fake_run(step_key: step_key), preview: true)
+      assert_continue_right_aligned(step_key)
+    end
 
-    html = rendered_content
-    assert_includes html, "onboarding-controls"
-    assert_includes html, "control-advance"
-    assert_includes html, "w-full"
-    refute_includes html, "control-exit"
-    refute_includes html, "control-back"
-    refute_includes html, "control-skip"
+    render_inline RecordingStudioOnboarding::ControlsComponent.new(
+      run: fake_run(step_key: :welcome), preview: true, button_positions: {}
+    )
+    assert_continue_right_aligned(:default)
   end
 
   test "progress bar starts colored on step one" do
@@ -59,6 +58,24 @@ class ChromeAndControlsTest < ViewComponent::TestCase
   end
 
   private
+
+  def assert_continue_right_aligned(step_key)
+    fragment = Nokogiri::HTML.fragment(rendered_content)
+    controls = fragment.at_css("[data-testid='onboarding-controls']")
+    assert controls, "expected controls on #{step_key}"
+    assert_includes controls["class"].split, "mt-10"
+
+    control = fragment.at_css(".ms-auto [data-testid='control-advance']")
+    assert control, "expected right-aligned Continue on #{step_key}"
+    refute_includes control["class"].to_s.split, "w-full"
+    refute_includes control["class"].to_s.split, "block"
+
+    button = control.at_css("button, [type='submit']")
+    refute_includes button["class"].to_s.split, "w-full" if button
+    refute_includes rendered_content, "control-exit"
+    refute_includes rendered_content, "control-back"
+    refute_includes rendered_content, "control-skip"
+  end
 
   def fake_run(step_key:)
     Struct.new(
