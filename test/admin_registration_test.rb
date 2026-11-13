@@ -15,4 +15,15 @@ class AdminRegistrationTest < Minitest::Test
     assert_includes source, "RecordingStudioOnboarding::Admin.register!"
     assert_includes source, "load File.expand_path(\"admin.rb\""
   end
+
+  def test_admin_support_files_reload_with_the_namespace
+    source = File.read(File.expand_path("../lib/recording_studio_onboarding/admin.rb", __dir__))
+
+    refute_includes source, "require_relative \"admin/"
+    assert_includes source, "load File.expand_path(\"admin/support_loader.rb\", __dir__)"
+    loader = File.read(File.expand_path("../lib/recording_studio_onboarding/admin/support_loader.rb", __dir__))
+    assert_includes loader, "def self.load_support_files!"
+    assert_includes loader, "const_defined?(:Registrar, false)"
+    assert_includes loader, "registrar"
+  end
 end

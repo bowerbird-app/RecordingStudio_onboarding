@@ -21,8 +21,8 @@ class UsersRegistrationIntegrationTest < Minitest::Test
     dummy_gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
     assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.26.6"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.27.1"'
-    assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.27.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.28.1"'
+    assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.28.1"'
   end
 
   def test_install_is_idempotent

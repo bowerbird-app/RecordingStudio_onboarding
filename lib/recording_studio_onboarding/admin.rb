@@ -1,23 +1,14 @@
 # frozen_string_literal: true
 
-# Soft-registers when RecordingStudioAdmin is present. Required from Engine
-# to_prepare after RecordingStudioAdmin is loaded.
+# Soft-registers when RecordingStudioAdmin is present. The engine loads this
+# file from to_prepare. Support files reload only after Zeitwerk drops Registrar.
 
-require_relative "admin/rows"
-require_relative "admin/paths"
-require_relative "admin/widgets"
-require_relative "admin/onboarding_section"
-require_relative "admin/flows_screen"
-require_relative "admin/previews_screen"
-require_relative "admin/runs_screen"
-require_relative "admin/funnel_screen"
-require_relative "admin/provisioning_screen"
-require_relative "admin/runs_resource"
-require_relative "admin/provisioning_resource"
-require_relative "admin/registrar"
+load File.expand_path("admin/support_loader.rb", __dir__)
 
 module RecordingStudioOnboarding
   module Admin
+    load_support_files!
+
     module_function
 
     def engine_mount_path = Paths.engine_mount_path
@@ -108,6 +99,7 @@ module RecordingStudioOnboarding
     end
 
     def register!
+      load_support_files!
       Registrar.register!
     end
   end
