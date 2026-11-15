@@ -152,7 +152,10 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     workspace = Workspace.create!(name: "Counted Workspace")
     2.times do
-      RecordingStudio.root_recording_for(Workspace.create!(name: "Counted Workspace #{SecureRandom.hex(4)}"))
+      RecordingStudio.create_root_recording!(
+        Workspace.create!(name: "Counted Workspace #{SecureRandom.hex(4)}"),
+        actor: @user
+      )
     end
 
     root_recording = owned_root_for(workspace)

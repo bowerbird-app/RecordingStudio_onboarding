@@ -24,7 +24,7 @@ module Dummy
       return existing if existing
 
       workspace = Workspace.create!(name: workspace_name)
-      recording = RecordingStudio.root_recording_for(workspace)
+      recording = RecordingStudio.create_root_recording!(workspace, actor: @actor)
 
       result = RecordingStudioAccessible.bootstrap_owner_access!(
         recording: recording,

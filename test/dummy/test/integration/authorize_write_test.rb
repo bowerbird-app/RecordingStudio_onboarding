@@ -11,7 +11,7 @@ class AuthorizeWriteTest < ActionDispatch::IntegrationTest
     )
     @workspace = Workspace.create!(name: "Write Workspace")
     with_actor(@user) do
-      @root = RecordingStudio.root_recording_for(@workspace)
+      @root = RecordingStudio.create_root_recording!(@workspace, actor: @user)
       result = RecordingStudioAccessible.bootstrap_owner_access!(recording: @root, actor: @user)
       raise result.error if result.failure?
     end

@@ -139,7 +139,7 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
     )
     workspace = Workspace.create!(name: "Private provision workspace")
     with_actor(owner) do
-      recording = RecordingStudio.root_recording_for(workspace)
+      recording = RecordingStudio.create_root_recording!(workspace, actor: owner)
       result = RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: owner)
       raise result.error if result.failure?
     end

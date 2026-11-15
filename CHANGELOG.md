@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-15
+
+### Changed
+- Require Recording Studio `>= 7.0`, `< 8.0`. Require RecordingStudio_users
+  `>= 0.30.0`, `< 1.0`. Rails is `>= 8.1.0`, `< 9.0`. `view_component` is
+  `>= 4.14.0`, `< 5`.
+- Dummy and development GitHub pins move to Recording Studio `v7.0.0`,
+  Accessible `v0.44.0`, Admin `v2.16.0`, API `v0.24.0`, Attachable `v0.28.0`,
+  Metrics `v0.9.0`, Moveable `v5.0.0`, Trashable `v0.17.0`,
+  RecordingStudio_users `v0.30.0`, Root Switchable `v0.15.1`, and FlatPack
+  `v0.1.376`, and Logs `v0.8.0` (API 0.24 requires Logs `>= 0.8.0`, `< 1.0`).
+  Cache stays `v0.6.3`. Icons stay `v0.2.1`.
+  API, Moveable, and Icons stay `require: false`. Dummy omits Terms and
+  Publishable.
+- Seeds, provisioning, and host setup that created a root by calling
+  `root_recording_for` now call `create_root_recording!` with an actor.
+  Lookups stay on `root_recording_for`.
+- The dummy copies Recording Studio 7's `events.root_recording_id` migration.
+- Dummy `authorize_write` still requires Accessible `:edit` and
+  `AccessCreationContext` for Access rows. A new root is allowed because
+  `create_root_recording!` authorizes before that root exists.
+- Admin uses `access_recording_resolver`. The dummy sets Accessible
+  `admin_root_resolver` to the kept Admin root so site-wide screens resolve.
+  `Recording.kept` replaces trashed filters.
+- Dummy and without-terms lockfiles pin Puma `8.1.0` and msgpack `>= 1.8.7`.
+
+### Upgrade notes
+- Hosts need Recording Studio 7.0 or newer, below 8, and RecordingStudio_users
+  0.30.0 or newer, below 1. Run the core `events.root_recording_id` migration.
+- Replace create-on-lookup with `RecordingStudio.create_root_recording!(recordable, actor:)`.
+  Keep `root_recording_for` for finds, and handle nil.
+- Drop `site_admin_recording_resolver`. Use `access_recording_resolver`, and
+  set Accessible `admin_root_resolver` to that same kept root.
+  Replace `kept_sql` with `Recording.kept`.
+- Users 0.30 rejects passwords shorter than 12 characters.
+- See `MIGRATION_NOTES.md`.
+
 ## [0.7.4] - 2026-11-15
 
 ### Fixed
@@ -423,7 +460,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.1...v0.7.2

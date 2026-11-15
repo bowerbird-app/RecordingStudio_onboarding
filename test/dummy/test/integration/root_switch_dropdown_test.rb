@@ -14,7 +14,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     manager = User.find_by(email: "admin@admin.com") || user
     Current.actor = manager
     (Workspace.order(:name).to_a + workspaces).uniq.each do |workspace|
-      recording = RecordingStudio.root_recording_for(workspace)
+      recording = RecordingStudio.create_root_recording!(workspace, actor: manager)
       next if RecordingStudioAccessible.authorized?(actor: user, recording: recording, role: :view)
 
       result = if manager != user &&
@@ -56,7 +56,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     sign_in user
 
     workspace = Workspace.create!(name: "Dropdown Workspace")
-    RecordingStudio.root_recording_for(workspace)
+    RecordingStudio.create_root_recording!(workspace, actor: user)
 
     get root_path
 

@@ -4,19 +4,41 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio `>= 6.1`, `< 8.0` (dummy GitHub tag `v6.7.0`)
-- RecordingStudio_users `>= 0.26.6` (dummy/root GitHub tag `v0.28.1`) for the
-  registration-completed provisioning subscriber; dummy mounts users auth
-- RecordingStudio_metrics `v0.8.0`
-- Accessible dummy tag `v0.32.0`, Attachable `v0.23.0`, Admin `v2.13.0`,
-  API `v0.23.1` (`require: false`), Moveable `v4.1.1` (`require: false`),
-  Icons `v0.2.1` (`require: false`), Cache `v0.6.3`, Logs `v0.7.4`,
-  Trashable `v0.14.0` (dummy `purge_at` column), Root Switchable `v0.15.0`
-- FlatPack dummy tag `v0.1.357` (`view_component` `>= 4.14`, `< 5`)
+- Recording Studio `>= 7.0`, `< 8.0` (dummy GitHub tag `v7.0.0`)
+- RecordingStudio_users `>= 0.30.0`, `< 1.0` (dummy/root GitHub tag `v0.30.0`)
+  for the registration-completed provisioning subscriber; dummy mounts users auth
+- RecordingStudio_metrics `v0.9.0`
+- Accessible dummy tag `v0.44.0`, Attachable `v0.28.0`, Admin `v2.16.0`,
+  API `v0.24.0` (`require: false`), Moveable `v5.0.0` (`require: false`),
+  Icons `v0.2.1` (`require: false`), Cache `v0.6.3`, Logs `v0.8.0`,
+  Trashable `v0.17.0` (dummy `purge_at` column; kept rows use `Recording.kept`),
+  Root Switchable `v0.15.1`
+- FlatPack dummy tag `v0.1.376` (`view_component` `>= 4.14.0`, `< 5`)
 - Dummy and `gemfiles/without_terms.gemfile` omit Terms and Publishable.
-  Terms `v0.14.2` still declares `recording_studio ~> 4.2`. Agree-before-onboarding
-  is tested once Terms ships a 6.x-compatible tag.
+  Agree-before-onboarding is tested once Terms ships a core 7 tag.
+- Dummy Puma `8.1.0` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
+
+## 0.8.0 Recording Studio 7
+
+- The gemspec requires Recording Studio `>= 7.0`, `< 8.0` and
+  RecordingStudio_users `>= 0.30.0`, `< 1.0`.
+- `RecordingStudio.root_recording_for` only finds a root. It returns nil when
+  the recordable has none. Create a root with
+  `RecordingStudio.create_root_recording!(recordable, actor:)`.
+- Copy Recording Studio's `events.root_recording_id` migration
+  (`20261114090000`) into the host and migrate before booting 0.8.0.
+- Admin 2.16 dropped `site_admin_recording_resolver`. Set
+  `access_recording_resolver` and read kept rows with `Recording.kept`.
+- Dummy `authorize_write` still requires Accessible `:edit`, and allows a new
+  root when the write has no recording yet. Onboarding steps still check
+  Accessible `:view` on workspace and subject scopes.
+- Root Switchable `v0.15.0` declares `recording_studio < 7`. The dummy pin is
+  `v0.15.1`, which allows core 7.
+- API `v0.24.0` requires Logs `>= 0.8.0`, `< 1.0`. The dummy pin is Logs
+  `v0.8.0`.
+- Users `v0.30.0` rejects passwords shorter than 12 characters. Seeded and
+  test accounts use `Password123!`. Dummy Devise `password_length` is `12..128`.
 
 ## 0.7.4 omniauth 2.2.0
 

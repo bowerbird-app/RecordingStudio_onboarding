@@ -256,7 +256,7 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
   def create_owned_workspace(user, name)
     workspace = Workspace.create!(name: name)
     with_actor(user) do
-      recording = RecordingStudio.root_recording_for(workspace)
+      recording = RecordingStudio.create_root_recording!(workspace, actor: user)
       result = RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
       raise result.error if result.failure?
     end
