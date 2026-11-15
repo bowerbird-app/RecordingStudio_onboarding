@@ -15,5 +15,5 @@ Splash and top-card demos use the shared Pexels photo
 | Buttons right | `/demos/onboarding/buttons-right` | `buttons-right-desktop.png` | `buttons-right-mobile.png` |
 | Buttons full | `/demos/onboarding/buttons-full` | `buttons-full-desktop.png` | `buttons-full-mobile.png` |
 
-Sign in as `admin@admin.com` / `Password`, then open each route (it starts or
+Sign in as `admin@admin.com` / `Password123!`, then open each route (it starts or
 resumes the `layout_gallery` flow and redirects to `/onboarding/runs/:uuid`).

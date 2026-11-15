@@ -3,11 +3,10 @@
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
 find_or_record_child = lambda do |recordable, root_recording, parent_recording|
-  RecordingStudio::Recording.find_by(
+  RecordingStudio::Recording.kept.find_by(
     root_recording: root_recording,
     parent_recording: parent_recording,
-    recordable: recordable,
-    trashed_at: nil
+    recordable: recordable
   ) || RecordingStudio.record!(
     action: "created",
     recordable: recordable,
@@ -18,8 +17,8 @@ end
 
 # Create the admin user (Devise actor; profile is created on first RS Users write).
 user = User.find_or_create_by!(email: "admin@admin.com") do |u|
-  u.password = "Password"
-  u.password_confirmation = "Password"
+  u.password = "Password123!"
+  u.password_confirmation = "Password123!"
   u.registered_with = "password" if u.respond_to?(:registered_with=)
   u.confirmed_at = Time.current if u.respond_to?(:confirmed_at=)
 end
@@ -38,10 +37,10 @@ Current.actor = user
 
 begin
   # Create the root recording
-  root_recording = RecordingStudio.root_recording_for(workspace)
-  accessible_root_recording = RecordingStudio.root_recording_for(accessible_workspace)
-  private_root_recording = RecordingStudio.root_recording_for(private_workspace)
-  admin_root_recording = RecordingStudio.root_recording_for(admin_root)
+  root_recording = RecordingStudio.create_root_recording!(workspace, actor: user)
+  accessible_root_recording = RecordingStudio.create_root_recording!(accessible_workspace, actor: user)
+  private_root_recording = RecordingStudio.create_root_recording!(private_workspace, actor: user)
+  admin_root_recording = RecordingStudio.create_root_recording!(admin_root, actor: user)
 
   [root_recording, accessible_root_recording, admin_root_recording].each do |recording|
     result = RecordingStudioAccessible.bootstrap_owner_access!(
@@ -63,8 +62,8 @@ Current.actor = user
 begin
   demo_users = 3.times.map do |i|
     User.find_or_create_by!(email: "onboarding-demo-#{i}@example.com") do |u|
-      u.password = "Password"
-      u.password_confirmation = "Password"
+      u.password = "Password123!"
+      u.password_confirmation = "Password123!"
       u.registered_with = "password" if u.respond_to?(:registered_with=)
       u.confirmed_at = Time.current if u.respond_to?(:confirmed_at=)
     end.tap do |u|
@@ -93,8 +92,8 @@ begin
   end
 
   dismiss_user = User.find_or_create_by!(email: "onboarding-dismiss@example.com") do |u|
-    u.password = "Password"
-    u.password_confirmation = "Password"
+    u.password = "Password123!"
+    u.password_confirmation = "Password123!"
   end
   unless RecordingStudioOnboarding::FlowRun.where(initiating_actor: dismiss_user, status: "dismissed").exists?
     run = RecordingStudioOnboarding.start(:account_setup, actor: dismiss_user)
@@ -160,7 +159,7 @@ if defined?(RecordingStudioTermsAndConditions) && defined?(RecordingStudioPublis
   end
 end
 
-puts "Seeded: admin@admin.com / Password"
+puts "Seeded: admin@admin.com / Password123!"
 puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"
 puts "Seeded: Workspace '#{accessible_workspace.name}' with root recording ##{accessible_root_recording.id}"
 puts "Seeded: Workspace '#{private_workspace.name}' with root recording ##{private_root_recording.id}"

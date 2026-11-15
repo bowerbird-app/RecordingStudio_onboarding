@@ -375,7 +375,7 @@ class FlowsTest < ActionDispatch::IntegrationTest
 
   def grant_owner(user, workspace)
     with_actor(user) do
-      recording = RecordingStudio.root_recording_for(workspace)
+      recording = RecordingStudio.create_root_recording!(workspace, actor: user)
       result = RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
       raise result.error if result.failure?
     end

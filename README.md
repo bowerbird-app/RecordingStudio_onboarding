@@ -35,7 +35,7 @@ user-facing flow.
 | Field    | Value             |
 |----------|-------------------|
 | Email    | admin@admin.com   |
-| Password | Password          |
+| Password | Password123!      |
 
 ### Useful Routes
 
@@ -229,7 +229,7 @@ No separate analytics store.
 
 ## RecordingStudio_users integration
 
-Requires **RecordingStudio_users >= 0.26.6**.
+Requires **RecordingStudio_users >= 0.30.0**, **< 1.0**.
 
 Subscribes to `registration.completed.recording_studio_user` for every
 successful sign-up method (`:password`, `:oauth`, `:otp`). Provisioning is
@@ -248,14 +248,15 @@ and return 404 rather than error pages.
 
 - No gemspec dependency on RS Terms & Conditions (soft optional gate)
 - Flatpack ViewComponents only; no React or Vue
-- Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v6.7.0`,
-  Accessible `v0.32.0`, Admin `v2.13.0`, API `v0.23.1`, Attachable `v0.23.0`,
-  Cache `v0.6.3`, Icons `v0.2.1`, Logs `v0.7.4`, RecordingStudio_users `v0.28.1`,
-  Metrics `v0.8.0`, Moveable `v4.1.1`, Trashable `v0.14.0`, Root Switchable
-  `v0.15.0`, Flatpack `v0.1.357`.
-  Dummy omits Terms and Publishable until Terms ships a 6.x-compatible tag
-  (`v0.14.2` still declares `recording_studio ~> 4.2`). Gemspec:
-  `recording_studio` `>= 6.1`, `< 8.0`, `recording_studio_user` `>= 0.26.6`.
+- Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v7.0.0`,
+  Accessible `v0.44.0`, Admin `v2.16.0`, API `v0.24.0`, Attachable `v0.28.0`,
+  Cache `v0.6.3`, Icons `v0.2.1`, Logs `v0.8.0`, RecordingStudio_users `v0.30.0`,
+  Metrics `v0.9.0`, Moveable `v5.0.0`, Trashable `v0.17.0`, Root Switchable
+  `v0.15.1`, Flatpack `v0.1.376`.
+  Dummy omits Terms and Publishable until Terms ships a core 7 tag.
+  Gemspec: `recording_studio` `>= 7.0`, `< 8.0`, `recording_studio_user`
+  `>= 0.30.0`, `< 1.0`. Create roots with `RecordingStudio.create_root_recording!`.
+  `root_recording_for` only finds an existing root.
 - CI also runs against `gemfiles/without_terms.gemfile`. Terms-gated dummy
   behavior is tested once a 6.x Terms tag exists.
 

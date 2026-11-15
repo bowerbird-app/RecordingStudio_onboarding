@@ -43,14 +43,14 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
 
     @admin = User.create!(
       email: "terms-admin-#{SecureRandom.hex(4)}@example.com",
-      password: "Password",
-      password_confirmation: "Password",
+      password: "Password123!",
+      password_confirmation: "Password123!",
       registered_with: "password",
       confirmed_at: Time.current
     )
     @workspace = Workspace.create!(name: "Terms Gate Workspace #{SecureRandom.hex(4)}")
     Current.actor = @admin
-    @root = RecordingStudio.root_recording_for(@workspace)
+    @root = RecordingStudio.create_root_recording!(@workspace, actor: @admin)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: @root, actor: @admin).value!
     ensure_published_terms!
     RecordingStudioOnboarding::Gates::TermsAndConditions.register_if_present!
@@ -135,8 +135,8 @@ class BeforeOnboardingTermsGateTest < ActionDispatch::IntegrationTest
   def pending_terms_user(label)
     User.create!(
       email: "#{label}-#{SecureRandom.hex(4)}@example.com",
-      password: "Password",
-      password_confirmation: "Password",
+      password: "Password123!",
+      password_confirmation: "Password123!",
       registered_with: "password",
       confirmed_at: Time.current
     ).tap do |u|

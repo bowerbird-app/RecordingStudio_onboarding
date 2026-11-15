@@ -28,6 +28,7 @@ RecordingStudio.configure do |config|
   config.actor = -> { Current.actor }
 
   # Access rows may be written only inside AccessCreationContext (grant/bootstrap).
+  # create_root_recording! authorizes before a root exists, so a nil target is a new root.
   # Every other write needs Accessible :edit on the recording being written.
   config.authorize_write = lambda { |actor:, recordable:, recording:, root_recording:, parent_recording:, **|
     next false if actor.blank?
@@ -35,6 +36,8 @@ RecordingStudio.configure do |config|
 
     if recordable.is_a?(RecordingStudio::Access)
       RecordingStudioAccessible::AccessCreationContext.allowed?
+    elsif recording.nil? && parent_recording.nil? && root_recording.nil?
+      true
     else
       target = recording || parent_recording || root_recording
       next false if target.blank?

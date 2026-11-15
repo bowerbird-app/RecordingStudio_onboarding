@@ -7,12 +7,12 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
 
   setup do
     @user = User.find_or_create_by!(email: "admin@admin.com") do |u|
-      u.password = "Password"
-      u.password_confirmation = "Password"
+      u.password = "Password123!"
+      u.password_confirmation = "Password123!"
     end
     @admin_root = AdminRoot.find_or_create_by!(name: "Admin")
     Current.actor = @user
-    @admin_recording = RecordingStudio.root_recording_for(@admin_root)
+    @admin_recording = RecordingStudio.create_root_recording!(@admin_root, actor: @user)
     result = RecordingStudioAccessible.bootstrap_owner_access!(
       recording: @admin_recording,
       actor: @user
@@ -164,7 +164,7 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
     end
 
     workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
-    workspace_recording = RecordingStudio.root_recording_for(workspace)
+    workspace_recording = RecordingStudio.create_root_recording!(workspace, actor: @user)
     access = RecordingStudioAccessible.bootstrap_owner_access!(
       recording: workspace_recording,
       actor: @user

@@ -13,8 +13,8 @@ class WithoutTermsOnboardingTest < ActionDispatch::IntegrationTest
 
     @user = User.create!(
       email: "no-terms-#{SecureRandom.hex(4)}@example.com",
-      password: "Password",
-      password_confirmation: "Password",
+      password: "Password123!",
+      password_confirmation: "Password123!",
       registered_with: "password",
       confirmed_at: Time.current
     )

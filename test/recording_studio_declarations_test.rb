@@ -34,7 +34,9 @@ class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
   test "root recordable creates a root recording" do
     workspace = Workspace.create!(name: unique_name("Root Workspace"))
 
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    assert_nil RecordingStudio.root_recording_for(workspace)
+
+    root_recording = RecordingStudio.create_root_recording!(workspace, actor: @actor)
 
     assert_predicate root_recording, :persisted?
     assert_equal workspace, root_recording.recordable
@@ -82,7 +84,10 @@ class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
   end
 
   test "parentless child under an existing root is invalid" do
-    root_recording = RecordingStudio.root_recording_for(Workspace.create!(name: unique_name("Parentless Workspace")))
+    root_recording = RecordingStudio.create_root_recording!(
+      Workspace.create!(name: unique_name("Parentless Workspace")),
+      actor: @actor
+    )
     folder = Folder.create!(name: unique_name("Parentless Folder"))
     recording = RecordingStudio::Recording.new(root_recording: root_recording, recordable: folder)
 

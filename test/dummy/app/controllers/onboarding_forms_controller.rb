@@ -13,7 +13,7 @@ class OnboardingFormsController < ApplicationController
     end
 
     workspace = Workspace.create!(name: name)
-    recording = RecordingStudio.root_recording_for(workspace)
+    recording = RecordingStudio.create_root_recording!(workspace, actor: current_user)
     result = RecordingStudioAccessible.bootstrap_owner_access!(
       recording: recording,
       actor: current_user

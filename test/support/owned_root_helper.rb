@@ -2,7 +2,7 @@
 
 module OwnedRootHelper
   def owned_root_for(workspace, actor: owning_test_actor)
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    root_recording = RecordingStudio.create_root_recording!(workspace, actor: actor)
     result = RecordingStudioAccessible.bootstrap_owner_access!(
       recording: root_recording,
       actor: actor

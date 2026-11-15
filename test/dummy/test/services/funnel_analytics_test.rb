@@ -21,8 +21,8 @@ class FunnelAnalyticsTest < ActiveSupport::TestCase
   test "computes funnel metrics from FlowRun and StepProgress" do
     actor = User.create!(
       email: "funnel-#{SecureRandom.hex(4)}@example.com",
-      password: "Password",
-      password_confirmation: "Password"
+      password: "Password123!",
+      password_confirmation: "Password123!"
     )
     run = RecordingStudioOnboarding.start(:funnel_demo, actor: actor)
     RecordingStudioOnboarding.mark_viewed(run, actor: actor)
@@ -33,8 +33,8 @@ class FunnelAnalyticsTest < ActiveSupport::TestCase
 
     actor2 = User.create!(
       email: "funnel2-#{SecureRandom.hex(4)}@example.com",
-      password: "Password",
-      password_confirmation: "Password"
+      password: "Password123!",
+      password_confirmation: "Password123!"
     )
     run2 = RecordingStudioOnboarding.start(:funnel_demo, actor: actor2)
     %w[a b c].each do |key|
