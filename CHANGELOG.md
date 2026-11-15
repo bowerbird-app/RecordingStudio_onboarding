@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-11-15
+
+### Fixed
+- Root, dummy, and without-terms lockfiles use omniauth 2.2.0, the lowest
+  release that patches CVE-2026-63183 (host-header injection in callback URLs).
+
+### Upgrade notes
+- No host change. This gem does not depend on omniauth. Recording Studio stays
+  on the existing pin. Hosts that resolve omniauth through
+  RecordingStudio_users (`~> 2.1`) can lock 2.2.0.
+- See `MIGRATION_NOTES.md`.
+
 ## [0.7.3] - 2026-11-15
 
 ### Changed
@@ -411,7 +423,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.3...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.4...HEAD
+[0.7.4]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.0...v0.7.1

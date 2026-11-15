@@ -18,6 +18,13 @@
   is tested once Terms ships a 6.x-compatible tag.
 - Public RubyGems and GitHub access for dependency installation
 
+## 0.7.4 omniauth 2.2.0
+
+- Root, dummy, and without-terms lockfiles pin omniauth 2.2.0
+  (CVE-2026-63183). No other locked gems moved. Recording Studio stays
+  `v6.7.0`.
+- No host change. This gem does not depend on omniauth.
+
 ## 0.7.3 core 7 phase 1
 
 - The gemspec allows Recording Studio `>= 6.1` and `< 8.0`. The floor stays
