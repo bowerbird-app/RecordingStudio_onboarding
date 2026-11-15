@@ -13,8 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow recording_studio < 8.0 (core 7 phase 1).
 
 ### Upgrade notes
-- Hosts on Recording Studio older than 6.14.0 need `>= 6.14.0` before this
-  release. Core 7 is allowed. Core 7 is not required.
+- No host change. The floor stays `>= 6.1`. The gemspec now allows `< 8.0`.
+  Core 7 is allowed. Core 7 is not required.
 - See `MIGRATION_NOTES.md`.
 
 ## [0.7.2] - 2026-11-13

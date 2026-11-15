@@ -14,7 +14,7 @@ class RecordingStudioOnboardingTest < Minitest::Test
   def test_gemspec_pins_recording_studio_6_1
     gemspec = File.read(File.expand_path("../recording_studio_onboarding.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.14.0", "< 8.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.1", "< 8.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.26.6"'
     assert_includes gemspec, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'
     refute_includes gemspec, '"~> 4.2"'
@@ -252,11 +252,11 @@ class RecordingStudioOnboardingTest < Minitest::Test
       assert_includes update_summary, tag
     end
     gemspec = File.read(File.expand_path("../recording_studio_onboarding.gemspec", __dir__))
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.14.0", "< 8.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.1", "< 8.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.26.6"'
-    assert_includes readme, ">= 6.14.0"
+    assert_includes readme, ">= 6.1"
     assert_includes readme, ">= 0.26.6"
-    assert_includes update_summary, ">= 6.14.0"
+    assert_includes update_summary, ">= 6.1"
     assert_includes update_summary, ">= 0.26.6"
     assert_includes readme, "Admin integration"
     assert_includes readme, "registration.completed.recording_studio_user"

@@ -255,7 +255,7 @@ and return 404 rather than error pages.
   `v0.15.0`, Flatpack `v0.1.357`.
   Dummy omits Terms and Publishable until Terms ships a 6.x-compatible tag
   (`v0.14.2` still declares `recording_studio ~> 4.2`). Gemspec:
-  `recording_studio` `>= 6.14.0`, `< 8.0`, `recording_studio_user` `>= 0.26.6`.
+  `recording_studio` `>= 6.1`, `< 8.0`, `recording_studio_user` `>= 0.26.6`.
 - CI also runs against `gemfiles/without_terms.gemfile`. Terms-gated dummy
   behavior is tested once a 6.x Terms tag exists.
 

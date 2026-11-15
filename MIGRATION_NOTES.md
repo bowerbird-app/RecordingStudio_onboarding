@@ -4,7 +4,7 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio `>= 6.14.0`, `< 8.0` (dummy GitHub tag stays `v6.7.0`)
+- Recording Studio `>= 6.1`, `< 8.0` (dummy GitHub tag `v6.7.0`)
 - RecordingStudio_users `>= 0.26.6` (dummy/root GitHub tag `v0.28.1`) for the
   registration-completed provisioning subscriber; dummy mounts users auth
 - RecordingStudio_metrics `v0.8.0`
@@ -20,11 +20,10 @@
 
 ## 0.7.3 core 7 phase 1
 
-- The gemspec allows Recording Studio `>= 6.14.0` and `< 8.0`.
-- Hosts older than 6.14.0 need that release or newer. Core 7 is allowed.
-  Core 7 is not required.
-- Dummy and root Gemfiles still pin `v6.7.0`. That tag is below the new
-  floor, so those bundles do not resolve until the pin moves.
+- The gemspec allows Recording Studio `>= 6.1` and `< 8.0`. The floor stays
+  the previous `~> 6.1` lower bound.
+- No host change. Core 7 is allowed. Core 7 is not required. Dummy and root
+  locks stay on Recording Studio `v6.7.0`.
 
 ## 0.7.1 full-screen frame and Continue
 
