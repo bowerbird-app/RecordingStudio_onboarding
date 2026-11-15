@@ -4,7 +4,7 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio 6.x (`~> 6.1` in the gemspec; dummy GitHub tag `v6.7.0`)
+- Recording Studio `>= 6.1`, `< 8.0` (dummy GitHub tag `v6.7.0`)
 - RecordingStudio_users `>= 0.26.6` (dummy/root GitHub tag `v0.28.1`) for the
   registration-completed provisioning subscriber; dummy mounts users auth
 - RecordingStudio_metrics `v0.8.0`
@@ -17,6 +17,13 @@
   Terms `v0.14.2` still declares `recording_studio ~> 4.2`. Agree-before-onboarding
   is tested once Terms ships a 6.x-compatible tag.
 - Public RubyGems and GitHub access for dependency installation
+
+## 0.7.3 core 7 phase 1
+
+- The gemspec allows Recording Studio `>= 6.1` and `< 8.0`. The floor stays
+  the previous `~> 6.1` lower bound.
+- No host change. Core 7 is allowed. Core 7 is not required. Dummy and root
+  locks stay on Recording Studio `v6.7.0`.
 
 ## 0.7.1 full-screen frame and Continue
 

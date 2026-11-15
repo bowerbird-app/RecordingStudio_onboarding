@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-11-15
+
+### Changed
+- Allow recording_studio < 8.0 (core 7 phase 1).
+
+### Upgrade notes
+- No host change. The floor stays `>= 6.1`. The gemspec now allows `< 8.0`.
+  Core 7 is allowed. Core 7 is not required.
+- See `MIGRATION_NOTES.md`.
+
 ## [0.7.2] - 2026-11-13
 
 ### Fixed
@@ -401,7 +411,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.6.0...v0.7.0
