@@ -4,7 +4,21 @@ require "test_helper"
 
 class RecordingStudioOnboardingTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.7.3", ::RecordingStudioOnboarding::VERSION
+    assert_equal "0.7.4", ::RecordingStudioOnboarding::VERSION
+  end
+
+  def test_lockfiles_pin_patched_omniauth
+    root = File.expand_path("..", __dir__)
+    [
+      "Gemfile.lock",
+      "test/dummy/Gemfile.lock",
+      "gemfiles/without_terms.gemfile.lock"
+    ].each do |relative_path|
+      lockfile = File.read(File.join(root, relative_path))
+
+      assert_includes lockfile, "omniauth (2.2.0)", relative_path
+      refute_includes lockfile, "omniauth (2.1.4)", relative_path
+    end
   end
 
   def test_engine_exists
