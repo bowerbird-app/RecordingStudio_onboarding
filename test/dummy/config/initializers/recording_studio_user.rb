@@ -61,12 +61,11 @@ RecordingStudioUser.configure do |config|
   config.profile_route_path = "profile"
   config.admin_route_path = "admin"
   config.layout = "recording_studio/default_layout"
-  # Password registration without the Notifications stack. OTP stays off until
-  # RecordingStudio_notifications is installed in this dummy.
+  # OTP stays off until RecordingStudio_notifications is installed. Password
+  # registration stays on. Users 0.31 removed password_registration_confirmation.
   config.otp_enabled = false
   config.registration_authentication_methods = %i[password]
   config.require_password_confirmation = false
-  config.password_registration_confirmation = :existing_policy
   config.omniauth_providers = Dummy::OmniauthFallbacks.providers
   config.omniauth_create_account = true
 end

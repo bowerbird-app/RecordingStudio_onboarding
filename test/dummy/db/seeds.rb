@@ -20,8 +20,10 @@ user = User.find_or_create_by!(email: "admin@admin.com") do |u|
   u.password = "Password123!"
   u.password_confirmation = "Password123!"
   u.registered_with = "password" if u.respond_to?(:registered_with=)
+  u.skip_confirmation! if u.respond_to?(:skip_confirmation!)
   u.confirmed_at = Time.current if u.respond_to?(:confirmed_at=)
 end
+user.skip_confirmation! if user.respond_to?(:skip_confirmation!) && user.respond_to?(:confirmed?) && !user.confirmed?
 user.update!(confirmed_at: Time.current) if user.respond_to?(:confirmed_at) && user.confirmed_at.blank?
 
 # Create the workspace recordables
@@ -65,8 +67,10 @@ begin
       u.password = "Password123!"
       u.password_confirmation = "Password123!"
       u.registered_with = "password" if u.respond_to?(:registered_with=)
+      u.skip_confirmation! if u.respond_to?(:skip_confirmation!)
       u.confirmed_at = Time.current if u.respond_to?(:confirmed_at=)
     end.tap do |u|
+      u.skip_confirmation! if u.respond_to?(:skip_confirmation!) && u.respond_to?(:confirmed?) && !u.confirmed?
       u.update!(confirmed_at: Time.current) if u.respond_to?(:confirmed_at) && u.confirmed_at.blank?
     end
   end
@@ -94,6 +98,11 @@ begin
   dismiss_user = User.find_or_create_by!(email: "onboarding-dismiss@example.com") do |u|
     u.password = "Password123!"
     u.password_confirmation = "Password123!"
+    u.skip_confirmation! if u.respond_to?(:skip_confirmation!)
+  end
+  if dismiss_user.respond_to?(:skip_confirmation!) && dismiss_user.respond_to?(:confirmed?) && !dismiss_user.confirmed?
+    dismiss_user.skip_confirmation!
+    dismiss_user.save!
   end
   unless RecordingStudioOnboarding::FlowRun.where(initiating_actor: dismiss_user, status: "dismissed").exists?
     run = RecordingStudioOnboarding.start(:account_setup, actor: dismiss_user)

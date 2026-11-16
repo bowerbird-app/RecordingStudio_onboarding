@@ -4,19 +4,19 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio `>= 7.0`, `< 8.0` (dummy GitHub tag `v7.0.0`)
-- RecordingStudio_users `>= 0.30.0`, `< 1.0` (dummy/root GitHub tag `v0.30.0`)
+- Recording Studio `>= 7.0`, `< 8.0` (dummy GitHub tag `v7.3.0`)
+- RecordingStudio_users `>= 0.30.0`, `< 1.0` (dummy/root GitHub tag `v0.32.0`)
   for the registration-completed provisioning subscriber; dummy mounts users auth
 - RecordingStudio_metrics `v0.9.0`
-- Accessible dummy tag `v0.44.0`, Attachable `v0.28.0`, Admin `v2.16.0`,
-  API `v0.24.0` (`require: false`), Moveable `v5.0.0` (`require: false`),
-  Icons `v0.2.1` (`require: false`), Cache `v0.6.3`, Logs `v0.8.0`,
-  Trashable `v0.17.0` (dummy `purge_at` column; kept rows use `Recording.kept`),
-  Root Switchable `v0.15.1`
-- FlatPack dummy tag `v0.1.376` (`view_component` `>= 4.14.0`, `< 5`)
+- Accessible dummy tag `v0.45.1`, Attachable `v0.31.0`, Admin `v2.18.0`,
+  API `v1.2.1` (`require: false`), Moveable `v6.0.0` (`require: false`),
+  Icons `v0.4.0` (`require: false`), Cache `v0.7.0`, Logs `v0.8.0`,
+  Trashable `v1.0.1` (dummy `purge_at` column; kept rows use `Recording.kept`),
+  Root Switchable `v0.16.0`
+- FlatPack dummy tag `v0.1.377` (`view_component` `>= 4.14.0`, `< 5`)
 - Dummy and `gemfiles/without_terms.gemfile` omit Terms and Publishable.
   Agree-before-onboarding is tested once Terms ships a core 7 tag.
-- Dummy Puma `8.1.0` and msgpack `>= 1.8.7`
+- Dummy Puma `8.1.1` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
 
 ## 0.8.0 Recording Studio 7

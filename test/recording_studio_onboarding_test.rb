@@ -64,23 +64,23 @@ class RecordingStudioOnboardingTest < Minitest::Test
     gemfile = File.read(gemfile_path)
     lock = File.read("#{gemfile_path}.lock")
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.44.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.30.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.16.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v0.24.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.28.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.3"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_icons", tag: "v0.2.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.45.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.32.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.18.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v1.2.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.31.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.7.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_icons", tag: "v0.4.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_logs", tag: "v0.8.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.9.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_moveable", tag: "v5.0.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.17.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.15.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.376"'
-    assert_includes gemfile, 'gem "puma", "8.1.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_moveable", tag: "v6.0.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v1.0.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.16.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.377"'
+    assert_includes gemfile, 'gem "puma", "8.1.1"'
     assert_includes gemfile, 'gem "msgpack", ">= 1.8.7"'
-    assert_includes lock, "puma (8.1.0)"
+    assert_includes lock, "puma (8.1.1)"
     assert_includes lock, "msgpack (1.8.7)"
     refute_includes lock, "puma (8.0.2)"
     refute_includes lock, "msgpack (1.8.5)"
@@ -116,9 +116,9 @@ class RecordingStudioOnboardingTest < Minitest::Test
     refute_includes gemfile, "widen_family_requirements"
     refute_includes lock, "recording_studio_terms_and_conditions"
     refute_includes lock, "recording_studio_publishable"
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.30.0"'
-    assert_includes lock, "puma (8.1.0)"
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.32.0"'
+    assert_includes lock, "puma (8.1.1)"
     assert_includes lock, "msgpack (1.8.7)"
     refute_includes lock, "msgpack (1.8.5)"
   end
@@ -258,7 +258,10 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes admin_initializer, "RecordingStudioAccessible.admin_root"
     refute_includes admin_initializer, "site_admin_recording_resolver"
     assert_includes accessible_initializer, "admin_root_resolver"
+    assert_includes accessible_initializer, "Studio Workspace"
     assert_includes accessible_initializer, "Recording.kept"
+    user_initializer = File.read(File.expand_path("dummy/config/initializers/recording_studio_user.rb", __dir__))
+    refute_match(/config\.password_registration_confirmation\s*=/, user_initializer)
     refute_includes initializer_source, "config.include_children"
     refute_includes initializer_source, "config.features."
     refute_includes initializer_source, "v3"

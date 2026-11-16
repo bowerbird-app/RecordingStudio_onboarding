@@ -10,9 +10,9 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
       u.password = "Password123!"
       u.password_confirmation = "Password123!"
     end
-    @admin_root = AdminRoot.find_or_create_by!(name: "Admin")
+    @workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
     Current.actor = @user
-    @admin_recording = RecordingStudio.create_root_recording!(@admin_root, actor: @user)
+    @admin_recording = RecordingStudio.create_root_recording!(@workspace, actor: @user)
     result = RecordingStudioAccessible.bootstrap_owner_access!(
       recording: @admin_recording,
       actor: @user
@@ -25,8 +25,9 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
   end
 
   def switch_to_admin_root!
-    # Admin authorization requires RootSwitchable's current root to be AdminRoot.
-    # Switch through the real endpoint so the signed device-key cookie stays consistent.
+    # Admin authorization requires the current root to match admin_root_resolver.
+    # That root is Studio Workspace. Switch through the real endpoint so the
+    # signed device-key cookie stays consistent.
     get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
     assert_response :success
 

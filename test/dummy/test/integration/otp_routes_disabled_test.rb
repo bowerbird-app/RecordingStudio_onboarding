@@ -2,15 +2,12 @@
 
 require "test_helper"
 
-# Dummy boots with OTP off. RecordingStudio_users 0.18+ omits OTP routes when
-# otp_enabled is false, so these paths must be unreachable (clean 404).
+# Dummy boots with OTP off. OTP-only routes stay absent. Users 0.32 still
+# draws the password confirmation code routes while password registration is on.
 class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
   OTP_PATHS = [
     [:get, "/users/sign_up/otp"],
     [:post, "/users/sign_up/otp"],
-    [:get, "/users/sign_up/verify"],
-    [:post, "/users/sign_up/verify"],
-    [:post, "/users/sign_up/resend"],
     [:get, "/users/sign_in/otp"],
     [:post, "/users/sign_in/otp"],
     [:get, "/users/sign_in/verify"],
@@ -18,14 +15,20 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     [:post, "/users/sign_in/resend"],
     [:get, "/recording_studio_users/auth/sign_up/otp"],
     [:post, "/recording_studio_users/auth/sign_up/otp"],
-    [:get, "/recording_studio_users/auth/sign_up/verify"],
-    [:post, "/recording_studio_users/auth/sign_up/verify"],
-    [:post, "/recording_studio_users/auth/sign_up/resend"],
     [:get, "/recording_studio_users/auth/sign_in/otp"],
     [:post, "/recording_studio_users/auth/sign_in/otp"],
     [:get, "/recording_studio_users/auth/sign_in/verify"],
     [:post, "/recording_studio_users/auth/sign_in/verify"],
     [:post, "/recording_studio_users/auth/sign_in/resend"]
+  ].freeze
+
+  PASSWORD_CODE_PATHS = [
+    [:get, "/users/sign_up/verify"],
+    [:post, "/users/sign_up/verify"],
+    [:post, "/users/sign_up/resend"],
+    [:get, "/recording_studio_users/auth/sign_up/verify"],
+    [:post, "/recording_studio_users/auth/sign_up/verify"],
+    [:post, "/recording_studio_users/auth/sign_up/resend"]
   ].freeze
 
   test "otp is off in the dummy default config" do
@@ -36,6 +39,14 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     OTP_PATHS.each do |http_method, path|
       public_send(http_method, path)
       assert_response :not_found, "#{http_method.upcase} #{path} should be unreachable"
+      refute_match(/NoMethodError|undefined method/i, response.body)
+    end
+  end
+
+  test "password confirmation code routes stay routed when OTP is off" do
+    PASSWORD_CODE_PATHS.each do |http_method, path|
+      public_send(http_method, path)
+      assert_not_equal 404, response.status, "#{http_method.upcase} #{path} is the password code screen"
       refute_match(/NoMethodError|undefined method/i, response.body)
     end
   end

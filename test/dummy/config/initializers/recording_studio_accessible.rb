@@ -3,12 +3,12 @@
 RecordingStudioAccessible.configure do |config|
   config.access_actor_types = [ "User" ]
 
-  # Site-wide admin screens resolve only when this kept root matches the admin
-  # access recording and the actor holds a role on it.
+  # Accessible 0.45 authorizes mounted admin pages from this kept root.
+  # The dummy's Studio Workspace root is that admin root.
   config.admin_root_resolver = lambda do |context: nil|
-    admin_root = AdminRoot.find_by(name: "Admin")
-    next unless admin_root
+    workspace = Workspace.find_by(name: "Studio Workspace")
+    next unless workspace
 
-    RecordingStudio::Recording.kept.find_by(recordable: admin_root)
+    RecordingStudio::Recording.kept.find_by(recordable: workspace)
   end
 end
