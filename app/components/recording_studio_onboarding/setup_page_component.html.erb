@@ -1,0 +1,43 @@
+<div data-testid="your-setup">
+  <% if heading? %>
+    <%= render FlatPack::PageTitle::Component.new(title: title, subtitle: subtitle, variant: :h1) %>
+  <% end %>
+
+  <% if status.applicable? %>
+    <%= render FlatPack::SectionTitle::Component.new(title: "Still to do", spacing: :sm, size: :md) %>
+    <div data-testid="setup-remaining">
+      <% if status.remaining.empty? %>
+        <p>Nothing left. Nice work.</p>
+      <% else %>
+        <%= render FlatPack::List::Component.new(divider: true) do %>
+          <% status.remaining.each do |item| %>
+            <%= render FlatPack::List::Item.new(
+                  title: item.next_step,
+                  subtitle: "Do this next",
+                  href: item.link,
+                  data: { testid: "setup-item-#{item.key}" }
+                ) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%= render FlatPack::SectionTitle::Component.new(title: "Done", spacing: :sm, size: :md) %>
+    <div data-testid="setup-done">
+      <% if status.done.empty? %>
+        <p>Nothing finished yet.</p>
+      <% else %>
+        <%= render FlatPack::List::Component.new(divider: true) do %>
+          <% status.done.each do |item| %>
+            <%= render FlatPack::List::Item.new(
+                  title: item.next_step,
+                  subtitle: "Done",
+                  href: item.link,
+                  data: { testid: "setup-item-#{item.key}" }
+                ) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

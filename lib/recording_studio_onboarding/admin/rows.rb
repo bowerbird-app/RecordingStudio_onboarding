@@ -10,6 +10,11 @@ module RecordingStudioOnboarding
 
     PreviewRow = Struct.new(:id, :flow_key, :step_key, :component, keyword_init: true)
 
+    ChecklistItemRow = Struct.new(
+      :id, :checklist_key, :scope, :item_key, :next_step,
+      keyword_init: true
+    )
+
     FunnelRow = Struct.new(
       :step_key, :reached, :continued_pct, :dismissals, :median_seconds,
       keyword_init: true

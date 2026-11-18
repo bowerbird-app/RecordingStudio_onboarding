@@ -19,6 +19,17 @@
 - Dummy Puma `8.1.1` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
 
+## 0.9.0 Setup checklists
+
+- Copy `db/migrate/20261118120000_create_recording_studio_onboarding_setup_checks.rb`
+  into the host (the install generator does this for a new install) and migrate.
+  The table is `recording_studio_onboarding_setup_checks`.
+- Existing flows, gates, events, and routes are unchanged. Checklists are
+  additive. They do not gate provisioning.
+- Set `config.setup_recheck_interval` if 5 minutes is the wrong throttle.
+- Sign-in rechecks need Warden. Hosts without Warden keep the page and
+  `setup_status` recheck, and skip the sign-in hook.
+
 ## 0.8.0 Recording Studio 7
 
 - The gemspec requires Recording Studio `>= 7.0`, `< 8.0` and

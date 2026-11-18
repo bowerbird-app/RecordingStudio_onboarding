@@ -26,6 +26,7 @@ module RecordingStudioOnboarding
         RecordingStudioAdmin.register_screen(RunsScreen)
         RecordingStudioAdmin.register_screen(FunnelScreen)
         RecordingStudioAdmin.register_screen(ProvisioningScreen)
+        RecordingStudioAdmin.register_screen(ChecklistsScreen)
       end
 
       def register_resources!

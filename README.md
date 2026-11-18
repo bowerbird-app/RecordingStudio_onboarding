@@ -12,9 +12,12 @@ user-facing flow.
 - **Flow registry** — Ruby-configured sequences (`config.flow`)
 - **`FlowRun` / `StepProgress`** — scoped persistence with row-lock transitions
 - **Public API** — `start`, `active_run`, `advance`, `back`, `skip`, `dismiss`,
-  `reset`, `restart`, `mark_viewed`, `preview` (no automatic redirect from `start`).
-  Workspace/subject `start` and `provision` need Accessible `:view` or they raise
-  `Unauthorized`. `active_run` returns `nil` in that case.
+  `reset`, `restart`, `mark_viewed`, `preview`, `setup_status` (no automatic
+  redirect from `start`). Workspace/subject `start` and `provision` need
+  Accessible `:view` or they raise `Unauthorized`. `active_run` returns `nil`
+  in that case.
+- **Setup checklists** — host-registered items with a saved complete flag,
+  a live Your setup page, and a background recheck. Separate from flows.
 - **Before-onboarding gates** — `config.before_onboarding` callables; RS Terms
   auto-registers when present
 - **Card UI** — `RunComponent`, `CardShellComponent`, permanent chrome
@@ -43,6 +46,7 @@ user-facing flow.
 - `/flows` — start flows; embedded `RunComponent` when an account_setup run is open
 - `/demos/onboarding` — layout gallery (splash, top-card, plain, button positions)
 - `/onboarding/runs/:uuid` — full-screen card shell for the current step
+- `/onboarding/setup/:checklist` — Your setup (live checklist)
 - `/recording_studio_terms_and_conditions/acceptance` — RS Terms Agree (when installed)
 - `/admin` — RS Admin root section (onboarding hub + screens)
 - `/admin/root` — host admin landing with search
@@ -199,13 +203,77 @@ class Host::Onboarding::WelcomeComponent < ViewComponent::Base
 end
 ```
 
+## Setup checklists
+
+A checklist answers whether an account is set up, and what to do next. It stays
+useful after onboarding. It does not depend on which flow steps ran. Registering
+one does not gate provisioning.
+
+```ruby
+config.setup_recheck_interval = 5.minutes # default
+
+config.checklist :studio do
+  scope :user # :user, :workspace, or :subject
+  applies_to ->(actor, _scope) { actor.staff? } # optional, host-defined
+  item :profile,
+    check: ->(actor, _scope) { actor.email.present? },
+    next_step: "Confirm the email on your account",
+    link: "https://example.com/profile", # absolute URL, or a callable that returns one
+    applies_to: ->(actor, _scope) { actor.staff? } # optional
+end
+```
+
+`check` and `applies_to` receive the actor and the scope target. A check that
+returns a truthy value means the item is done. An item whose `applies_to`
+returns false is hidden and left out of completeness. A check that raises counts
+as not done, is logged, and does not raise into the page, the caller, or the
+recheck job. A raising `applies_to` is logged and treated as applying, so a
+failure cannot mark the list complete by hiding the item.
+
+```ruby
+status = RecordingStudioOnboarding.setup_status(:studio, actor: current_user)
+status.complete?
+status.next_item&.next_step
+status.next_item&.link
+status.done
+status.remaining
+```
+
+The first call for an actor and scope computes and saves. Later calls return
+that saved answer, then enqueue `RecheckSetupJob` when the saved check is older
+than `setup_recheck_interval`. The job corrects the row if the account went
+backwards. Your setup always computes live and updates the saved row. Workspace
+and subject checklists take `subject_type` and `subject_id` on that page.
+Authorization matches runs. The signed-in person sees a `:user` checklist.
+Workspace and subject checklists need Accessible `:view`.
+
+When Warden is loaded, a successful sign-in enqueues the same recheck. If
+Warden is absent, sign-in is unchanged.
+
+This gem has no MCP dependency and no MCP code. A host can call `setup_status`
+from its own MCP instructions. Featured In can do that from `instructions_suffix`:
+
+```ruby
+def instructions_suffix
+  status = RecordingStudioOnboarding.setup_status(:studio, actor: current_user)
+  return "" if status.complete? || status.next_item.nil?
+
+  step = status.next_item
+  "Setup is not finished. Next: #{step.next_step} #{step.link}"
+end
+```
+
+Run the `create_recording_studio_onboarding_setup_checks` migration. See
+`MIGRATION_NOTES.md`.
+
 ## Admin integration
 
 When `recording_studio_admin` is present, the engine registers (soft optional):
 
 - Section `onboarding`
 - Screens: `onboarding_flows`, `onboarding_previews`, `onboarding_runs`,
-  `onboarding_funnel`, `onboarding_provisioning`
+  `onboarding_funnel`, `onboarding_provisioning`, `onboarding_checklists`
+- Lookup: `/onboarding/admin/setup_lookup` for one account's user-scoped checklist
 - Widgets: open runs, completion rate, failed provisions
 - Resources: reset/restart run, retry provisioning
 
@@ -225,7 +293,8 @@ No separate analytics store.
 ## Events
 
 `*.recording_studio_onboarding`: `provision.*`, `flow.started`, `step.viewed`,
-`step.completed`, `step.skipped`, `flow.completed`, `flow.dismissed`, `flow.reset`.
+`step.completed`, `step.skipped`, `flow.completed`, `flow.dismissed`, `flow.reset`,
+`setup.completed`, `setup.regressed`.
 
 ## RecordingStudio_users integration
 
@@ -237,6 +306,11 @@ idempotent per actor, so duplicate events do not double-provision.
 
 The older OTP-only event (`otp.registration_completed.recording_studio_user`)
 is not subscribed; OTP is covered by the unified event.
+
+Users does not publish a sign-in event. Setup rechecks on sign-in use
+`Warden::Manager.after_authentication` when Warden is loaded. That hook enqueues
+user-scoped checklists and any saved rows for other scopes. Each recheck still
+obeys `setup_recheck_interval`.
 
 The dummy mounts RS Users auth (`recording_studio_user_auth_for :users` plus
 `RecordingStudioUser::Engine`) so `/users/sign_up` is the real users flow.

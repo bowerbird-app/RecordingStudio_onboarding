@@ -33,6 +33,10 @@ module RecordingStudioOnboarding
         engine_helpers.admin_provisioning_execution_path(execution, script_name: engine_mount_path)
       end
 
+      def admin_setup_lookup_path
+        engine_helpers.admin_setup_lookup_path(script_name: engine_mount_path)
+      end
+
       def admin_retry_provisioning_path(execution)
         engine_helpers.retry_admin_provisioning_execution_path(execution, script_name: engine_mount_path)
       end

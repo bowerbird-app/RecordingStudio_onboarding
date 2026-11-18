@@ -37,6 +37,13 @@ module RecordingStudioOnboarding
       end
     end
 
+    # Optional. Warden is absent when the host has no Devise/Warden stack.
+    initializer "recording_studio_onboarding.sign_in_recheck" do
+      config.after_initialize do
+        RecordingStudioOnboarding::SignInRecheck.install!
+      end
+    end
+
     # Soft optional: register RS Terms Agree gate when that gem is loaded.
     # No gemspec dependency — detection is defined?(RecordingStudioTermsAndConditions).
     initializer "recording_studio_onboarding.register_terms_gate" do

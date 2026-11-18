@@ -13,6 +13,7 @@ module RecordingStudioOnboarding
         runs_screen
         funnel_screen
         provisioning_screen
+        checklists_screen
         runs_resource
         provisioning_resource
         registrar
@@ -30,6 +31,7 @@ module RecordingStudioOnboarding
         OpenRunsWidget
         CompletionRateWidget
         FailedProvisionsWidget
+        ChecklistItemRow
       ].freeze
     end
 

@@ -1,0 +1,4 @@
+<% page = RecordingStudioOnboarding::SetupPageComponent.new(status: @status, heading: false) %>
+<% content_for :title, page.title %>
+<% content_for :subtitle, page.subtitle.html_safe %>
+<%= render page %>

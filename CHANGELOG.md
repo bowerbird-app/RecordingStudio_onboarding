@@ -18,6 +18,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `skip_confirmation!`. `password_registration_confirmation` is removed.
 - Dummy and without-terms lockfiles pin Puma `8.1.1`.
 
+## [0.9.0] - 2026-11-18
+
+### Added
+- `config.checklist` registers a named setup checklist. Each item has a key, a
+  `check` callable, a next-step line, and an absolute link (or a callable that
+  returns one). Optional `applies_to` callables hide items that do not apply.
+  A checklist-level `applies_to` can hide a whole checklist.
+- `RecordingStudioOnboarding.setup_status(name, actor:, subject: nil)` returns
+  the next incomplete item, done and remaining lists, and a complete flag.
+  The first call computes and saves. Later calls return the saved answer and
+  enqueue `RecheckSetupJob` when it is older than `setup_recheck_interval`
+  (default 5 minutes).
+- Table `recording_studio_onboarding_setup_checks`. Run the new migration.
+- Your setup page at `/onboarding/setup/:checklist`. It always computes live.
+- Admin screen `onboarding_checklists` and one-account lookup at
+  `/onboarding/admin/setup_lookup`, only when `recording_studio_admin` is present.
+- Sign-in recheck via `Warden::Manager.after_authentication` when Warden is
+  loaded. Absent Warden leaves sign-in unchanged.
+- Events `setup.completed.recording_studio_onboarding` and
+  `setup.regressed.recording_studio_onboarding`.
+- Checklists are not a gate and are not a `before_onboarding` hook. Provisioning
+  is unchanged. This gem does not depend on MCP. Hosts call `setup_status` from
+  their own tools. See README.
+- A check that raises counts as not done and is logged. It does not raise into
+  the page, the caller, or the job.
+
 ## [0.8.0] - 2026-11-15
 
 ### Changed

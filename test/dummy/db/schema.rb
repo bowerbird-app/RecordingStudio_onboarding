@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_18_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -280,6 +280,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_090000) do
     t.index ["provisioner", "idempotency_key"], name: "idx_rso_provisioning_executions_idempotency", unique: true
     t.index ["status"], name: "idx_rso_provisioning_executions_status"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'running'::character varying::text, 'completed'::character varying::text, 'failed'::character varying::text])", name: "rso_provisioning_executions_status_check"
+  end
+
+  create_table "recording_studio_onboarding_setup_checks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "checklist_key", null: false
+    t.string "actor_type", null: false
+    t.uuid "actor_id", null: false
+    t.string "scope_type", null: false
+    t.uuid "scope_id", null: false
+    t.boolean "complete", default: false, null: false
+    t.boolean "applicable", default: true, null: false
+    t.jsonb "items", default: [], null: false
+    t.datetime "checked_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_type", "actor_id"], name: "idx_rso_setup_checks_actor"
+    t.index ["checklist_key", "actor_type", "actor_id", "scope_type", "scope_id"], name: "idx_rso_setup_checks_identity", unique: true
   end
 
   create_table "recording_studio_onboarding_step_progresses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

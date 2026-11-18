@@ -37,6 +37,8 @@ Then open the app and sign in with:
 - `/` - dummy app home page and template guidance
 - `/flows` - start registered flows; embedded RunComponent when active
 - `/onboarding/runs/:uuid` - full-screen card shell for the current step
+- `/onboarding/setup/:checklist` - Your setup for a registered checklist
+- `/onboarding/admin/setup_lookup` - one account's user-scoped setup status
 - `/recording_studio_terms_and_conditions/acceptance` - Agree (terms-before-onboarding)
 - `/admin` - RecordingStudio Admin root (onboarding section + screens)
 - `/admin/root` - host admin landing with search
