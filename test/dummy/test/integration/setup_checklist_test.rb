@@ -93,10 +93,22 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Your setup", count: 1
     assert_includes response.body, "What&#39;s finished, and what to do next."
     refute_includes response.body, "&amp;#39;s finished"
-    assert_includes response.body, "Add a name"
-    assert_includes response.body, "Do this next"
+    assert_select "[data-testid=setup-remaining]" do
+      assert_select "[data-testid=setup-item-name]", text: /Add a name/
+      assert_select "a[href=?]", "https://example.com/name", text: "Open"
+    end
     row = RecordingStudioOnboarding::SetupCheck.find_by!(checklist_key: "box", actor: @user)
     refute row.complete?
+  end
+
+  test "your setup page shows the all-done line when nothing remains" do
+    register_box(->(*) { true })
+    sign_in @user
+    get recording_studio_onboarding.setup_path("box")
+
+    assert_response :success
+    assert_includes response.body, "Nothing left. Nice work."
+    assert_includes response.body, "You&#39;re all set."
   end
 
   test "a raising check stays on the page as not done" do

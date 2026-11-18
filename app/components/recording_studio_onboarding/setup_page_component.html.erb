@@ -13,8 +13,7 @@
           <% status.remaining.each do |item| %>
             <%= render FlatPack::List::Item.new(
                   title: item.next_step,
-                  subtitle: "Do this next",
-                  href: item.link,
+                  trailing: remaining_link(item),
                   data: { testid: "setup-item-#{item.key}" }
                 ) %>
           <% end %>

@@ -24,5 +24,18 @@ module RecordingStudioOnboarding
 
       "What's finished, and what to do next."
     end
+
+    def remaining_link(item)
+      return if item.link.blank?
+
+      render(
+        FlatPack::Button::Component.new(
+          text: "Open",
+          href: item.link,
+          style: :primary,
+          size: :sm
+        )
+      )
+    end
   end
 end
