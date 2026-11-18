@@ -95,6 +95,7 @@ RecordingStudioOnboarding.configure do |config|
       component: "Dummy::Onboarding::TopCardPageComponent",
       controls: %i[continue],
       button_positions: { continue: :right },
+      footer_action: :skip,
       skippable: true
     step :no_image,
       component: "Dummy::Onboarding::NoImagePageComponent",

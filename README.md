@@ -19,7 +19,7 @@ user-facing flow.
   auto-registers when present
 - **Card UI** — `RunComponent`, `CardShellComponent`, permanent chrome
   (`ChromeComponent` Back / Skip text links), line `ProgressComponent`,
-  bottom `ControlsComponent` with left/right/full Continue, default
+  bottom `ControlsComponent` with a right-aligned Continue or Skip button, default
   `PageComponent` (splash / top-card / plain), shared `PageFrameComponent`
 - **Engine routes** — `/onboarding/runs/:uuid` (+ advance/back/skip/dismiss)
 - **Admin + analytics** — soft `RecordingStudioAdmin.register_*` section/screens
@@ -87,7 +87,8 @@ RecordingStudioOnboarding.configure do |config|
     step :details,
       component: "Host::Onboarding::DetailsComponent",
       controls: %i[continue],
-      skippable: true
+      skippable: true,
+      footer_action: :skip
   end
 end
 ```
@@ -98,7 +99,7 @@ Full-screen and embedded shells always use:
 
 - **Back** — plain text link with a Heroicons chevron-left icon, top-left
   (hidden on the first step)
-- **`Skip`** — plain text link, top-right (hidden when `skippable: false`)
+- **`Skip`** — plain text link, top-right (hidden when `skippable: false`, and when the footer button is Skip)
 - **Line progress** — Flatpack Progress bar; step 1 already shows color
 - **No Exit** — removed from the UI (call `dismiss` in host code if needed)
 
@@ -127,11 +128,19 @@ If both image fields are set, **splash wins**.
 | `after_dismiss` | flow | Path, URL, or callable → destination after dismiss |
 | `step :key` | flow | Ordered step; key is stable in `StepProgress` |
 | `component` | step | ViewComponent class name string (required) |
-| `controls` | step | Bottom actions — typically `%i[continue]` (default). `:exit` ignored. Back/Skip are chrome. |
-| `button_positions` | step | Still accepts `:left`, `:right`, or `:full`. Continue always renders as an auto-width button on the right. |
+| `controls` | step | Bottom actions — typically `%i[continue]` (default). `:exit` ignored. Back and the top Skip link are chrome. |
+| `button_positions` | step | Still accepts `:left`, `:right`, or `:full`. The footer button always renders as an auto-width button on the right. |
 | `show_progress` | step | When false, step is omitted from the progress count (default true) |
-| `skippable` | step | When false, Skip chrome is hidden and skip is rejected (default true) |
+| `skippable` | step | When false, the top Skip link is hidden and skip is rejected (default true) |
+| `footer_action` | step | `:continue` (default) or `:skip`. Picks the bottom button label and where it posts. |
 | `complete_when` | step | Optional callable `(run) → truthy` to auto-advance on render |
+
+`footer_action: :continue` posts to advance and records the step completed.
+`:skip` posts to the existing skip action and records the step skipped.
+`:skip` requires `skippable` (the default). `skippable: false` with
+`footer_action: :skip` raises when the flow is defined. The bottom button
+still needs `:continue` in `controls` (the default). When that button skips,
+the top Skip link is hidden so Skip shows once.
 
 **Step count / progress:** `FlowDefinition#visible_steps` keeps steps with
 `show_progress: true`. `ProgressComponent` fills the bar to the 1-based current

@@ -82,6 +82,43 @@ class FlowRegistryTest < Minitest::Test
     )
   end
 
+  def test_footer_action_defaults_to_continue_and_skip_requires_skippable
+    @configuration.flow :footer do
+      step :welcome, component: "X"
+      step :optional, component: "X", footer_action: :skip
+    end
+
+    welcome = @configuration.flow_for(:footer).step_for(:welcome)
+    optional = @configuration.flow_for(:footer).step_for(:optional)
+    assert_equal :continue, welcome.footer_action
+    refute welcome.footer_skips?
+    assert welcome.skippable?
+    assert_equal :skip, optional.footer_action
+    assert optional.footer_skips?
+    assert optional.skippable?
+
+    error = assert_raises(ArgumentError) do
+      @configuration.flow :blocked_footer do
+        step :welcome, component: "X", footer_action: :skip, skippable: false
+      end
+    end
+    assert_match(/footer_action :skip requires a skippable step/, error.message)
+
+    error = assert_raises(ArgumentError) do
+      @configuration.flow :bad_footer do
+        step :welcome, component: "X", footer_action: :next
+      end
+    end
+    assert_match(/Unsupported footer action :next/, error.message)
+
+    @configuration.flow :no_footer_button do
+      step :optional, component: "X", controls: %i[], footer_action: :skip
+    end
+    omitted = @configuration.flow_for(:no_footer_button).step_for(:optional)
+    assert_equal :skip, omitted.footer_action
+    refute omitted.footer_skips?
+  end
+
   def test_step_rejects_unknown_keywords
     error = assert_raises(ArgumentError) do
       @configuration.flow :typo_step do

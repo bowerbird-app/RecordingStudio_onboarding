@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module RecordingStudioOnboarding
-  # Bottom Continue action. Back / Skip live in ChromeComponent.
-  # Continue is always an auto-width button on the right.
+  # Right-aligned footer button. Back and the top Skip live in ChromeComponent.
+  # `footer_action` picks Continue (advance) or Skip (the existing skip action).
   class ControlsComponent < ViewComponent::Base
     include EngineRouting
 
@@ -18,18 +18,12 @@ module RecordingStudioOnboarding
       @button_positions = normalize_positions(button_positions || run.current_step&.button_positions)
     end
 
-    def preview_mode?(preview, run)
-      preview || (run.respond_to?(:preview?) && run.preview?)
-    end
+    def preview_mode?(preview, run) = preview || (run.respond_to?(:preview?) && run.preview?)
 
-    def resolve_controls(controls, run)
-      Array(controls || run.current_step&.controls || []).map(&:to_sym)
-    end
+    def resolve_controls(controls, run) = Array(controls || run.current_step&.controls || []).map(&:to_sym)
     private :preview_mode?, :resolve_controls
 
-    def render?
-      (@run.open? || @preview) && visible_controls.any?
-    end
+    def render? = (@run.open? || @preview) && visible_controls.any?
 
     def call
       content_tag(:div, class: "mt-10 flex w-full flex-col gap-3", data: { testid: "onboarding-controls" }) do
@@ -48,9 +42,7 @@ module RecordingStudioOnboarding
       end
     end
 
-    def visible_controls
-      BOTTOM_CONTROLS.select { |control| @controls.include?(control) }
-    end
+    def visible_controls = BOTTOM_CONTROLS.select { |control| @controls.include?(control) }
 
     def position_for(control)
       return :right if control == :continue
@@ -77,9 +69,7 @@ module RecordingStudioOnboarding
       end
     end
 
-    def controls_for(position)
-      visible_controls.select { |control| position_for(control) == position }
-    end
+    def controls_for(position) = visible_controls.select { |control| position_for(control) == position }
 
     def control_group(controls, align: :start)
       return if controls.empty?
@@ -93,7 +83,16 @@ module RecordingStudioOnboarding
     def render_control(control, full:)
       return unless control == :continue
 
-      control_button("Continue", :advance, style: :primary, full: full, testid: "control-advance")
+      label, action, testid = footer_button
+      control_button(label, action, style: :primary, full: full, testid: testid)
+    end
+
+    def footer_button
+      if @run.current_step&.footer_skips?
+        ["Skip", :skip, "control-skip"]
+      else
+        ["Continue", :advance, "control-advance"]
+      end
     end
 
     def control_button(label, action, style:, full:, testid:)

@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `skip_confirmation!`. `password_registration_confirmation` is removed.
 - Dummy and without-terms lockfiles pin Puma `8.1.1`.
 
+## [0.9.1] - 2026-11-18
+
+### Added
+- Steps accept `footer_action: :continue` (default) or `:skip`. `:skip` labels the bottom button Skip and posts to the existing skip action, so the step is recorded skipped. The top Skip link is hidden when that button is shown. `footer_action: :skip` requires `skippable` (the default). `skippable: false` raises when the flow is defined.
+
+### Upgrade notes
+- No host change. Steps that omit `footer_action` keep the right-aligned Continue button.
+- See `MIGRATION_NOTES.md`.
+
 ## [0.8.0] - 2026-11-15
 
 ### Changed
@@ -471,7 +480,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.8.0...v0.9.1
 [0.8.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.2...v0.7.3

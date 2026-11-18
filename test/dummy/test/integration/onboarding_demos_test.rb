@@ -35,11 +35,28 @@ class OnboardingDemosTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='control-exit']", count: 0
   end
 
-  test "top-card demo lands on top-card layout" do
+  test "top-card demo footer skip records skipped and hides the chrome skip link" do
     get "/demos/onboarding/top-card"
+    assert_response :redirect
+    run = RecordingStudioOnboarding::FlowRun.find(run_uuid_from(response.location))
     follow_redirect!
+    assert_response :success
     assert_select "[data-testid='onboarding-page'][data-layout='top-card']"
     assert_select "[data-testid='control-back']"
+    assert_select "[data-testid='onboarding-chrome'] [data-testid='control-skip']", count: 0
+    assert_select "[data-testid='onboarding-controls'][class~='mt-10']"
+    assert_select "[data-testid='onboarding-controls'] .ms-auto form[data-testid='control-skip'][class~='inline-flex'][action=?]",
+      recording_studio_onboarding.skip_run_path(run)
+    assert_select "[data-testid='onboarding-controls'] button", text: "Skip"
+    assert_select "[data-testid='control-advance']", count: 0
+
+    post recording_studio_onboarding.skip_run_path(run), params: { from: "top_card" }
+    assert_redirected_to recording_studio_onboarding.run_path(run)
+    follow_redirect!
+    progress = run.step_progresses.find_by!(step_key: "top_card")
+    assert_equal "skipped", progress.status
+    refute_equal "completed", progress.status
+    assert_equal "no_image", run.reload.current_step_key
   end
 
   test "no-image demo lands on plain layout" do
@@ -57,5 +74,11 @@ class OnboardingDemosTest < ActionDispatch::IntegrationTest
       assert_select "[data-testid='control-advance']"
       assert_select "[data-testid='control-exit']", count: 0
     end
+  end
+
+  private
+
+  def run_uuid_from(location)
+    URI.parse(location).path.split("/").last
   end
 end
