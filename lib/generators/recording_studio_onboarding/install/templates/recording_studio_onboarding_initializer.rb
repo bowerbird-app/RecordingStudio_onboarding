@@ -11,6 +11,7 @@ RecordingStudioOnboarding.configure do |config|
   #   item :profile,
   #     check: ->(actor, _scope) { actor.email.present? },
   #     next_step: "Confirm the email on your account",
-  #     link: "https://example.com/profile"
+  #     link: -> { main_app.new_press_kit_path },
+  #     icon: :queue_list
   # end
 end

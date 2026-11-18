@@ -22,20 +22,7 @@ module RecordingStudioOnboarding
       return "Nothing here applies to you." unless status.applicable?
       return "You're all set." if status.complete?
 
-      "What's finished, and what to do next."
-    end
-
-    def remaining_link(item)
-      return if item.link.blank?
-
-      render(
-        FlatPack::Button::Component.new(
-          text: "Open",
-          href: item.link,
-          style: :primary,
-          size: :sm
-        )
-      )
+      "What to do next."
     end
   end
 end

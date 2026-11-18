@@ -41,9 +41,34 @@ class SetupChecklistTest < Minitest::Test
     end
     assert_raises(ArgumentError) do
       RecordingStudioOnboarding.configuration.checklist(:relative) do
-        item :email, check: ->(*) { true }, next_step: "Confirm your email", link: "/email"
+        item :email, check: ->(*) { true }, next_step: "Confirm your email", link: "email"
       end
     end
+  end
+
+  def test_item_link_accepts_a_path_or_host_callable_and_defaults_the_icon
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :studio do
+        scope :user
+        item :email,
+             check: ->(*) { false },
+             next_step: "Confirm your email",
+             link: "/account/email"
+        item :press_kit,
+             check: ->(*) { false },
+             next_step: "Publish your first press kit",
+             link: -> { "/press_kits/new" },
+             icon: :queue_list
+      end
+    end
+
+    status = evaluate(:studio)
+    email, press = status.remaining
+
+    assert_equal "/account/email", email.link
+    assert_equal :queue_list, email.icon
+    assert_equal "/press_kits/new", press.link
+    assert_equal :queue_list, press.icon
   end
 
   def test_status_lists_the_next_item_done_and_remaining
@@ -120,7 +145,7 @@ class SetupChecklistTest < Minitest::Test
   def test_a_bad_link_does_not_raise
     RecordingStudioOnboarding.configure do |config|
       config.checklist :studio do
-        item :email, check: ->(*) { true }, next_step: "Confirm your email", link: ->(*) { "/relative" }
+        item :email, check: ->(*) { true }, next_step: "Confirm your email", link: ->(*) { "relative" }
       end
     end
 

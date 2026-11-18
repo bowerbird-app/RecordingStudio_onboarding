@@ -11,7 +11,7 @@ module RecordingStudioOnboarding
     end
 
     def call
-      content_tag(:div, class: shell_classes, data: shell_data) do
+      render FlatPack::Stack::Component.new(gap: :lg, class: "w-full", data: shell_data) do
         safe_join([chrome_region, progress_region, body_region, controls_region].compact)
       end
     end
@@ -26,10 +26,6 @@ module RecordingStudioOnboarding
         embedded: @embedded,
         preview: @preview
       }
-    end
-
-    def shell_classes
-      "flex w-full flex-col gap-6"
     end
 
     def chrome_region

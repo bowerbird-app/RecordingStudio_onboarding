@@ -3,10 +3,11 @@
 module RecordingStudioOnboarding
   # Single shared content width for admin, previews, and user-facing step pages.
   class PageFrameComponent < ViewComponent::Base
-    CONTAINER_CLASSES = "mx-auto w-full max-w-3xl px-4 py-6 sm:px-8 sm:py-8"
+    CONTAINER_STYLE = "margin-inline: auto; width: 100%; max-width: 48rem; " \
+                      "padding: var(--space-6) var(--space-4);"
 
     def call
-      content_tag(:div, content, class: CONTAINER_CLASSES, data: { testid: "onboarding-page-frame" })
+      content_tag(:div, content, style: CONTAINER_STYLE, data: { testid: "onboarding-page-frame" })
     end
   end
 end

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "recording_studio_onboarding/host_url_context"
 require "recording_studio_onboarding/services/failure_sanitizer"
 require "recording_studio_onboarding/setup_snapshot"
 
@@ -54,7 +55,9 @@ module RecordingStudioOnboarding
       def evaluate_item(item)
         return unless show?(item)
 
-        SetupItem.new(key: item.key, next_step: item.next_step, link: link_for(item), done: done?(item))
+        SetupItem.new(
+          key: item.key, next_step: item.next_step, link: link_for(item), icon: item.icon, done: done?(item)
+        )
       end
 
       def show?(item)
@@ -68,14 +71,21 @@ module RecordingStudioOnboarding
       end
 
       def link_for(item)
-        raw = item.link.respond_to?(:call) ? invoke(item.link) : item.link
-        return raw if ChecklistItem.absolute_http?(raw)
+        raw = resolve_link(item.link)
+        return raw if ChecklistItem.usable_link?(raw)
 
-        log(ArgumentError.new("checklist item #{item.key} link was not an absolute http(s) URL"))
+        log(ArgumentError.new("checklist item #{item.key} link was not a path or absolute http(s) URL"))
         nil
       rescue StandardError => e
         log(e)
         nil
+      end
+
+      def resolve_link(link)
+        return link unless link.respond_to?(:call)
+        return HostUrlContext.instance_exec(&link) if link.arity.zero?
+
+        link.call(@actor, @scope)
       end
 
       def guard(fallback)

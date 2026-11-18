@@ -11,7 +11,10 @@ module RecordingStudioOnboarding
     end
 
     def dump_item(item)
-      { "key" => item.key.to_s, "next_step" => item.next_step, "link" => item.link, "done" => item.done }
+      {
+        "key" => item.key.to_s, "next_step" => item.next_step, "link" => item.link,
+        "icon" => item.icon.to_s, "done" => item.done
+      }
     end
 
     def load(definition, row)
@@ -33,6 +36,7 @@ module RecordingStudioOnboarding
         key: fields["key"].to_sym,
         next_step: fields["next_step"].to_s,
         link: fields["link"],
+        icon: ChecklistItem.normalize_icon(fields["icon"]),
         done: fields["done"] == true
       )
     end

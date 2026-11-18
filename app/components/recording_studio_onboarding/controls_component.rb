@@ -32,7 +32,7 @@ module RecordingStudioOnboarding
     end
 
     def call
-      content_tag(:div, class: "mt-10 flex w-full flex-col gap-3", data: { testid: "onboarding-controls" }) do
+      render FlatPack::Stack::Component.new(gap: :md, data: { testid: "onboarding-controls" }) do
         safe_join([full_region, row_region].compact)
       end
     end

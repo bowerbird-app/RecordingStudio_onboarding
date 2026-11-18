@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RecordingStudioOnboarding
-  SetupItem = Data.define(:key, :next_step, :link, :done) do
+  SetupItem = Data.define(:key, :next_step, :link, :icon, :done) do
     def done? = done
   end
 

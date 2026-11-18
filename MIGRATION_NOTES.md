@@ -29,6 +29,9 @@
 - Set `config.setup_recheck_interval` if 5 minutes is the wrong throttle.
 - Sign-in rechecks need Warden. Hosts without Warden keep the page and
   `setup_status` recheck, and skip the sign-in hook.
+- Item `link` is the page where the person does that step. Pass a path, an
+  absolute URL, or `link: -> { main_app.new_press_kit_path }`. Optional `icon:`
+  is a FlatPack icon name. The setup page shows only what is left.
 
 ## 0.8.0 Recording Studio 7
 

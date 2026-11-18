@@ -22,16 +22,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `config.checklist` registers a named setup checklist. Each item has a key, a
-  `check` callable, a next-step line, and an absolute link (or a callable that
-  returns one). Optional `applies_to` callables hide items that do not apply.
-  A checklist-level `applies_to` can hide a whole checklist.
+  `check` callable, a next-step line, and a `link` (a host path, an absolute
+  URL, or a callable such as `-> { main_app.new_press_kit_path }`). Optional
+  `icon:` is a FlatPack icon name. Optional `applies_to` callables hide items
+  that do not apply. A checklist-level `applies_to` can hide a whole checklist.
 - `RecordingStudioOnboarding.setup_status(name, actor:, subject: nil)` returns
   the next incomplete item, done and remaining lists, and a complete flag.
   The first call computes and saves. Later calls return the saved answer and
   enqueue `RecheckSetupJob` when it is older than `setup_recheck_interval`
   (default 5 minutes).
 - Table `recording_studio_onboarding_setup_checks`. Run the new migration.
-- Your setup page at `/onboarding/setup/:checklist`. It always computes live.
+- Your setup page at `/onboarding/setup/:checklist`. It always computes live
+  and lists only the items still left. Each row links to the host path.
 - Admin screen `onboarding_checklists` and one-account lookup at
   `/onboarding/admin/setup_lookup`, only when `recording_studio_admin` is present.
 - Sign-in recheck via `Warden::Manager.after_authentication` when Warden is

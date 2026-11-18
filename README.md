@@ -218,10 +218,25 @@ config.checklist :studio do
   item :profile,
     check: ->(actor, _scope) { actor.email.present? },
     next_step: "Confirm the email on your account",
-    link: "https://example.com/profile", # absolute URL, or a callable that returns one
+    link: -> { main_app.new_press_kit_path }, # path, absolute URL, or a callable
+    icon: :queue_list, # optional FlatPack icon name
     applies_to: ->(actor, _scope) { actor.staff? } # optional
 end
 ```
+
+`link` is the page where the person takes that action (create a press kit, confirm
+an email). Pass a path (`"/press_kits/new"`), an absolute `http(s)` URL, or a
+callable. A zero-argument callable runs in the host's URL context, so
+`-> { main_app.new_press_kit_path }` works from an initializer. A callable that
+takes arguments receives the actor and the scope target. The setup page renders
+that path on the row. Cards and step components still do not build navigation
+URLs.
+
+`icon` is a FlatPack icon name. It defaults to `:queue_list`.
+
+The setup page lists only what is still left. Each row is the icon, the
+next-step line, and a link across the whole row. When nothing remains, the page
+says you're done. `setup_status` still returns both the done and remaining lists.
 
 `check` and `applies_to` receive the actor and the scope target. A check that
 returns a truthy value means the item is done. An item whose `applies_to`

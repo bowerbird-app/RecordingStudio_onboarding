@@ -91,12 +91,12 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Your setup", count: 1
-    assert_includes response.body, "What&#39;s finished, and what to do next."
-    refute_includes response.body, "&amp;#39;s finished"
+    assert_includes response.body, "What to do next."
     assert_select "[data-testid=setup-remaining]" do
-      assert_select "[data-testid=setup-item-name]", text: /Add a name/
-      assert_select "a[href=?]", "https://example.com/name", text: "Open"
+      assert_select "[data-testid=setup-item-name] a[href=?]", "https://example.com/name", text: /Add a name/
     end
+    assert_select "[data-testid=setup-done]", count: 0
+    refute_includes response.body, ">Open<"
     row = RecordingStudioOnboarding::SetupCheck.find_by!(checklist_key: "box", actor: @user)
     refute row.complete?
   end
@@ -146,7 +146,7 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
       subject_id: @workspace.id
     )
     assert_response :success
-    assert_includes response.body, "Give the workspace a name"
+    assert_includes response.body, "Nothing left. Nice work."
 
     sign_in @other
     get recording_studio_onboarding.setup_path(

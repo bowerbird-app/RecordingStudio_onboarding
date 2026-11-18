@@ -34,8 +34,10 @@ module RecordingStudioOnboarding
       @applies_to = chosen
     end
 
-    def item(key, check:, next_step:, link:, applies_to: nil)
-      built = ChecklistItem.build(key, check: check, next_step: next_step, link: link, applies_to: applies_to)
+    def item(key, check:, next_step:, link:, applies_to: nil, icon: nil) # rubocop:disable Metrics/ParameterLists
+      built = ChecklistItem.build(
+        key, check: check, next_step: next_step, link: link, applies_to: applies_to, icon: icon
+      )
       raise ArgumentError, "duplicate item key #{built.key.inspect}" if item_for(built.key)
 
       @items << built
