@@ -19,6 +19,10 @@
 - Dummy Puma `8.1.1` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
 
+## 0.9.1 footer button
+
+- No host change is required. Optional `footer_action: :skip` makes that step's bottom button Skip and posts to the existing skip action. It requires `skippable` (the default). The top Skip link stays hidden on that step.
+
 ## 0.8.0 Recording Studio 7
 
 - The gemspec requires Recording Studio `>= 7.0`, `< 8.0` and

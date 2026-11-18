@@ -72,22 +72,63 @@ class ChromeAndControlsTest < ViewComponent::TestCase
 
     button = control.at_css("button, [type='submit']")
     refute_includes button["class"].to_s.split, "w-full" if button
+    assert_includes control.text, "Continue"
     refute_includes rendered_content, "control-exit"
     refute_includes rendered_content, "control-back"
     refute_includes rendered_content, "control-skip"
   end
 
-  def fake_run(step_key:)
+  test "footer skip is the right aligned button and hides the chrome skip link" do
+    configuration = RecordingStudioOnboarding::Configuration.new
+    configuration.flow :footer do
+      step :welcome, component: "X", controls: %i[continue], skippable: false
+      step :optional, component: "X", controls: %i[continue], footer_action: :skip,
+           button_positions: { continue: :full }
+    end
+    run = fake_run(step_key: :optional, definition: configuration.flow_for(:footer))
+
+    render_inline RecordingStudioOnboarding::ChromeComponent.new(run: run, preview: true)
+    assert_includes rendered_content, "Back"
+    refute_includes rendered_content, "Skip"
+    refute_includes rendered_content, "control-skip"
+
+    render_inline RecordingStudioOnboarding::ControlsComponent.new(run: run, preview: true)
+    fragment = Nokogiri::HTML.fragment(rendered_content)
+    control = fragment.at_css(".ms-auto [data-testid='control-skip']")
+    assert control, "expected a right-aligned footer Skip"
+    assert_includes control.text, "Skip"
+    refute_includes rendered_content, "Continue"
+    refute_includes rendered_content, "control-advance"
+    refute_includes control["class"].to_s.split, "w-full"
+    refute_includes control["class"].to_s.split, "block"
+  end
+
+  test "chrome keeps skip when footer_action is skip but the footer button is omitted" do
+    configuration = RecordingStudioOnboarding::Configuration.new
+    configuration.flow :footer do
+      step :welcome, component: "X", controls: %i[continue]
+      step :optional, component: "X", controls: %i[], footer_action: :skip
+    end
+    run = fake_run(step_key: :optional, definition: configuration.flow_for(:footer))
+
+    render_inline RecordingStudioOnboarding::ChromeComponent.new(run: run, preview: true)
+    assert_includes rendered_content, "Skip"
+
+    render_inline RecordingStudioOnboarding::ControlsComponent.new(run: run, preview: true)
+    assert_equal "", rendered_content.strip
+  end
+
+  def fake_run(step_key:, definition: @definition)
     Struct.new(
       :flow_key, :current_step_key, :definition, :open?, :step_progresses, :current_step,
       :preview?, keyword_init: true
     ).new(
       flow_key: "demo",
       current_step_key: step_key.to_s,
-      definition: @definition,
+      definition: definition,
       open?: true,
       step_progresses: [],
-      current_step: @definition.step_for(step_key),
+      current_step: definition.step_for(step_key),
       preview?: true
     )
   end

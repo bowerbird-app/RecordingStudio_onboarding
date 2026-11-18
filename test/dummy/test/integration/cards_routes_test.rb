@@ -84,7 +84,8 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='onboarding-progress'][data-mode='bar']"
     assert_select "[data-testid='onboarding-progress'] [role='progressbar'][aria-valuenow=?]", "1.0"
     assert_select "[data-testid='onboarding-controls']"
-    assert_select "[data-testid='control-advance']"
+    assert_select "[data-testid='control-advance'] button", text: "Continue"
+    assert_select "form[data-testid='control-advance'][action=?]", recording_studio_onboarding.advance_run_path(run)
     assert_select "[data-testid='onboarding-controls'][class~='mt-10']"
     assert_select "[data-testid='onboarding-controls'] .ms-auto [data-testid='control-advance'][class~='inline-flex']"
     assert_select "[data-testid='control-advance'][class~='w-full']", count: 0

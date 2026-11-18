@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioOnboardingTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.8.0", ::RecordingStudioOnboarding::VERSION
+    assert_equal "0.9.1", ::RecordingStudioOnboarding::VERSION
   end
 
   def test_lockfiles_pin_patched_omniauth

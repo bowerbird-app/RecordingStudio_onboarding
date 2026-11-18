@@ -31,7 +31,7 @@ module RecordingStudioOnboarding
     end
 
     def show_skip?
-      skippable?
+      skippable? && !footer_skips?
     end
 
     def first_step?
@@ -43,6 +43,8 @@ module RecordingStudioOnboarding
       step = @run.current_step
       step.nil? || step.skippable?
     end
+
+    def footer_skips? = @run.current_step&.footer_skips?
 
     def back_link
       return empty_slot unless show_back?
