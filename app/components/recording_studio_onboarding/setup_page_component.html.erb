@@ -6,12 +6,19 @@
   <% if status.applicable? && status.remaining.empty? %>
     <p>Nothing left. Nice work.</p>
   <% elsif status.applicable? %>
-    <%= render FlatPack::List::Component.new(divider: true, data: { testid: "setup-remaining" }) do %>
+    <%= render FlatPack::List::Component.new(
+          divider: true,
+          class: "w-full overflow-hidden rounded-[var(--radius-lg)] border border-[var(--surface-border-color)] bg-[var(--surface-background-color)]",
+          data: { testid: "setup-remaining" }
+        ) do %>
       <% status.remaining.each do |item| %>
         <%= render FlatPack::List::Item.new(
               icon: item.icon,
               title: item.next_step,
               href: item.link.presence,
+              hover: true,
+              align: :center,
+              trailing: row_chevron,
               data: { testid: "setup-item-#{item.key}" }
             ) %>
       <% end %>

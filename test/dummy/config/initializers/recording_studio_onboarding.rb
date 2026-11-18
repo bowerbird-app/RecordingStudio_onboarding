@@ -126,18 +126,28 @@ RecordingStudioOnboarding.configure do |config|
       check: ->(actor, _scope) { actor.respond_to?(:email) && actor.email.present? },
       next_step: "Confirm the email on your account",
       link: -> { main_app.root_path },
-      icon: :queue_list
+      icon: :envelope
+    item :profile,
+      check: ->(*) { false },
+      next_step: "Add your profile",
+      link: -> { main_app.root_path },
+      icon: :user
     item :workspace,
       check: ->(_actor, _scope) { Workspace.exists?(name: "Studio Workspace") },
       next_step: "Name your workspace",
       link: -> { main_app.flows_path },
-      icon: :queue_list
+      icon: :building_office
     item :press_kit,
       applies_to: ->(actor, _scope) { actor.respond_to?(:email) && actor.email.to_s.end_with?("@admin.com") },
       check: ->(_actor, _scope) { false },
       next_step: "Publish your first press kit",
       link: -> { main_app.flows_path },
-      icon: :queue_list
+      icon: :newspaper
+    item :team,
+      check: ->(*) { false },
+      next_step: "Invite a teammate",
+      link: -> { main_app.flows_path },
+      icon: :users
   end
 
   config.checklist :workspace_ready do

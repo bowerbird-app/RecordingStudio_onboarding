@@ -33,7 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (default 5 minutes).
 - Table `recording_studio_onboarding_setup_checks`. Run the new migration.
 - Your setup page at `/onboarding/setup/:checklist`. It always computes live
-  and lists only the items still left. Each row links to the host path.
+  and lists only the items still left. Each row is a FlatPack list item: icon,
+  next step, and a link across the row.
 - Admin screen `onboarding_checklists` and one-account lookup at
   `/onboarding/admin/setup_lookup`, only when `recording_studio_admin` is present.
 - Sign-in recheck via `Warden::Manager.after_authentication` when Warden is
