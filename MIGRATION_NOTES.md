@@ -4,21 +4,36 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio `>= 7.0`, `< 8.0` (dummy GitHub tag `v7.3.0`)
-- RecordingStudio_users `>= 0.30.0`, `< 1.0` (dummy/root GitHub tag `v0.32.0`)
+- Recording Studio `>= 7.0`, `< 8.0` (dummy GitHub tag `v7.8.0`)
+- RecordingStudio_users `>= 0.30.0`, `< 1.0` (dummy/root GitHub tag `v0.41.0`)
   for the registration-completed provisioning subscriber; dummy mounts users auth
-- RecordingStudio_metrics `v0.9.0`
-- Accessible dummy tag `v0.45.1`, Attachable `v0.31.0`, Admin `v2.18.0`,
-  Dashboard `v0.5.0` (dummy only; the gem does not depend on it),
-  API `v1.2.1` (`require: false`), Moveable `v6.0.0` (`require: false`),
-  Icons `v0.4.0` (`require: false`), Cache `v0.7.0`, Logs `v0.8.0`,
-  Trashable `v1.0.1` (dummy `purge_at` column; kept rows use `Recording.kept`),
-  Root Switchable `v0.16.0`
-- FlatPack dummy tag `v0.1.377` (`view_component` `>= 4.14.0`, `< 5`)
+- RecordingStudio_metrics `v0.10.0`
+- Accessible dummy tag `v0.58.0`, Attachable `v0.34.0`, Admin `v2.20.0`,
+  Dashboard `v0.6.0` (dummy only; the gem does not depend on it),
+  API `v1.21.2` (`require: false`), Moveable `v6.1.0` (`require: false`),
+  Icons `v0.5.0` (`require: false`), Cache `v0.8.0`, Logs `v0.9.0`,
+  Trashable `v1.3.0` (dummy `purge_at` column; kept rows use `Recording.kept`),
+  Root Switchable `v0.17.0`
+- FlatPack dummy tag `v0.2.0` (`view_component` `>= 4.14.0`, `< 5`). Icons are
+  server-rendered. Do not pin `flat_pack/heroicons` or register `flat-pack--icon`.
 - Dummy and `gemfiles/without_terms.gemfile` omit Terms and Publishable.
   Agree-before-onboarding is tested once Terms ships a core 7 tag.
 - Dummy Puma `8.1.1` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
+
+## 0.11.0 Dependency pins
+
+- No onboarding migration. Gemspec floors stay `recording_studio` `>= 7.0`,
+  `< 8.0` and `recording_studio_user` `>= 0.30.0`, `< 1.0`.
+- Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have not.
+- flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual
+  `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller
+  registration. Unknown icon names raise in development and test.
+- Dummy copies the Users sign-in lockout and sign-in link migrations from
+  Users `v0.41.0`. Hosts that mount Users should run those Users migrations.
+- Users 0.41 removes `after_sign_up_path_for` from `Auth::BaseController`.
+  Drop a host `public :after_sign_in_path_for, :after_sign_up_path_for`
+  workaround. The dummy no longer publishes those methods.
 
 ## 0.10.0 Dashboard widget
 

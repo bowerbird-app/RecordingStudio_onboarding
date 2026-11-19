@@ -445,7 +445,7 @@ obeys `setup_recheck_interval`.
 The dummy mounts RS Users auth (`recording_studio_user_auth_for :users` plus
 `RecordingStudioUser::Engine`) so `/users/sign_up` is the real users flow.
 Password and OAuth sign-up emit the unified event. OTP registration stays off
-in the dummy (`otp_enabled = false`), so OTP-only paths return 404. Users 0.32
+in the dummy (`otp_enabled = false`), so OTP-only paths return 404. Users 0.41
 still draws the password confirmation code routes (`/users/sign_up/verify`
 and resend) while password registration is on. `password_registration_confirmation`
 is removed.
@@ -454,11 +454,11 @@ is removed.
 
 - No gemspec dependency on RS Terms & Conditions (soft optional gate)
 - Flatpack ViewComponents only; no React or Vue
-- Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v7.3.0`,
-  Accessible `v0.45.1`, Admin `v2.18.0`, API `v1.2.1`, Attachable `v0.31.0`,
-  Cache `v0.7.0`, Icons `v0.4.0`, Logs `v0.8.0`, RecordingStudio_users `v0.32.0`,
-  Metrics `v0.9.0`, Moveable `v6.0.0`, Trashable `v1.0.1`, Root Switchable
-  `v0.16.0`, Flatpack `v0.1.377`. The dummy also pins Dashboard `v0.5.0`.
+- Dummy and root GitHub tag pins match the Gemfiles: RecordingStudio `v7.8.0`,
+  Accessible `v0.58.0`, Admin `v2.20.0`, API `v1.21.2`, Attachable `v0.34.0`,
+  Cache `v0.8.0`, Icons `v0.5.0`, Logs `v0.9.0`, RecordingStudio_users `v0.41.0`,
+  Metrics `v0.10.0`, Moveable `v6.1.0`, Trashable `v1.3.0`, Root Switchable
+  `v0.17.0`, Flatpack `v0.2.0`. The dummy also pins Dashboard `v0.6.0`.
   The gem does not depend on Dashboard.
   Dummy omits Terms and Publishable until Terms ships a core 7 tag.
   Gemspec: `recording_studio` `>= 7.0`, `< 8.0`, `recording_studio_user`

@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioOnboardingTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.10.0", ::RecordingStudioOnboarding::VERSION
+    assert_equal "0.11.0", ::RecordingStudioOnboarding::VERSION
   end
 
   def test_lockfiles_pin_patched_omniauth
@@ -64,21 +64,25 @@ class RecordingStudioOnboardingTest < Minitest::Test
     gemfile = File.read(gemfile_path)
     lock = File.read("#{gemfile_path}.lock")
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.45.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.32.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.18.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v1.2.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.31.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.7.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_icons", tag: "v0.4.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_logs", tag: "v0.8.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.9.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_moveable", tag: "v6.0.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v1.0.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.16.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_dashboard", tag: "v0.5.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.377"'
+    [
+      ["recording_studio", "~> 7.8", "bowerbird-app/RecordingStudio", "v7.8.0"],
+      ["recording_studio_accessible", "~> 0.58", "bowerbird-app/RecordingStudio_accessible", "v0.58.0"],
+      ["recording_studio_user", "~> 0.41", "bowerbird-app/RecordingStudio_users", "v0.41.0"],
+      ["recording_studio_admin", "~> 2.20", "bowerbird-app/RecordingStudio_admin", "v2.20.0"],
+      ["recording_studio_api", "~> 1.21", "bowerbird-app/RecordingStudio_api", "v1.21.2", "require: false"],
+      ["recording_studio_attachable", "~> 0.34", "bowerbird-app/RecordingStudio_attachable", "v0.34.0"],
+      ["recording_studio_cache", "~> 0.8", "bowerbird-app/RecordingStudio_cache", "v0.8.0"],
+      ["recording_studio_icons", "~> 0.5", "bowerbird-app/RecordingStudio_icons", "v0.5.0", "require: false"],
+      ["recording_studio_logs", "~> 0.9", "bowerbird-app/RecordingStudio_logs", "v0.9.0"],
+      ["recording_studio_metrics", "~> 0.10", "bowerbird-app/RecordingStudio_metrics", "v0.10.0"],
+      ["recording_studio_moveable", "~> 6.1", "bowerbird-app/RecordingStudio_moveable", "v6.1.0", "require: false"],
+      ["recording_studio_trashable", "~> 1.3", "bowerbird-app/RecordingStudio_trashable", "v1.3.0", "require: false"],
+      ["recording_studio_root_switchable", "~> 0.17", "bowerbird-app/RecordingStudio_root_switchable", "v0.17.0"],
+      ["recording_studio_dashboard", "~> 0.6", "bowerbird-app/RecordingStudio_dashboard", "v0.6.0"],
+      ["flat_pack", "~> 0.2", "bowerbird-app/flatpack", "v0.2.0"]
+    ].each do |name, requirement, repo, tag, extra|
+      assert_github_pin(gemfile, name, requirement, [repo, tag], extra)
+    end
     assert_includes gemfile, 'gem "puma", "8.1.1"'
     assert_includes gemfile, 'gem "msgpack", ">= 1.8.7"'
     assert_includes lock, "puma (8.1.1)"
@@ -100,7 +104,6 @@ class RecordingStudioOnboardingTest < Minitest::Test
     refute_includes gemfile, 'tag: "v2.0.5"'
     refute_includes gemfile, 'tag: "v0.1.177"'
     refute_includes gemfile, 'tag: "v0.1.133"'
-    refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "0.3.1"'
   end
 
@@ -116,8 +119,10 @@ class RecordingStudioOnboardingTest < Minitest::Test
     refute_includes gemfile, "widen_family_requirements"
     refute_includes lock, "recording_studio_terms_and_conditions"
     refute_includes lock, "recording_studio_publishable"
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_users", tag: "v0.32.0"'
+    assert_github_pin(gemfile, "recording_studio", "~> 7.8", ["bowerbird-app/RecordingStudio", "v7.8.0"])
+    assert_github_pin(
+      gemfile, "recording_studio_user", "~> 0.41", ["bowerbird-app/RecordingStudio_users", "v0.41.0"]
+    )
     assert_includes lock, "puma (8.1.1)"
     assert_includes lock, "msgpack (1.8.7)"
     refute_includes lock, "msgpack (1.8.5)"
@@ -435,5 +440,12 @@ class RecordingStudioOnboardingTest < Minitest::Test
 
   def github_tags_from(path)
     File.read(path).scan(/github:\s+"([^"]+)",\s+tag:\s+"([^"]+)"/).to_h
+  end
+
+  def assert_github_pin(source, name, requirement, location, extra = nil)
+    repo, tag = location
+    declaration = %(gem "#{name}", "#{requirement}", github: "#{repo}", tag: "#{tag}")
+    declaration = "#{declaration}, #{extra}" if extra
+    assert_includes source, declaration
   end
 end
