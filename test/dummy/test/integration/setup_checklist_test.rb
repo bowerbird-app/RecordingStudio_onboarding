@@ -202,6 +202,54 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "setup_status to_h resolves main_app links and rereads the saved row" do
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :box do
+        scope :user
+        title "Finish your studio"
+        subtitle remaining: "Here's what's left."
+        item :name,
+          check: ->(*) { false },
+          next_step: "Add a name",
+          link: -> { main_app.root_path },
+          icon: :user
+      end
+    end
+
+    status = RecordingStudioOnboarding.setup_status(:box, actor: @user)
+    payload = {
+      "checklist" => "box",
+      "title" => "Finish your studio",
+      "subtitle" => "Here's what's left.",
+      "applicable" => true,
+      "complete" => false,
+      "remaining" => [
+        { "key" => "name", "next_step" => "Add a name", "icon" => "user", "link" => "/" }
+      ],
+      "done" => []
+    }
+    assert_equal payload, status.to_h
+    assert_equal payload, status.as_json
+    assert_equal payload, JSON.parse(JSON.generate(status.to_h))
+
+    assert_no_difference -> { RecordingStudioOnboarding::SetupCheck.count } do
+      assert_equal payload, RecordingStudioOnboarding.setup_status(:box, actor: @user).to_h
+    end
+  end
+
+  test "setup_status uses the same access rule as the setup page" do
+    register_workspace_checklist
+    status = RecordingStudioOnboarding.setup_status(:workspace_ready, actor: @user, subject: @workspace)
+
+    assert_equal "Your setup", status.to_h["title"]
+    assert_equal "You're all set.", status.to_h["subtitle"]
+    assert_equal true, status.to_h["complete"]
+
+    assert_raises(RecordingStudioOnboarding::Unauthorized) do
+      RecordingStudioOnboarding.setup_status(:workspace_ready, actor: @other, subject: @workspace)
+    end
+  end
+
   test "two checklists keep separate saved rows" do
     register_box(->(*) { true })
     RecordingStudioOnboarding.configure do |config|

@@ -282,17 +282,66 @@ Workspace and subject checklists need Accessible `:view`.
 When Warden is loaded, a successful sign-in enqueues the same recheck. If
 Warden is absent, sign-in is unchanged.
 
-This gem has no MCP dependency and no MCP code. A host can call `setup_status`
-from its own MCP instructions. Featured In can do that from `instructions_suffix`:
+## Using setup status in your host
+
+`RecordingStudioOnboarding.setup_status` is the call. The setup page and the
+admin lookup render this `SetupStatus`.
+
+```ruby
+status = RecordingStudioOnboarding.setup_status(:studio, actor: current_user)
+status.title
+status.subtitle
+status.applicable?
+status.complete?
+status.remaining
+status.done
+status.to_h
+```
+
+A `:user` checklist uses the signed-in person. Pass `subject:` for a workspace
+or subject checklist. That person needs Accessible `:view` on the subject.
+Anyone else gets `RecordingStudioOnboarding::Unauthorized`.
+
+The first call computes and saves. A later call returns the saved row and
+enqueues a recheck when the row is older than `setup_recheck_interval`. Item
+`link` values on the status are strings. A zero-argument link callable runs
+with `main_app` set to the application route helpers, including from a sign-in
+callback or an MCP tool. A callable that takes arguments receives the actor
+and the scope target.
+
+After sign-in, read the status and show the subtitle when work remains.
+
+```ruby
+status = RecordingStudioOnboarding.setup_status(:studio, actor: current_user)
+flash.now[:notice] = status.subtitle unless status.complete?
+```
+
+`to_h` and `as_json` return plain data. Keys are strings. Values are strings,
+booleans, arrays, and `null` links. No procs and no records.
 
 ```ruby
 def instructions_suffix
-  status = RecordingStudioOnboarding.setup_status(:studio, actor: current_user)
-  return "" if status.complete? || status.next_item.nil?
-
-  step = status.next_item
-  "Setup is not finished. Next: #{step.next_step} #{step.link}"
+  RecordingStudioOnboarding.setup_status(:studio, actor: current_user).to_h
 end
+```
+
+```json
+{
+  "checklist": "studio",
+  "title": "Finish your studio",
+  "subtitle": "Here's what's left.",
+  "applicable": true,
+  "complete": false,
+  "remaining": [
+    {
+      "key": "profile",
+      "next_step": "Add your profile",
+      "icon": "user",
+      "link": "/"
+    }
+  ],
+  "done": []
+}
 ```
 
 Run the `create_recording_studio_onboarding_setup_checks` migration. See

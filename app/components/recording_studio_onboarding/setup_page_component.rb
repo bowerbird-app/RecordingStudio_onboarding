@@ -15,21 +15,15 @@ module RecordingStudioOnboarding
     end
 
     def title
-      checklist&.title || ChecklistDefinition::DEFAULT_TITLE
+      status.title
     end
 
     def subtitle
-      checklist&.subtitle_for(status) || ChecklistDefinition.default_subtitle(status)
+      status.subtitle
     end
 
     def row_chevron
       render FlatPack::Shared::IconComponent.new(name: "chevron-right", size: :sm)
-    end
-
-    private
-
-    def checklist
-      RecordingStudioOnboarding.configuration.checklist_for(status.checklist)
     end
   end
 end

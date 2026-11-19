@@ -111,6 +111,73 @@ class SetupChecklistTest < Minitest::Test
     assert_raises(ArgumentError) { definition.subtitle_for(listed_status(applicable: true, complete: false)) }
   end
 
+  def test_setup_status_to_h_is_plain_json_for_the_current_state
+    register_studio
+    status = evaluate(:studio)
+    payload = status.to_h
+
+    assert_equal "studio", payload["checklist"]
+    assert_equal "Your setup", payload["title"]
+    assert_equal "What to do next.", payload["subtitle"]
+    assert_equal true, payload["applicable"]
+    assert_equal false, payload["complete"]
+    assert_equal [
+      {
+        "key" => "press_kit",
+        "next_step" => "Publish your first press kit",
+        "icon" => "queue_list",
+        "link" => "https://example.com/press"
+      }
+    ], payload["remaining"]
+    assert_equal [
+      {
+        "key" => "email",
+        "next_step" => "Confirm the email on your account",
+        "icon" => "queue_list",
+        "link" => "https://example.com/email"
+      }
+    ], payload["done"]
+    assert_equal payload, status.as_json
+    assert_equal payload, JSON.parse(JSON.generate(payload))
+    refute_match(/Proc|RecordingStudio/, JSON.generate(payload))
+  end
+
+  def test_setup_status_to_h_uses_a_custom_title_subtitle_and_resolved_link
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :studio do
+        title "Finish your studio"
+        subtitle remaining: "Here's what's left.",
+                 complete: "The studio is ready.",
+                 not_applicable: "This list isn't for you."
+        item :email,
+             check: ->(*) { false },
+             next_step: "Confirm your email",
+             link: -> { "/account/email" },
+             icon: :envelope
+      end
+      config.checklist :skipped do
+        applies_to ->(*) { false }
+        subtitle not_applicable: "This list isn't for you."
+        item :email,
+             check: ->(*) { false },
+             next_step: "Confirm your email",
+             link: "https://example.com/email"
+      end
+    end
+
+    open_status = evaluate(:studio)
+    assert_equal "Finish your studio", open_status.title
+    assert_equal "Here's what's left.", open_status.subtitle
+    assert_equal "/account/email", open_status.to_h["remaining"].first["link"]
+    assert_equal "envelope", open_status.to_h["remaining"].first["icon"]
+
+    hidden = evaluate(:skipped)
+    assert_equal false, hidden.to_h["applicable"]
+    assert_equal "This list isn't for you.", hidden.to_h["subtitle"]
+    assert_equal [], hidden.to_h["remaining"]
+    assert_equal [], hidden.to_h["done"]
+  end
+
   def test_checklist_requires_a_name_items_and_absolute_link
     assert_raises(ArgumentError) { RecordingStudioOnboarding.configuration.checklist(nil) { item_email } }
     assert_raises(ArgumentError) { RecordingStudioOnboarding.configuration.checklist(:studio) }
