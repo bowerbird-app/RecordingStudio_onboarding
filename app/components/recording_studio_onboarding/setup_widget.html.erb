@@ -1,22 +1,13 @@
-<%= render FlatPack::Stack::Component.new(gap: :md) do %>
-  <%= render FlatPack::SectionTitle::Component.new(
-        title: title,
-        subtitle: subtitle,
-        size: :md,
-        spacing: :none,
-        level: :h2
-      ) %>
-  <%= render FlatPack::Card::Component.new(padding: :none, data: { testid: "onboarding-setup" }) do |card| %>
-    <% card.body(padding: :none) do %>
-      <%= render RecordingStudioOnboarding::SetupItemsComponent.new(status: status, surface: false) %>
-    <% end %>
-    <% card.footer(padding: :sm) do %>
-      <%= render FlatPack::Button::Component.new(
-            text: "See your setup",
-            href: setup_href,
-            style: :ghost,
-            size: :sm
-          ) %>
-    <% end %>
+<%= render FlatPack::Card::Component.new(padding: :none, data: { testid: "onboarding-setup" }) do |card| %>
+  <% card.body(padding: :none) do %>
+    <%= render RecordingStudioOnboarding::SetupItemsComponent.new(status: status, surface: false) %>
+  <% end %>
+  <% card.footer(padding: :sm) do %>
+    <%= render FlatPack::Button::Component.new(
+          text: "See your setup",
+          href: setup_href,
+          style: :ghost,
+          size: :sm
+        ) %>
   <% end %>
 <% end %>

@@ -7,7 +7,7 @@ module RecordingStudioOnboarding
     extend SetupWidgetRegistration
 
     WIDGET_ID = :onboarding_setup
-    Source = Data.define(:status, :title, :link, :subject)
+    Source = Data.define(:status, :link, :subject)
 
     def initialize(preparation: nil, **)
       super()
@@ -16,14 +16,6 @@ module RecordingStudioOnboarding
 
     def render?
       !@source.nil?
-    end
-
-    def title
-      @source.title
-    end
-
-    def subtitle
-      @source.status.subtitle
     end
 
     def status

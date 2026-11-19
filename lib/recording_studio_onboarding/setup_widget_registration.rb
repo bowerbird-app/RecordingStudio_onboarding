@@ -18,17 +18,18 @@ module RecordingStudioOnboarding
       return unless defined?(::RecordingStudioDashboard)
       return if dashboard_widget_registered?
 
-      ::RecordingStudioDashboard.register_widget(
-        SetupWidget::WIDGET_ID,
-        component: SetupWidget,
-        default_span: 6,
-        supported_spans: [6, 12],
-        options: %i[checklist title link subject show_complete],
-        empty: :hide
-      )
+      ::RecordingStudioDashboard.register_widget(SetupWidget::WIDGET_ID, **widget_type)
     end
 
     private
+
+    def widget_type
+      {
+        component: SetupWidget, title: "Setup checklist", description: "Remaining setup items",
+        default_span: 6, supported_spans: [6, 12],
+        options: %i[checklist link subject show_complete], empty: :hide
+      }
+    end
 
     def checklist_status(context, checklist, subject)
       raise ArgumentError, "checklist is required" if checklist.blank?
@@ -37,11 +38,8 @@ module RecordingStudioOnboarding
     end
 
     def source_for(status, options, context, subject)
-      chosen_title = resolve_with_context(options[:title], context)
-      chosen_title = status.title if chosen_title.blank?
       SetupWidget::Source.new(
         status: status,
-        title: chosen_title,
         link: resolve_with_context(options[:link], context),
         subject: subject
       )

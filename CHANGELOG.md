@@ -22,23 +22,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Optional Dashboard widget `:onboarding_setup`. It renders one named checklist
-  through `RecordingStudioOnboarding.setup_status` (title, subtitle, remaining
-  items, and each item's link and icon). The gem registers the widget only
-  when Recording Studio Dashboard is loaded. There is no gemspec dependency.
+  through `RecordingStudioOnboarding.setup_status` (remaining items, and each
+  item's link and icon). The card has no heading. The gem registers the widget
+  only when Recording Studio Dashboard is loaded. There is no gemspec
+  dependency.
 - `SetupItemsComponent` draws the remaining rows for Your setup and the widget.
 
 ### Upgrade notes
 - No migration. Checklists, flows, provisioning, and the setup page stay as
   they are. Hosts that do not install Dashboard see no change.
 - To show the widget, install Recording Studio Dashboard and place
-  `:onboarding_setup` with a `checklist` name. It hides when the checklist
-  does not apply or is complete. `show_complete: true` keeps the finished
-  state. The widget draws one title and one subtitle: the checklist title
-  and subtitle. `title` replaces the title when set. Leave the dashboard row
-  untitled so it does not add a second heading. `title` and `link` are a
-  String or a Proc of the dashboard context. `subject` is a record or a Proc
-  of that context. The widget calls `setup_status` (the saved row, then a
-  recheck when the row is stale). The setup page still computes live.
+  `:onboarding_setup` with a `checklist` name. Set the section title on the
+  row (`row :setup, title: "..."`). The widget does not draw a heading.
+  It hides when the checklist does not apply or is complete.
+  `show_complete: true` keeps the finished state. `link` is a String or a
+  Proc of the dashboard context. `subject` is a record or a Proc of that
+  context. The widget calls `setup_status` (the saved row, then a recheck
+  when the row is stale). The setup page still computes live.
 
 ## [0.9.1] - 2026-11-19
 

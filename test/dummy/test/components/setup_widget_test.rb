@@ -24,6 +24,9 @@ class SetupWidgetTest < ViewComponent::TestCase
     widget = RecordingStudioDashboard.registry.widget(:onboarding_setup)
 
     assert_equal RecordingStudioOnboarding::SetupWidget, widget.component
+    assert_equal "Setup checklist", widget.title
+    assert_equal "Remaining setup items", widget.description
+    assert_equal %i[checklist link subject show_complete], widget.options
     assert_equal :hide, widget.empty_state.policy
     assert_nil RecordingStudioOnboarding::SetupWidget.register_dashboard_widget!
   end
@@ -46,7 +49,7 @@ class SetupWidgetTest < ViewComponent::TestCase
     assert_includes rendered_content, "Nothing left. Nice work."
   end
 
-  test "prepare renders remaining items and resolves a title proc" do
+  test "prepare renders remaining items and resolves a link proc" do
     RecordingStudioOnboarding.configure do |config|
       config.checklist :open do
         scope :user
@@ -58,22 +61,18 @@ class SetupWidgetTest < ViewComponent::TestCase
       @context,
       {
         checklist: :open,
-        title: ->(ctx) { ctx.label },
         link: ->(ctx) { "/setup/#{ctx.label.parameterize}" }
       }
     )
 
     assert_equal :content, preparation.state
     assert_instance_of RecordingStudioOnboarding::SetupWidget::Source, preparation.data
-    assert_equal "Almost there", preparation.data.title
+    assert_equal "/setup/almost-there", preparation.data.link
     assert_equal ["Add a name", "Add a photo"], preparation.data.status.remaining.map(&:next_step)
 
     render_inline RecordingStudioOnboarding::SetupWidget.new(preparation: preparation)
     document = Nokogiri::HTML.fragment(rendered_content)
-    assert_equal [ "Almost there" ], document.css("h2").map { |node| node.text.squish }
-    assert_equal [ "What to do next." ], document.css(".fp-section-title p").map { |node| node.text.squish }
-    assert_equal 1, document.css(".fp-section-title").size
-    assert_nil document.at_css("[data-testid=onboarding-setup] h2")
+    assert_empty document.css("h1, h2, h3, h4, h5, h6, .fp-section-title")
     assert_rendered "[data-testid=setup-item-name] a", text: "Add a name", href: "https://example.com/name"
     assert_rendered "[data-testid=setup-item-photo] a", text: "Add a photo", href: "https://example.com/photo"
     assert_rendered "a", text: "See your setup", href: "/setup/almost-there"
