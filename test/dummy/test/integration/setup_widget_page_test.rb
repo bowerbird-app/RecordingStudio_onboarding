@@ -24,6 +24,11 @@ class SetupWidgetPageTest < ActionDispatch::IntegrationTest
     get dashboard_path
 
     assert_response :success
+    assert_select "title", text: "Recording Studio Onboarding", count: 1
+    assert_select "h1", text: "Your studio", count: 0
+    assert_select "h1, h2, h3, h4, h5, h6", count: 1
+    assert_select "h2", text: "Finish your studio", count: 1
+    refute_includes response.body, "Your studio"
     assert_select "[data-testid=onboarding-setup]"
     assert_select "[data-dashboard-row=setup] .fp-section-title.fp-on-backdrop", text: "Finish your studio"
     %w[h1 h2 h3 h4 h5 h6].each do |tag|

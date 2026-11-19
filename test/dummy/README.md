@@ -39,7 +39,7 @@ Then open the app and sign in with:
 - `/onboarding/runs/:uuid` - full-screen card shell for the current step
 - `/onboarding/setup/:checklist` - Your setup for a registered checklist.
   `:studio` sets its own title and subtitle. `:workspace_ready` keeps the defaults.
-- `/dashboard` - Your studio, with the setup widget for the `:studio` checklist.
+- `/dashboard` - studio dashboard with the setup widget for the `:studio` checklist.
 - `/onboarding/admin/setup_lookup` - one account's user-scoped setup status
 - `/recording_studio_terms_and_conditions/acceptance` - Agree (terms-before-onboarding)
 - `/admin` - RecordingStudio Admin root (onboarding section + screens)
