@@ -22,10 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `RecordingStudioOnboarding.setup_status` returns `title`, `subtitle`, and
-  `to_h` / `as_json`. `to_h` is plain data for a host prompt or an MCP payload.
-  Item links are strings resolved when the row is computed. A zero-argument
-  link callable uses the application route helpers. The setup page and admin
-  lookup read this same object. No migration.
+  `to_h` / `as_json`. `to_h(only:, except:, url_options:)` keeps the top-level
+  record and always includes each item `key`. `only` and `except` choose among
+  `next_step`, `icon`, and `link`. `url_options` (or
+  `Rails.application.routes.default_url_options` when it has a host) turns a
+  stored path into an absolute URL at serialization. The saved row stays a
+  path. The setup page and admin lookup read this same object. No migration.
 - `config.checklist` accepts an optional `title` and `subtitle`. `title`
   defaults to "Your setup". `subtitle` defaults to "What to do next.",
   "You're all set.", and "Nothing here applies to you." for the remaining,

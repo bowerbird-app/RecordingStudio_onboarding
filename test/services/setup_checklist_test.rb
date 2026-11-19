@@ -178,6 +178,46 @@ class SetupChecklistTest < Minitest::Test
     assert_equal [], hidden.to_h["done"]
   end
 
+  def test_to_h_filters_item_fields_and_always_keeps_key
+    status = status_with_link("/flows")
+    only_link = status.to_h(only: [:link])["remaining"].first
+    assert_equal({ "key" => "name", "link" => "/flows" }, only_link)
+
+    without_icon = status.to_h(except: [:icon])["remaining"].first
+    assert_equal(
+      { "key" => "name", "next_step" => "Add a name", "link" => "/flows" },
+      without_icon
+    )
+    assert_equal %w[checklist title subtitle applicable complete remaining done], status.to_h(only: :link).keys
+    assert_equal without_icon, status.as_json(except: :icon)["remaining"].first
+    assert_equal without_icon, status.as_json({ "except" => "icon" })["remaining"].first
+  end
+
+  def test_to_h_rejects_an_unknown_item_field_and_excluding_key
+    status = status_with_link("/flows")
+    assert_raises(ArgumentError) { status.to_h(only: [:title]) }
+    assert_raises(ArgumentError) { status.to_h(except: [:key]) }
+    assert_raises(ArgumentError) { status.to_h(url_options: "app.example") }
+  end
+
+  def test_to_h_absolutizes_relative_links_and_leaves_absolute_and_nil
+    relative = status_with_link("/flows")
+    assert_equal(
+      "https://app.example/flows",
+      relative.to_h(url_options: { host: "app.example", protocol: "https" })["remaining"].first["link"]
+    )
+    assert_equal "/flows", relative.remaining.first.link
+
+    absolute = status_with_link("https://cdn.example/press")
+    assert_equal(
+      "https://cdn.example/press",
+      absolute.to_h(url_options: { host: "app.example", protocol: "https" })["remaining"].first["link"]
+    )
+
+    missing = status_with_link(nil)
+    assert_nil missing.to_h(url_options: { host: "app.example" })["remaining"].first["link"]
+  end
+
   def test_checklist_requires_a_name_items_and_absolute_link
     assert_raises(ArgumentError) { RecordingStudioOnboarding.configuration.checklist(nil) { item_email } }
     assert_raises(ArgumentError) { RecordingStudioOnboarding.configuration.checklist(:studio) }
@@ -359,6 +399,16 @@ class SetupChecklistTest < Minitest::Test
              link: "https://example.com/press"
       end
     end
+  end
+
+  def status_with_link(link)
+    item = RecordingStudioOnboarding::SetupItem.new(
+      key: :name, next_step: "Add a name", link: link, icon: :user, done: false
+    )
+    RecordingStudioOnboarding::SetupStatus.new(
+      checklist: :studio, applicable: true, complete: false, next_item: item,
+      done: [], remaining: [item], checked_at: nil
+    )
   end
 
   def listed_status(applicable:, complete:)

@@ -237,6 +237,29 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "to_h uses routes default_url_options and the saved link stays relative" do
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :box do
+        scope :user
+        item :name,
+          check: ->(*) { false },
+          next_step: "Add a name",
+          link: -> { main_app.root_path },
+          icon: :user
+      end
+    end
+    status = RecordingStudioOnboarding.setup_status(:box, actor: @user)
+    routes = Rails.application.routes
+    previous = routes.default_url_options.dup
+    routes.default_url_options = { host: "studio.example", protocol: "https" }
+
+    assert_equal "https://studio.example/", status.to_h["remaining"].first["link"]
+    stored = RecordingStudioOnboarding::SetupCheck.find_by!(checklist_key: "box", actor: @user)
+    assert_equal "/", stored.items.first["link"]
+  ensure
+    Rails.application.routes.default_url_options = previous if defined?(previous) && previous
+  end
+
   test "setup_status uses the same access rule as the setup page" do
     register_workspace_checklist
     status = RecordingStudioOnboarding.setup_status(:workspace_ready, actor: @user, subject: @workspace)

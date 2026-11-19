@@ -29,9 +29,12 @@
 - Override `app/views/recording_studio_onboarding/setup/show` to keep a
   full-width list.
 - `setup_status` returns `title`, `subtitle`, and `to_h` / `as_json`. Call
-  the same method the setup page uses. Item links are already strings. A
+  the same method the setup page uses. Item links are stored as paths. A
   zero-argument `link` callable uses the application route helpers, so a
-  sign-in callback or an MCP tool does not pass a controller. No migration.
+  sign-in callback does not pass a controller. `to_h(only:, except:, url_options:)`
+  shapes item fields and can build absolute URLs. `key` is always included.
+  If `Rails.application.routes.default_url_options` has a host, `to_h` and
+  `as_json` return absolute links. The saved row stays a path. No migration.
 - Optional `title` and `subtitle` on `config.checklist`. Defaults are
   unchanged: "Your setup", "What to do next.", "You're all set.", and
   "Nothing here applies to you." A subtitle is one string, per-state text,

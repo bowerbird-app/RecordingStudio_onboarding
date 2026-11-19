@@ -309,19 +309,30 @@ with `main_app` set to the application route helpers, including from a sign-in
 callback or an MCP tool. A callable that takes arguments receives the actor
 and the scope target.
 
-After sign-in, read the status and show the subtitle when work remains.
+After sign-in, pass the full `to_h` as the prompt. `checklist`, `title`,
+`subtitle`, `applicable`, and `complete` are always present. Each item
+includes `key`. `only` and `except` choose among `next_step`, `icon`, and
+`link`. `except: [:key]` raises `ArgumentError`. An unknown field name raises
+`ArgumentError`.
 
 ```ruby
 status = RecordingStudioOnboarding.setup_status(:studio, actor: current_user)
-flash.now[:notice] = status.subtitle unless status.complete?
+prompt = status.to_h unless status.complete?
 ```
 
-`to_h` and `as_json` return plain data. Keys are strings. Values are strings,
-booleans, arrays, and `null` links. No procs and no records.
+`to_h` and `as_json` return string keys and plain values. The saved row keeps
+the path. Pass `url_options:` when you want an absolute link in that hash.
+An `http` or `https` link stays as stored. A nil link stays nil. Omit
+`url_options` and a host in `Rails.application.routes.default_url_options`
+is used. With no host, the path stays relative. Pass `port` when it is not
+80 or 443.
 
 ```ruby
 def instructions_suffix
-  RecordingStudioOnboarding.setup_status(:studio, actor: current_user).to_h
+  RecordingStudioOnboarding.setup_status(:studio, actor: current_user).to_h(
+    except: [:icon],
+    url_options: { host: "app.example", protocol: "https" }
+  )
 end
 ```
 
@@ -336,8 +347,7 @@ end
     {
       "key": "profile",
       "next_step": "Add your profile",
-      "icon": "user",
-      "link": "/"
+      "link": "https://app.example/"
     }
   ],
   "done": []
