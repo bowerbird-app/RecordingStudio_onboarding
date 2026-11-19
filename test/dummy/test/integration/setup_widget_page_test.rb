@@ -25,7 +25,11 @@ class SetupWidgetPageTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "[data-testid=onboarding-setup]"
-    assert_select "h2", text: "Finish your studio"
+    assert_select "[data-dashboard-row=setup] .fp-on-backdrop", count: 0
+    assert_select "h2", text: "Finish your studio", count: 1
+    assert_select "[data-testid=onboarding-setup] h2", count: 0
+    assert_select "p", text: "Here's what's left.", count: 1
+    refute_includes response.body, "Still to do"
     assert_select "[data-testid=setup-item-profile] a[href=?]", "/", text: /Add your profile/
     assert_select "[data-testid=setup-item-press_kit] a[href=?]", "/flows", text: /Publish your first press kit/
     assert_select "[data-testid=setup-item-team] a[href=?]", "/flows", text: /Invite a teammate/

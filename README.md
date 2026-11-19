@@ -291,7 +291,7 @@ that gem is loaded, onboarding registers the widget `:onboarding_setup`.
 
 ```ruby
 RecordingStudioDashboard.register(:home) do
-  row :setup, title: "Still to do" do
+  row :setup do
     widget :onboarding_setup, span: 6, config: {
       checklist: :studio,
       title: ->(context) { "Finish #{context.studio_name}" },
@@ -303,9 +303,12 @@ end
 ```
 
 `checklist` is the registered name. The widget calls `setup_status` for that
-name and shows the title, the subtitle, and the items still left. Each row
-keeps that item's link. "See your setup" opens the full setup page. Pass
-`link` when that destination should be somewhere else.
+name and draws one title and one subtitle, then the items still left. The
+title is the checklist title. A `title` string or Proc replaces that title.
+The subtitle stays the checklist subtitle. Leave the dashboard row untitled.
+A row title is a second heading. Each item keeps its link. "See your setup"
+opens the full setup page. Pass `link` when that destination should be
+somewhere else.
 
 `title` and `link` are a String or a Proc of the dashboard context. `subject`
 is the record passed to `setup_status`, or a Proc of the dashboard context

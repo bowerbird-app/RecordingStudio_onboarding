@@ -1,21 +1,22 @@
-<%= render FlatPack::Card::Component.new(padding: :none, data: { testid: "onboarding-setup" }) do |card| %>
-  <% card.header(padding: :sm) do %>
-    <%= render FlatPack::Stack::Component.new(gap: :sm) do %>
-      <%= render FlatPack::Heading::Component.new(text: title, level: 2, size: :sm) %>
-      <% if subtitle.present? %>
-        <%= render FlatPack::Text::Component.new(text: subtitle, size: :sm, style: :muted) %>
-      <% end %>
+<%= render FlatPack::Stack::Component.new(gap: :md) do %>
+  <%= render FlatPack::SectionTitle::Component.new(
+        title: title,
+        subtitle: subtitle,
+        size: :md,
+        spacing: :none,
+        level: :h2
+      ) %>
+  <%= render FlatPack::Card::Component.new(padding: :none, data: { testid: "onboarding-setup" }) do |card| %>
+    <% card.body(padding: :none) do %>
+      <%= render RecordingStudioOnboarding::SetupItemsComponent.new(status: status, surface: false) %>
     <% end %>
-  <% end %>
-  <% card.body(padding: :none) do %>
-    <%= render RecordingStudioOnboarding::SetupItemsComponent.new(status: status, surface: false) %>
-  <% end %>
-  <% card.footer(padding: :sm) do %>
-    <%= render FlatPack::Button::Component.new(
-          text: "See your setup",
-          href: setup_href,
-          style: :ghost,
-          size: :sm
-        ) %>
+    <% card.footer(padding: :sm) do %>
+      <%= render FlatPack::Button::Component.new(
+            text: "See your setup",
+            href: setup_href,
+            style: :ghost,
+            size: :sm
+          ) %>
+    <% end %>
   <% end %>
 <% end %>

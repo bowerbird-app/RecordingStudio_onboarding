@@ -27,10 +27,12 @@
 - Recording Studio Dashboard is optional. The gem does not depend on it. When
   the host has loaded that gem, onboarding registers `:onboarding_setup`.
 - Place it with a `checklist` name. The widget calls `setup_status` (the saved
-  row, then a recheck when the row is stale) and shows the title, subtitle,
-  and remaining items. "See your setup" links to the setup page. `title` and
-  `link` are a String or a Proc of the dashboard context. `subject` is a
-  record or a Proc of that context.
+  row, then a recheck when the row is stale) and shows one title, one
+  subtitle, and the remaining items. The title is the checklist title unless
+  `title` is set. The subtitle is the checklist subtitle. Leave the dashboard
+  row untitled. "See your setup" links to the setup page. `title` and `link`
+  are a String or a Proc of the dashboard context. `subject` is a record or a
+  Proc of that context.
 - The widget is omitted when the checklist does not apply or is complete.
   `show_complete: true` keeps the finished state. Accessible `:view` is
   unchanged. A person without access does not see the widget.

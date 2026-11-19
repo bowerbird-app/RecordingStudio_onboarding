@@ -15,7 +15,7 @@ Rails.application.config.to_prepare do
 
   RecordingStudioOnboarding::SetupWidget.register_dashboard_widget!
   RecordingStudioDashboard.register(:studio) do
-    row :setup, title: "Still to do" do
+    row :setup do
       widget :onboarding_setup, span: 12, config: { checklist: :studio }
     end
   end

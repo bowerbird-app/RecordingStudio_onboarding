@@ -69,7 +69,11 @@ class SetupWidgetTest < ViewComponent::TestCase
     assert_equal ["Add a name", "Add a photo"], preparation.data.status.remaining.map(&:next_step)
 
     render_inline RecordingStudioOnboarding::SetupWidget.new(preparation: preparation)
-    assert_rendered "h2", text: "Almost there"
+    document = Nokogiri::HTML.fragment(rendered_content)
+    assert_equal [ "Almost there" ], document.css("h2").map { |node| node.text.squish }
+    assert_equal [ "What to do next." ], document.css(".fp-section-title p").map { |node| node.text.squish }
+    assert_equal 1, document.css(".fp-section-title").size
+    assert_nil document.at_css("[data-testid=onboarding-setup] h2")
     assert_rendered "[data-testid=setup-item-name] a", text: "Add a name", href: "https://example.com/name"
     assert_rendered "[data-testid=setup-item-photo] a", text: "Add a photo", href: "https://example.com/photo"
     assert_rendered "a", text: "See your setup", href: "/setup/almost-there"

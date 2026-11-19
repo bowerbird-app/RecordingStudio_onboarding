@@ -33,10 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - To show the widget, install Recording Studio Dashboard and place
   `:onboarding_setup` with a `checklist` name. It hides when the checklist
   does not apply or is complete. `show_complete: true` keeps the finished
-  state. `title` and `link` are a String or a Proc of the dashboard context.
-  `subject` is a record or a Proc of that context. The widget calls
-  `setup_status` (the saved row, then a recheck when the row is stale). The
-  setup page still computes live.
+  state. The widget draws one title and one subtitle: the checklist title
+  and subtitle. `title` replaces the title when set. Leave the dashboard row
+  untitled so it does not add a second heading. `title` and `link` are a
+  String or a Proc of the dashboard context. `subject` is a record or a Proc
+  of that context. The widget calls `setup_status` (the saved row, then a
+  recheck when the row is stale). The setup page still computes live.
 
 ## [0.9.1] - 2026-11-19
 
