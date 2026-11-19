@@ -99,7 +99,7 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
       assert_select grid, "[data-testid=setup-remaining].flat-pack-list-divided" do
         assert_select "[data-testid=setup-item-name] a[href=?]", "https://example.com/name", text: /Add a name/
         assert_select "[data-testid=setup-item-name][class*='hover:bg-']"
-        assert_select "[data-flat-pack--icon-name-value=chevron-right]"
+        assert_select "svg path[d=?]", "m8.25 4.5 7.5 7.5-7.5 7.5"
       end
     end
     assert_select "[data-testid=setup-done]", count: 0

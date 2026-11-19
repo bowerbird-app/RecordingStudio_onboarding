@@ -7,16 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-19
+
 ### Changed
-- Dummy and development GitHub pins move to Recording Studio `v7.3.0`,
-  Accessible `v0.45.1`, Admin `v2.18.0`, API `v1.2.1`, Attachable `v0.31.0`,
-  Cache `v0.7.0`, Icons `v0.4.0`, Moveable `v6.0.0`, Trashable `v1.0.1`,
-  RecordingStudio_users `v0.32.0`, Root Switchable `v0.16.0`, and FlatPack
-  `v0.1.377`. Logs stays `v0.8.0`. Metrics stays `v0.9.0`.
-- Dummy Accessible `admin_root_resolver` returns the kept Studio Workspace
-  root. Users 0.32 adds confirmable; seeds and test creates call
-  `skip_confirmation!`. `password_registration_confirmation` is removed.
-- Dummy and without-terms lockfiles pin Puma `8.1.1`.
+- Dummy and development GitHub pins move to Recording Studio `v7.8.0`,
+  Accessible `v0.58.0`, Admin `v2.20.0`, API `v1.21.2`, Attachable `v0.34.0`,
+  Cache `v0.8.0`, Icons `v0.5.0`, Logs `v0.9.0`, Metrics `v0.10.0`,
+  Moveable `v6.1.0`, Trashable `v1.3.0`, RecordingStudio_users `v0.41.0`,
+  and FlatPack `v0.2.0`. The dummy also pins Dashboard `v0.6.0` and Root
+  Switchable `v0.17.0`. Each pin is `~> major.minor` plus the GitHub tag.
+  Terms and Publishable stay omitted. Gemspec floors stay unchanged.
+
+### Upgrade notes
+- Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have not.
+- flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller registration.
+- Hosts that mount Users should run the Users 0.41 sign-in lockout and sign-in link migrations. Users 0.41 removes `after_sign_up_path_for` from `Auth::BaseController`. Drop a host `public :after_sign_in_path_for, :after_sign_up_path_for` workaround.
 
 ## [0.10.0] - 2026-11-19
 
@@ -558,7 +563,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.10.0...v0.11.0
 [0.8.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.2...v0.7.3
