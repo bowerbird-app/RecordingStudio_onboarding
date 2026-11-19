@@ -1,21 +1,24 @@
 # frozen_string_literal: true
 
+require "recording_studio_onboarding/checklist_definition"
 require "recording_studio_onboarding/flow_definition"
 
 module RecordingStudioOnboarding
   class Configuration
-    attr_reader :hooks, :provisioners, :flows, :before_onboarding_gates, :layout
-    attr_accessor :authorize_run, :preview_context, :current_actor
+    attr_reader :hooks, :provisioners, :flows, :checklists, :before_onboarding_gates, :layout
+    attr_accessor :authorize_run, :preview_context, :current_actor, :setup_recheck_interval
 
     def initialize
       @hooks = RecordingStudio::Hooks.new
       @provisioners = {}
       @flows = {}
+      @checklists = {}
       @before_onboarding_gates = []
       @authorize_run = nil
       @preview_context = nil
       @current_actor = nil
       @layout = nil
+      @setup_recheck_interval = 5.minutes
     end
 
     def layout=(value)
@@ -83,6 +86,38 @@ module RecordingStudioOnboarding
       @flows.key?(name.to_sym)
     end
 
+    # Register a named setup checklist. Separate from flows.
+    #
+    #   config.checklist :studio do
+    #     scope :user
+    #     item :profile,
+    #       check: ->(actor, scope) { actor.email.present? },
+    #       next_step: "Confirm the email on your account",
+    #       link: "https://example.com/profile"
+    #   end
+    def checklist(name, &block)
+      raise ArgumentError, "checklist name is required" if name.blank?
+      raise ArgumentError, "checklist definition block is required" unless block
+
+      definition = ChecklistDefinition.new(name)
+      definition.instance_eval(&block)
+      raise ArgumentError, "checklist #{name.inspect} must declare at least one item" if definition.items.empty?
+
+      @checklists[name.to_sym] = definition.freeze_definition!
+    end
+
+    def checklist_for(name)
+      @checklists[name.to_sym]
+    end
+
+    def checklist_registered?(name)
+      @checklists.key?(name.to_sym)
+    end
+
+    def delete_checklist(name)
+      @checklists.delete(name.to_sym)
+    end
+
     def clear_flows
       @flows = {}
     end
@@ -95,6 +130,8 @@ module RecordingStudioOnboarding
       {
         provisioners: @provisioners.keys,
         flows: @flows.keys,
+        checklists: @checklists.keys,
+        setup_recheck_interval: @setup_recheck_interval,
         before_onboarding_gates: @before_onboarding_gates.size,
         hooks_registered: @hooks.registered_counts
       }

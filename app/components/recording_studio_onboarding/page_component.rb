@@ -61,13 +61,13 @@ module RecordingStudioOnboarding
     def splash_copy
       content_tag(
         :div,
-        class: "relative z-10 flex w-full flex-col gap-3 p-6 sm:p-8 text-[var(--surface-page-background-color)]"
+        class: "relative z-10 w-full p-6 text-[var(--surface-page-background-color)] sm:p-8"
       ) { copy_blocks(on_dark: true) }
     end
 
     def render_top_image
-      page_shell("top-card", "flex w-full flex-col gap-5") do
-        safe_join([top_image_frame, copy_wrap { copy_blocks(on_dark: false) }])
+      render FlatPack::Stack::Component.new(gap: :lg, data: { testid: "onboarding-page", layout: "top-card" }) do
+        safe_join([top_image_frame, copy_blocks(on_dark: false)])
       end
     end
 
@@ -79,22 +79,22 @@ module RecordingStudioOnboarding
     end
 
     def render_plain
-      page_shell("plain", "flex w-full flex-col gap-3") { copy_blocks(on_dark: false) }
+      render FlatPack::Stack::Component.new(gap: :md, data: { testid: "onboarding-page", layout: "plain" }) do
+        copy_blocks(on_dark: false)
+      end
     end
 
     def page_shell(layout, classes, &)
       content_tag(:div, class: classes, data: { testid: "onboarding-page", layout: layout }, &)
     end
 
-    def copy_wrap(&)
-      content_tag(:div, class: "flex w-full flex-col gap-3", &)
-    end
-
     def copy_blocks(on_dark:)
       parts = []
       parts << page_title(on_dark) if @title.present?
       parts << rich_content(on_dark: on_dark) if @content_html.present?
-      safe_join(parts)
+      render FlatPack::Stack::Component.new(gap: :md) do
+        safe_join(parts)
+      end
     end
 
     def page_title(on_dark)

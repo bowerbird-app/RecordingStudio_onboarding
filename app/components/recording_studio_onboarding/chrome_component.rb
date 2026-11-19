@@ -17,11 +17,11 @@ module RecordingStudioOnboarding
     end
 
     def call
-      content_tag(
-        :div,
-        class: "flex w-full items-center justify-between gap-4",
-        data: { testid: "onboarding-chrome" }
-      ) { safe_join([back_link, skip_link]) }
+      render FlatPack::Cluster::Component.new(
+        gap: :md, justify: :between, data: { testid: "onboarding-chrome" }
+      ) do
+        safe_join([back_link, skip_link])
+      end
     end
 
     private

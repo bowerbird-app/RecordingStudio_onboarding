@@ -63,7 +63,7 @@ class ChromeAndControlsTest < ViewComponent::TestCase
     fragment = Nokogiri::HTML.fragment(rendered_content)
     controls = fragment.at_css("[data-testid='onboarding-controls']")
     assert controls, "expected controls on #{step_key}"
-    assert_includes controls["class"].split, "mt-10"
+    assert_includes controls["class"].split, "gap-[var(--stack-gap-md)]"
 
     control = fragment.at_css(".ms-auto [data-testid='control-advance']")
     assert control, "expected right-aligned Continue on #{step_key}"

@@ -51,7 +51,10 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
     get "/admin/sections/onboarding"
     assert_response :success
 
-    %w[onboarding_flows onboarding_previews onboarding_runs onboarding_funnel onboarding_provisioning].each do |key|
+    %w[
+      onboarding_flows onboarding_previews onboarding_runs onboarding_funnel
+      onboarding_provisioning onboarding_checklists
+    ].each do |key|
       get "/admin/screens/#{key}"
       assert_response :success, "expected screen #{key} to render"
     end
@@ -189,6 +192,7 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
     RecordingStudioOnboarding.mark_viewed(run, actor: @user)
     RecordingStudioOnboarding.advance(run, from: "welcome", actor: @user)
 
+    require "recording_studio_onboarding/services/funnel_analytics"
     summary = RecordingStudioOnboarding::Services::FunnelAnalytics.call(flow_key: :account_setup)
     assert summary.total_runs >= 1
     assert summary.steps.first.reached >= 1
@@ -296,5 +300,33 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
 
   test "admin admin_retry_provisioning_path stays on Admin" do
     assert_respond_to RecordingStudioOnboarding::Admin, :admin_retry_provisioning_path
+  end
+
+  test "admin lists registered setup checklists without other accounts" do
+    get "/admin/screens/onboarding_checklists"
+    assert_response :success
+
+    get "/admin/screens/onboarding_checklists/table"
+    assert_response :success
+    assert_includes response.body, "studio"
+    assert_includes response.body, "Publish your first press kit"
+    assert_includes response.body, "workspace_ready"
+    refute_includes response.body, "admin@admin.com"
+  end
+
+  test "admin setup lookup shows one account" do
+    get "/onboarding/admin/setup_lookup"
+    assert_response :success
+    assert_includes response.body, "Look up setup"
+
+    get "/onboarding/admin/setup_lookup", params: { email: "missing@example.com", checklist: "studio" }
+    assert_response :success
+    assert_includes response.body, "No account uses that email."
+
+    get "/onboarding/admin/setup_lookup", params: { email: "admin@admin.com", checklist: "studio" }
+    assert_response :success
+    assert_includes response.body, "Publish your first press kit"
+    refute_includes response.body, "Confirm the email on your account"
+    refute_includes response.body, "other@example.com"
   end
 end

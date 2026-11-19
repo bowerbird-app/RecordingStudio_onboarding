@@ -85,7 +85,7 @@ class CardsRoutesTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='onboarding-progress'] [role='progressbar'][aria-valuenow=?]", "1.0"
     assert_select "[data-testid='onboarding-controls']"
     assert_select "[data-testid='control-advance']"
-    assert_select "[data-testid='onboarding-controls'][class~='mt-10']"
+    assert_select "[data-testid='onboarding-controls'][class~='gap-[var(--stack-gap-md)]']"
     assert_select "[data-testid='onboarding-controls'] .ms-auto [data-testid='control-advance'][class~='inline-flex']"
     assert_select "[data-testid='control-advance'][class~='w-full']", count: 0
     assert_select "[data-testid='control-advance'] [class~='w-full']", count: 0

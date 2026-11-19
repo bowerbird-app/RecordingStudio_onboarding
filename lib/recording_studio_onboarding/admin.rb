@@ -19,6 +19,7 @@ module RecordingStudioOnboarding
     def admin_restart_run_path(...) = Paths.admin_restart_run_path(...)
     def admin_provisioning_path(...) = Paths.admin_provisioning_path(...)
     def admin_retry_provisioning_path(...) = Paths.admin_retry_provisioning_path(...)
+    def admin_setup_lookup_path(...) = Paths.admin_setup_lookup_path(...)
 
     def flow_rows
       counts = FlowRun.group(:flow_key, :status).count
@@ -60,6 +61,22 @@ module RecordingStudioOnboarding
         flow_key: definition.key.to_s,
         step_key: step.key.to_s,
         component: step.component.to_s
+      )
+    end
+
+    def checklist_rows
+      RecordingStudioOnboarding.configuration.checklists.values.flat_map do |definition|
+        definition.items.map { |item| checklist_item_row(definition, item) }
+      end
+    end
+
+    def checklist_item_row(definition, item)
+      ChecklistItemRow.new(
+        id: "#{definition.key}-#{item.key}",
+        checklist_key: definition.key.to_s,
+        scope: definition.scope.to_s,
+        item_key: item.key.to_s,
+        next_step: item.next_step
       )
     end
 

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 RecordingStudioOnboarding::Engine.routes.draw do
+  get "setup/:checklist", to: "setup#show", as: :setup
+
   resources :runs, only: [:show], param: :uuid do
     member do
       post :advance
@@ -11,6 +13,7 @@ RecordingStudioOnboarding::Engine.routes.draw do
   end
 
   namespace :admin do
+    get "setup_lookup", to: "setup_lookups#show", as: :setup_lookup
     get "previews/:flow_key/:step_key", to: "previews#show", as: :preview
     resources :runs, only: [:show], param: :uuid do
       member do

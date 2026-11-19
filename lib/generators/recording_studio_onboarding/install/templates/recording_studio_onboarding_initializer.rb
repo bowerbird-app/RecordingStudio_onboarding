@@ -5,4 +5,13 @@ RecordingStudioOnboarding.configure do |config|
   #
   # config.provision :new_registration,
   #   with: "MyApp::ProvisionRegistration"
+
+  # config.checklist :studio do
+  #   scope :user
+  #   item :profile,
+  #     check: ->(actor, _scope) { actor.email.present? },
+  #     next_step: "Confirm the email on your account",
+  #     link: -> { main_app.new_press_kit_path },
+  #     icon: :queue_list
+  # end
 end

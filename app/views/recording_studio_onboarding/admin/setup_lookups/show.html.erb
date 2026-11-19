@@ -1,0 +1,40 @@
+<% content_for :title, "Look up setup" %>
+
+<%= render FlatPack::Stack::Component.new(gap: :lg) do %>
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Look up setup",
+    subtitle: "One account at a time.",
+    variant: :h1
+  ) %>
+
+  <%= form_with url: admin_setup_lookup_path, method: :get, data: { testid: "setup-lookup-form" } do %>
+    <%= render FlatPack::Stack::Component.new(gap: :md) do %>
+      <%= render FlatPack::TextInput::Component.new(
+            name: "email",
+            label: "Email",
+            value: params[:email],
+            required: true
+          ) %>
+      <%= render FlatPack::Select::Component.new(
+            name: "checklist",
+            label: "Checklist",
+            options: @checklist_options,
+            value: params[:checklist],
+            required: true
+          ) %>
+      <div>
+        <%= render FlatPack::Button::Component.new(text: "Look up", style: :primary, type: "submit") %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if @message.present? %>
+    <%= render FlatPack::Alert::Component.new(title: "Look up", description: @message, style: :warning) %>
+  <% end %>
+
+  <% if @status %>
+    <div data-testid="setup-lookup-result">
+      <%= render RecordingStudioOnboarding::SetupPageComponent.new(status: @status) %>
+    </div>
+  <% end %>
+<% end %>

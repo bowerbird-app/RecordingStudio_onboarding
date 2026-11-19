@@ -10,6 +10,7 @@ require "recording_studio_onboarding/gates/terms_and_conditions"
 require "recording_studio_onboarding/services/failure_sanitizer"
 require "recording_studio_onboarding/services/instrumenter"
 require "recording_studio_onboarding/users_registration_integration"
+require "recording_studio_onboarding/sign_in_recheck"
 
 module RecordingStudioOnboarding
   # Raised when start or provision is called without Accessible access on the
@@ -94,6 +95,15 @@ module RecordingStudioOnboarding
     def mark_viewed(run, actor: nil)
       require_flow_services!
       Services::MarkStepViewed.call(run, actor: actor)
+    end
+
+    # Next incomplete setup item, done and remaining lists, and whether the
+    # checklist is complete. The first call for an actor computes and saves.
+    # Later calls return the saved answer and enqueue a recheck when it is stale.
+    # Onboarding does not know about MCP. Hosts call this from their own tools.
+    def setup_status(name, actor:, subject: nil)
+      require "recording_studio_onboarding/services/read_setup_status"
+      Services::ReadSetupStatus.call(name, actor: actor, subject: subject)
     end
 
     # In-memory card preview for admin (§23). Writes nothing.
