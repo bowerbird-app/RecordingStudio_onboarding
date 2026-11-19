@@ -15,14 +15,11 @@ module RecordingStudioOnboarding
     end
 
     def title
-      "Your setup"
+      status.title
     end
 
     def subtitle
-      return "Nothing here applies to you." unless status.applicable?
-      return "You're all set." if status.complete?
-
-      "What to do next."
+      status.subtitle
     end
 
     def row_chevron

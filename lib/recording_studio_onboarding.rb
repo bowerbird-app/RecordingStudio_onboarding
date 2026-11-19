@@ -97,10 +97,10 @@ module RecordingStudioOnboarding
       Services::MarkStepViewed.call(run, actor: actor)
     end
 
-    # Next incomplete setup item, done and remaining lists, and whether the
-    # checklist is complete. The first call for an actor computes and saves.
-    # Later calls return the saved answer and enqueue a recheck when it is stale.
-    # Onboarding does not know about MCP. Hosts call this from their own tools.
+    # Saved checklist state for a host. The first call computes and saves.
+    # Later calls return that row and enqueue a recheck when it is stale.
+    # `title`, `subtitle`, and `to_h` are the host surface. Item links are
+    # strings resolved on the compute. Onboarding does not know about MCP.
     def setup_status(name, actor:, subject: nil)
       require "recording_studio_onboarding/services/read_setup_status"
       Services::ReadSetupStatus.call(name, actor: actor, subject: subject)

@@ -215,6 +215,10 @@ config.setup_recheck_interval = 5.minutes # default
 config.checklist :studio do
   scope :user # :user, :workspace, or :subject
   applies_to ->(actor, _scope) { actor.staff? } # optional, host-defined
+  title "Finish your studio" # optional, default "Your setup"
+  subtitle remaining: "Here's what's left.", # optional, see below
+    complete: "The studio is ready.",
+    not_applicable: "This list isn't for you."
   item :profile,
     check: ->(actor, _scope) { actor.email.present? },
     next_step: "Confirm the email on your account",
@@ -234,9 +238,22 @@ URLs.
 
 `icon` is a FlatPack icon name. It defaults to `:queue_list`.
 
+`title` is the page heading and the browser tab. It defaults to "Your setup".
+`subtitle` is the line under that heading. Omit it and the page uses "What to do
+next." while items remain, "You're all set." when they are done, and "Nothing
+here applies to you." when the checklist does not apply. Set one string to use
+it for every state. Set `remaining:`, `complete:`, or `not_applicable:` for the
+states you want to change. A callable receives the status and returns the line.
+A block with no arguments returns one line for every state.
+Pass text you have already translated. This gem does not look up translation
+keys.
+
 The setup page lists only what is still left. Each row is the icon, the
 next-step line, and a link across the whole row. When nothing remains, the page
-says you're done. `setup_status` still returns both the done and remaining lists.
+says you're done. From the medium breakpoint up, the heading, that list, and
+the done line sit in the first column of a two-column grid. The second column
+is empty. Narrower screens use one full-width column. `setup_status` still
+returns both the done and remaining lists.
 
 `check` and `applies_to` receive the actor and the scope target. A check that
 returns a truthy value means the item is done. An item whose `applies_to`
@@ -265,17 +282,76 @@ Workspace and subject checklists need Accessible `:view`.
 When Warden is loaded, a successful sign-in enqueues the same recheck. If
 Warden is absent, sign-in is unchanged.
 
-This gem has no MCP dependency and no MCP code. A host can call `setup_status`
-from its own MCP instructions. Featured In can do that from `instructions_suffix`:
+## Using setup status in your host
+
+`RecordingStudioOnboarding.setup_status` is the call. The setup page and the
+admin lookup render this `SetupStatus`.
+
+```ruby
+status = RecordingStudioOnboarding.setup_status(:studio, actor: current_user)
+status.title
+status.subtitle
+status.applicable?
+status.complete?
+status.remaining
+status.done
+status.to_h
+```
+
+A `:user` checklist uses the signed-in person. Pass `subject:` for a workspace
+or subject checklist. That person needs Accessible `:view` on the subject.
+Anyone else gets `RecordingStudioOnboarding::Unauthorized`.
+
+The first call computes and saves. A later call returns the saved row and
+enqueues a recheck when the row is older than `setup_recheck_interval`. Item
+`link` values on the status are strings. A zero-argument link callable runs
+with `main_app` set to the application route helpers, including from a sign-in
+callback or an MCP tool. A callable that takes arguments receives the actor
+and the scope target.
+
+After sign-in, pass the full `to_h` as the prompt. `checklist`, `title`,
+`subtitle`, `applicable`, and `complete` are always present. Each item
+includes `key`. `only` and `except` choose among `next_step`, `icon`, and
+`link`. `except: [:key]` raises `ArgumentError`. An unknown field name raises
+`ArgumentError`.
+
+```ruby
+status = RecordingStudioOnboarding.setup_status(:studio, actor: current_user)
+prompt = status.to_h unless status.complete?
+```
+
+`to_h` and `as_json` return string keys and plain values. The saved row keeps
+the path. Pass `url_options:` when you want an absolute link in that hash.
+An `http` or `https` link stays as stored. A nil link stays nil. Omit
+`url_options` and a host in `Rails.application.routes.default_url_options`
+is used. With no host, the path stays relative. Pass `port` when it is not
+80 or 443.
 
 ```ruby
 def instructions_suffix
-  status = RecordingStudioOnboarding.setup_status(:studio, actor: current_user)
-  return "" if status.complete? || status.next_item.nil?
-
-  step = status.next_item
-  "Setup is not finished. Next: #{step.next_step} #{step.link}"
+  RecordingStudioOnboarding.setup_status(:studio, actor: current_user).to_h(
+    except: [:icon],
+    url_options: { host: "app.example", protocol: "https" }
+  )
 end
+```
+
+```json
+{
+  "checklist": "studio",
+  "title": "Finish your studio",
+  "subtitle": "Here's what's left.",
+  "applicable": true,
+  "complete": false,
+  "remaining": [
+    {
+      "key": "profile",
+      "next_step": "Add your profile",
+      "link": "https://app.example/"
+    }
+  ],
+  "done": []
+}
 ```
 
 Run the `create_recording_studio_onboarding_setup_checks` migration. See

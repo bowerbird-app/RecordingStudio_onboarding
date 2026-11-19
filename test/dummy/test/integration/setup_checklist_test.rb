@@ -90,12 +90,17 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
     get recording_studio_onboarding.setup_path("box")
 
     assert_response :success
+    assert_select "title", text: "Your setup", count: 1
+    assert_select "meta[property='og:title'][content=?]", "Your setup"
     assert_select "h1", text: "Your setup", count: 1
     assert_includes response.body, "What to do next."
-    assert_select "[data-testid=setup-remaining].flat-pack-list-divided" do
-      assert_select "[data-testid=setup-item-name] a[href=?]", "https://example.com/name", text: /Add a name/
-      assert_select "[data-testid=setup-item-name][class*='hover:bg-']"
-      assert_select "[data-flat-pack--icon-name-value=chevron-right]"
+    assert_setup_in_first_column do |grid|
+      assert_select grid, "h1", text: "Your setup", count: 1
+      assert_select grid, "[data-testid=setup-remaining].flat-pack-list-divided" do
+        assert_select "[data-testid=setup-item-name] a[href=?]", "https://example.com/name", text: /Add a name/
+        assert_select "[data-testid=setup-item-name][class*='hover:bg-']"
+        assert_select "[data-flat-pack--icon-name-value=chevron-right]"
+      end
     end
     assert_select "[data-testid=setup-done]", count: 0
     refute_includes response.body, ">Open<"
@@ -109,8 +114,42 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
     get recording_studio_onboarding.setup_path("box")
 
     assert_response :success
+    assert_select "title", text: "Your setup", count: 1
     assert_includes response.body, "Nothing left. Nice work."
     assert_includes response.body, "You&#39;re all set."
+    assert_setup_in_first_column do |grid|
+      assert_select grid, "h1", text: "Your setup", count: 1
+      assert_select grid, "p", text: "Nothing left. Nice work."
+    end
+  end
+
+  test "your setup page uses the checklist title and the subtitle for that state" do
+    register_titled_checklist(:box, check: ->(*) { false })
+    register_titled_checklist(:finished, check: ->(*) { true })
+    register_titled_checklist(:hidden, applies: ->(*) { false }, check: ->(*) { false })
+    sign_in @user
+
+    get recording_studio_onboarding.setup_path("box")
+    assert_response :success
+    assert_select "title", text: "Finish your studio", count: 1
+    assert_select "meta[property='og:title'][content=?]", "Finish your studio"
+    assert_select "h1", count: 1
+    assert_includes response.body, "Here&#39;s what&#39;s left."
+    assert_setup_in_first_column do |grid|
+      assert_select grid, "h1", text: "Finish your studio", count: 1
+    end
+
+    get recording_studio_onboarding.setup_path("finished")
+    assert_response :success
+    assert_select "title", text: "Finish your studio", count: 1
+    assert_includes response.body, "The studio is ready."
+    assert_includes response.body, "Nothing left. Nice work."
+
+    get recording_studio_onboarding.setup_path("hidden")
+    assert_response :success
+    assert_select "title", text: "Finish your studio", count: 1
+    assert_select "h1", count: 1
+    assert_includes response.body, "This list isn&#39;t for you."
   end
 
   test "a raising check stays on the page as not done" do
@@ -163,6 +202,77 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "setup_status to_h resolves main_app links and rereads the saved row" do
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :box do
+        scope :user
+        title "Finish your studio"
+        subtitle remaining: "Here's what's left."
+        item :name,
+          check: ->(*) { false },
+          next_step: "Add a name",
+          link: -> { main_app.root_path },
+          icon: :user
+      end
+    end
+
+    status = RecordingStudioOnboarding.setup_status(:box, actor: @user)
+    payload = {
+      "checklist" => "box",
+      "title" => "Finish your studio",
+      "subtitle" => "Here's what's left.",
+      "applicable" => true,
+      "complete" => false,
+      "remaining" => [
+        { "key" => "name", "next_step" => "Add a name", "icon" => "user", "link" => "/" }
+      ],
+      "done" => []
+    }
+    assert_equal payload, status.to_h
+    assert_equal payload, status.as_json
+    assert_equal payload, JSON.parse(JSON.generate(status.to_h))
+
+    assert_no_difference -> { RecordingStudioOnboarding::SetupCheck.count } do
+      assert_equal payload, RecordingStudioOnboarding.setup_status(:box, actor: @user).to_h
+    end
+  end
+
+  test "to_h uses routes default_url_options and the saved link stays relative" do
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :box do
+        scope :user
+        item :name,
+          check: ->(*) { false },
+          next_step: "Add a name",
+          link: -> { main_app.root_path },
+          icon: :user
+      end
+    end
+    status = RecordingStudioOnboarding.setup_status(:box, actor: @user)
+    routes = Rails.application.routes
+    previous = routes.default_url_options.dup
+    routes.default_url_options = { host: "studio.example", protocol: "https" }
+
+    assert_equal "https://studio.example/", status.to_h["remaining"].first["link"]
+    stored = RecordingStudioOnboarding::SetupCheck.find_by!(checklist_key: "box", actor: @user)
+    assert_equal "/", stored.items.first["link"]
+  ensure
+    Rails.application.routes.default_url_options = previous if defined?(previous) && previous
+  end
+
+  test "setup_status uses the same access rule as the setup page" do
+    register_workspace_checklist
+    status = RecordingStudioOnboarding.setup_status(:workspace_ready, actor: @user, subject: @workspace)
+
+    assert_equal "Your setup", status.to_h["title"]
+    assert_equal "You're all set.", status.to_h["subtitle"]
+    assert_equal true, status.to_h["complete"]
+
+    assert_raises(RecordingStudioOnboarding::Unauthorized) do
+      RecordingStudioOnboarding.setup_status(:workspace_ready, actor: @other, subject: @workspace)
+    end
+  end
+
   test "two checklists keep separate saved rows" do
     register_box(->(*) { true })
     RecordingStudioOnboarding.configure do |config|
@@ -181,6 +291,29 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def assert_setup_in_first_column
+    grid = css_select("div.grid").find { |node| node["class"].to_s.split.include?("md:grid-cols-2") }
+    assert grid, "expected the setup page to use a two-column grid"
+    classes = grid["class"].to_s.split
+    assert_includes classes, "grid-cols-1"
+    assert_equal 1, css_select(grid, ".fp-grid__item").size
+    yield grid
+  end
+
+  def register_titled_checklist(name, check:, applies: nil)
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist name do
+        scope :user
+        applies_to applies if applies
+        title "Finish your studio"
+        subtitle remaining: "Here's what's left.",
+                 complete: "The studio is ready.",
+                 not_applicable: "This list isn't for you."
+        item :name, check: check, next_step: "Add a name", link: "https://example.com/name"
+      end
+    end
+  end
 
   def register_box(check)
     RecordingStudioOnboarding.configure do |config|

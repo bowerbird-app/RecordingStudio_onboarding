@@ -19,6 +19,31 @@
 - Dummy Puma `8.1.1` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
 
+## 0.9.1 Your setup column
+
+- The default Your setup page uses `FlatPack::Grid` with `cols: 2`. The
+  heading, the remaining list, and the all-done line are the first cell. The
+  second column is empty. Below the `md` breakpoint the page is one column.
+- No migration. Admin lookup still renders `SetupPageComponent` at the full
+  width of that screen.
+- Override `app/views/recording_studio_onboarding/setup/show` to keep a
+  full-width list.
+- `setup_status` returns `title`, `subtitle`, and `to_h` / `as_json`. Call
+  the same method the setup page uses. Item links are stored as paths. A
+  zero-argument `link` callable uses the application route helpers, so a
+  sign-in callback does not pass a controller. `to_h(only:, except:, url_options:)`
+  shapes item fields and can build absolute URLs. `key` is always included.
+  If `Rails.application.routes.default_url_options` has a host, `to_h` and
+  `as_json` return absolute links. The saved row stays a path. No migration.
+- Optional `title` and `subtitle` on `config.checklist`. Defaults are
+  unchanged: "Your setup", "What to do next.", "You're all set.", and
+  "Nothing here applies to you." A subtitle is one string, per-state text,
+  or a callable. Pass already translated text if you use I18n.
+- The setup page sets `content_for :title` to the checklist title for the
+  browser tab. It also sets `content_for :hide_layout_heading` so the default
+  layout does not draw that heading a second time. A host layout that replaces
+  `recording_studio/shared/_default_layout` should do the same.
+
 ## 0.9.0 Setup checklists
 
 - Copy `db/migrate/20261118120000_create_recording_studio_onboarding_setup_checks.rb`

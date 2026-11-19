@@ -325,8 +325,11 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
 
     get "/onboarding/admin/setup_lookup", params: { email: "admin@admin.com", checklist: "studio" }
     assert_response :success
+    assert_select "[data-testid=setup-lookup-result] h1", text: "Finish your studio"
+    assert_select "[data-testid=setup-lookup-result] p", text: "Here's what's left."
     assert_includes response.body, "Publish your first press kit"
     refute_includes response.body, "Confirm the email on your account"
     refute_includes response.body, "other@example.com"
+    refute_includes response.body, "md:grid-cols-2"
   end
 end

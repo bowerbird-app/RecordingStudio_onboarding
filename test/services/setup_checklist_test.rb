@@ -27,6 +27,197 @@ class SetupChecklistTest < Minitest::Test
     assert_empty RecordingStudioOnboarding.configuration.before_onboarding_gates
   end
 
+  def test_checklist_title_and_subtitle_keep_the_setup_page_defaults
+    register_studio
+    definition = RecordingStudioOnboarding.configuration.checklist_for(:studio)
+
+    assert_equal "Your setup", definition.title
+    assert_equal "What to do next.", definition.subtitle_for(listed_status(applicable: true, complete: false))
+    assert_equal "You're all set.", definition.subtitle_for(listed_status(applicable: true, complete: true))
+    assert_equal "Nothing here applies to you.",
+                 definition.subtitle_for(listed_status(applicable: false, complete: true))
+  end
+
+  def test_checklist_subtitle_accepts_one_string_or_a_callable
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :shared do
+        subtitle "One line for every state"
+        item :email, check: ->(*) { false }, next_step: "Confirm your email", link: "https://example.com/email"
+      end
+      config.checklist :spoken do
+        subtitle ->(status) { status.complete? ? "Done now" : "Still open" }
+        item :email, check: ->(*) { false }, next_step: "Confirm your email", link: "https://example.com/email"
+      end
+      config.checklist :plain do
+        subtitle { "Always this line" }
+        item :email, check: ->(*) { false }, next_step: "Confirm your email", link: "https://example.com/email"
+      end
+    end
+
+    shared = RecordingStudioOnboarding.configuration.checklist_for(:shared)
+    spoken = RecordingStudioOnboarding.configuration.checklist_for(:spoken)
+    plain = RecordingStudioOnboarding.configuration.checklist_for(:plain)
+    assert_equal "One line for every state", shared.subtitle_for(listed_status(applicable: true, complete: true))
+    assert_equal "One line for every state", shared.subtitle_for(listed_status(applicable: false, complete: true))
+    assert_equal "Still open", spoken.subtitle_for(listed_status(applicable: true, complete: false))
+    assert_equal "Done now", spoken.subtitle_for(listed_status(applicable: true, complete: true))
+    assert_equal "Always this line", plain.subtitle_for(listed_status(applicable: true, complete: false))
+  end
+
+  def test_checklist_subtitle_overrides_one_state_and_keeps_the_others
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :studio do
+        title "Finish your studio"
+        subtitle remaining: "Here's what's left."
+        item :email, check: ->(*) { false }, next_step: "Confirm your email", link: "https://example.com/email"
+      end
+    end
+
+    definition = RecordingStudioOnboarding.configuration.checklist_for(:studio)
+    assert_equal "Finish your studio", definition.title
+    assert_equal "Here's what's left.", definition.subtitle_for(listed_status(applicable: true, complete: false))
+    assert_equal "You're all set.", definition.subtitle_for(listed_status(applicable: true, complete: true))
+    assert_equal "Nothing here applies to you.",
+                 definition.subtitle_for(listed_status(applicable: false, complete: true))
+  end
+
+  def test_checklist_title_and_subtitle_reject_blank_or_mixed_forms
+    assert_raises(ArgumentError) do
+      RecordingStudioOnboarding.configuration.checklist(:blank_title) do
+        title " "
+        item :email, check: ->(*) { true }, next_step: "Confirm your email", link: "https://example.com/email"
+      end
+    end
+    assert_raises(ArgumentError) do
+      RecordingStudioOnboarding.configuration.checklist(:mixed) do
+        subtitle "One line", remaining: "Here's what's left."
+        item :email, check: ->(*) { true }, next_step: "Confirm your email", link: "https://example.com/email"
+      end
+    end
+    assert_raises(ArgumentError) do
+      RecordingStudioOnboarding.configuration.checklist(:blank_state) do
+        subtitle remaining: " "
+        item :email, check: ->(*) { true }, next_step: "Confirm your email", link: "https://example.com/email"
+      end
+    end
+
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :empty_callable do
+        subtitle ->(*) { " " }
+        item :email, check: ->(*) { true }, next_step: "Confirm your email", link: "https://example.com/email"
+      end
+    end
+    definition = RecordingStudioOnboarding.configuration.checklist_for(:empty_callable)
+    assert_raises(ArgumentError) { definition.subtitle_for(listed_status(applicable: true, complete: false)) }
+  end
+
+  def test_setup_status_to_h_is_plain_json_for_the_current_state
+    register_studio
+    status = evaluate(:studio)
+    payload = status.to_h
+
+    assert_equal "studio", payload["checklist"]
+    assert_equal "Your setup", payload["title"]
+    assert_equal "What to do next.", payload["subtitle"]
+    assert_equal true, payload["applicable"]
+    assert_equal false, payload["complete"]
+    assert_equal [
+      {
+        "key" => "press_kit",
+        "next_step" => "Publish your first press kit",
+        "icon" => "queue_list",
+        "link" => "https://example.com/press"
+      }
+    ], payload["remaining"]
+    assert_equal [
+      {
+        "key" => "email",
+        "next_step" => "Confirm the email on your account",
+        "icon" => "queue_list",
+        "link" => "https://example.com/email"
+      }
+    ], payload["done"]
+    assert_equal payload, status.as_json
+    assert_equal payload, JSON.parse(JSON.generate(payload))
+    refute_match(/Proc|RecordingStudio/, JSON.generate(payload))
+  end
+
+  def test_setup_status_to_h_uses_a_custom_title_subtitle_and_resolved_link
+    RecordingStudioOnboarding.configure do |config|
+      config.checklist :studio do
+        title "Finish your studio"
+        subtitle remaining: "Here's what's left.",
+                 complete: "The studio is ready.",
+                 not_applicable: "This list isn't for you."
+        item :email,
+             check: ->(*) { false },
+             next_step: "Confirm your email",
+             link: -> { "/account/email" },
+             icon: :envelope
+      end
+      config.checklist :skipped do
+        applies_to ->(*) { false }
+        subtitle not_applicable: "This list isn't for you."
+        item :email,
+             check: ->(*) { false },
+             next_step: "Confirm your email",
+             link: "https://example.com/email"
+      end
+    end
+
+    open_status = evaluate(:studio)
+    assert_equal "Finish your studio", open_status.title
+    assert_equal "Here's what's left.", open_status.subtitle
+    assert_equal "/account/email", open_status.to_h["remaining"].first["link"]
+    assert_equal "envelope", open_status.to_h["remaining"].first["icon"]
+
+    hidden = evaluate(:skipped)
+    assert_equal false, hidden.to_h["applicable"]
+    assert_equal "This list isn't for you.", hidden.to_h["subtitle"]
+    assert_equal [], hidden.to_h["remaining"]
+    assert_equal [], hidden.to_h["done"]
+  end
+
+  def test_to_h_filters_item_fields_and_always_keeps_key
+    status = status_with_link("/flows")
+    only_link = status.to_h(only: [:link])["remaining"].first
+    assert_equal({ "key" => "name", "link" => "/flows" }, only_link)
+
+    without_icon = status.to_h(except: [:icon])["remaining"].first
+    assert_equal(
+      { "key" => "name", "next_step" => "Add a name", "link" => "/flows" },
+      without_icon
+    )
+    assert_equal %w[checklist title subtitle applicable complete remaining done], status.to_h(only: :link).keys
+    assert_equal without_icon, status.as_json(except: :icon)["remaining"].first
+    assert_equal without_icon, status.as_json({ "except" => "icon" })["remaining"].first
+  end
+
+  def test_to_h_rejects_an_unknown_item_field_and_excluding_key
+    status = status_with_link("/flows")
+    assert_raises(ArgumentError) { status.to_h(only: [:title]) }
+    assert_raises(ArgumentError) { status.to_h(except: [:key]) }
+    assert_raises(ArgumentError) { status.to_h(url_options: "app.example") }
+  end
+
+  def test_to_h_absolutizes_relative_links_and_leaves_absolute_and_nil
+    relative = status_with_link("/flows")
+    assert_equal(
+      "https://app.example/flows",
+      relative.to_h(url_options: { host: "app.example", protocol: "https" })["remaining"].first["link"]
+    )
+    assert_equal "/flows", relative.remaining.first.link
+
+    absolute = status_with_link("https://cdn.example/press")
+    assert_equal(
+      "https://cdn.example/press",
+      absolute.to_h(url_options: { host: "app.example", protocol: "https" })["remaining"].first["link"]
+    )
+
+    missing = status_with_link(nil)
+    assert_nil missing.to_h(url_options: { host: "app.example" })["remaining"].first["link"]
+  end
+
   def test_checklist_requires_a_name_items_and_absolute_link
     assert_raises(ArgumentError) { RecordingStudioOnboarding.configuration.checklist(nil) { item_email } }
     assert_raises(ArgumentError) { RecordingStudioOnboarding.configuration.checklist(:studio) }
@@ -208,6 +399,28 @@ class SetupChecklistTest < Minitest::Test
              link: "https://example.com/press"
       end
     end
+  end
+
+  def status_with_link(link)
+    item = RecordingStudioOnboarding::SetupItem.new(
+      key: :name, next_step: "Add a name", link: link, icon: :user, done: false
+    )
+    RecordingStudioOnboarding::SetupStatus.new(
+      checklist: :studio, applicable: true, complete: false, next_item: item,
+      done: [], remaining: [item], checked_at: nil
+    )
+  end
+
+  def listed_status(applicable:, complete:)
+    RecordingStudioOnboarding::SetupStatus.new(
+      checklist: :studio,
+      applicable: applicable,
+      complete: complete,
+      next_item: nil,
+      done: [],
+      remaining: [],
+      checked_at: nil
+    )
   end
 
   def evaluate(name, actor: @actor)
