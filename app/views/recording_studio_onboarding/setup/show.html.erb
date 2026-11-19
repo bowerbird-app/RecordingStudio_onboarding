@@ -1,4 +1,6 @@
 <% page = RecordingStudioOnboarding::SetupPageComponent.new(status: @status) %>
+<% content_for :title, page.title %>
+<% content_for :hide_layout_heading, "true" %>
 <%= render FlatPack::Grid::Component.new(cols: 2) do |grid| %>
   <% grid.with_item do %>
     <%= render page %>

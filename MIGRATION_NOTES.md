@@ -28,6 +28,14 @@
   width of that screen.
 - Override `app/views/recording_studio_onboarding/setup/show` to keep a
   full-width list.
+- Optional `title` and `subtitle` on `config.checklist`. Defaults are
+  unchanged: "Your setup", "What to do next.", "You're all set.", and
+  "Nothing here applies to you." A subtitle is one string, per-state text,
+  or a callable. Pass already translated text if you use I18n.
+- The setup page sets `content_for :title` to the checklist title for the
+  browser tab. It also sets `content_for :hide_layout_heading` so the default
+  layout does not draw that heading a second time. A host layout that replaces
+  `recording_studio/shared/_default_layout` should do the same.
 
 ## 0.9.0 Setup checklists
 

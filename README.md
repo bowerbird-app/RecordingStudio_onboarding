@@ -215,6 +215,10 @@ config.setup_recheck_interval = 5.minutes # default
 config.checklist :studio do
   scope :user # :user, :workspace, or :subject
   applies_to ->(actor, _scope) { actor.staff? } # optional, host-defined
+  title "Finish your studio" # optional, default "Your setup"
+  subtitle remaining: "Here's what's left.", # optional, see below
+    complete: "The studio is ready.",
+    not_applicable: "This list isn't for you."
   item :profile,
     check: ->(actor, _scope) { actor.email.present? },
     next_step: "Confirm the email on your account",
@@ -233,6 +237,16 @@ that path on the row. Cards and step components still do not build navigation
 URLs.
 
 `icon` is a FlatPack icon name. It defaults to `:queue_list`.
+
+`title` is the page heading and the browser tab. It defaults to "Your setup".
+`subtitle` is the line under that heading. Omit it and the page uses "What to do
+next." while items remain, "You're all set." when they are done, and "Nothing
+here applies to you." when the checklist does not apply. Set one string to use
+it for every state. Set `remaining:`, `complete:`, or `not_applicable:` for the
+states you want to change. A callable receives the status and returns the line.
+A block with no arguments returns one line for every state.
+Pass text you have already translated. This gem does not look up translation
+keys.
 
 The setup page lists only what is still left. Each row is the icon, the
 next-step line, and a link across the whole row. When nothing remains, the page

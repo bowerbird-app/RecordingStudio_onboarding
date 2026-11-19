@@ -122,6 +122,10 @@ RecordingStudioOnboarding.configure do |config|
 
   config.checklist :studio do
     scope :user
+    title "Finish your studio"
+    subtitle remaining: "Here's what's left.",
+      complete: "The studio is ready.",
+      not_applicable: "This list isn't for you."
     item :email,
       check: ->(actor, _scope) { actor.respond_to?(:email) && actor.email.present? },
       next_step: "Confirm the email on your account",

@@ -90,6 +90,8 @@ module RecordingStudioOnboarding
     #
     #   config.checklist :studio do
     #     scope :user
+    #     title "Finish your studio" # optional, default "Your setup"
+    #     subtitle remaining: "Here's what's left." # optional string, states, or callable
     #     item :profile,
     #       check: ->(actor, scope) { actor.email.present? },
     #       next_step: "Confirm the email on your account",

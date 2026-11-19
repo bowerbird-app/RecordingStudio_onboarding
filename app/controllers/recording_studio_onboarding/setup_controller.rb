@@ -7,6 +7,7 @@ require "recording_studio_onboarding/services/scope_resolver"
 module RecordingStudioOnboarding
   class SetupController < ApplicationController
     before_action :require_actor!
+    before_action :use_document_title_layout
 
     def show
       definition = RecordingStudioOnboarding.configuration.checklist_for(params[:checklist])
@@ -24,6 +25,20 @@ module RecordingStudioOnboarding
 
     def require_actor!
       render_not_found if current_onboarding_actor.nil?
+    end
+
+    def use_document_title_layout
+      return if host_replaced_default_layout?
+
+      prepend_view_path RecordingStudioOnboarding::Engine.root.join("app/setup_layout")
+    end
+
+    def host_replaced_default_layout?
+      found = lookup_context.find_all("default_layout", ["recording_studio/shared"], true).first
+      return false if found.nil?
+
+      stock = RecordingStudio::Engine.root.join("app/views/recording_studio/shared/_default_layout.html.erb")
+      Pathname(found.identifier).cleanpath != stock.cleanpath
     end
 
     def subject_for(definition)

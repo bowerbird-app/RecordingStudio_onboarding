@@ -15,18 +15,21 @@ module RecordingStudioOnboarding
     end
 
     def title
-      "Your setup"
+      checklist&.title || ChecklistDefinition::DEFAULT_TITLE
     end
 
     def subtitle
-      return "Nothing here applies to you." unless status.applicable?
-      return "You're all set." if status.complete?
-
-      "What to do next."
+      checklist&.subtitle_for(status) || ChecklistDefinition.default_subtitle(status)
     end
 
     def row_chevron
       render FlatPack::Shared::IconComponent.new(name: "chevron-right", size: :sm)
+    end
+
+    private
+
+    def checklist
+      RecordingStudioOnboarding.configuration.checklist_for(status.checklist)
     end
   end
 end

@@ -20,16 +20,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.1] - 2026-11-19
 
+### Added
+- `config.checklist` accepts an optional `title` and `subtitle`. `title`
+  defaults to "Your setup". `subtitle` defaults to "What to do next.",
+  "You're all set.", and "Nothing here applies to you." for the remaining,
+  complete, and not-applicable states. A subtitle may be one string, per-state
+  text (`remaining:`, `complete:`, `not_applicable:`), or a callable that
+  receives the status.
+
 ### Changed
 - Your setup (`/onboarding/setup/:checklist`) places the heading, the remaining
   list, and the all-done line in the first column of a two-column FlatPack
   grid (`cols: 2`). The second column is empty. Below the `md` breakpoint the
   grid is one column. Admin lookup is unchanged.
+- The browser tab and `og:title` use the checklist title. The visible heading
+  stays in the first column. Admin lookup shows the same title and subtitle.
 
 ### Upgrade notes
 - Hosts that use the default setup view get the narrower column. Override
   `app/views/recording_studio_onboarding/setup/show` to keep a full-width list.
   No migration.
+- Existing checklists keep the same title and subtitle. Set `title` or
+  `subtitle` on a checklist to change them. A host that replaces
+  `recording_studio/shared/_default_layout` keeps that layout on the setup
+  page. Read `content_for :title` for the tab, and skip the automatic heading
+  when `content_for :hide_layout_heading` is `"true"`, so the page does not
+  draw the heading twice.
 
 ## [0.9.0] - 2026-11-18
 
