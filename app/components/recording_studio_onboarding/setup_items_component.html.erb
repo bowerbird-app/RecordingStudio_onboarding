@@ -1,0 +1,17 @@
+<% if status.applicable? && status.remaining.empty? %>
+  <p>Nothing left. Nice work.</p>
+<% elsif status.applicable? %>
+  <%= render FlatPack::List::Component.new(**list_arguments) do %>
+    <% status.remaining.each do |item| %>
+      <%= render FlatPack::List::Item.new(
+            icon: item.icon,
+            title: item.next_step,
+            href: item.link.presence,
+            hover: true,
+            align: :center,
+            trailing: row_chevron,
+            data: { testid: "setup-item-#{item.key}" }
+          ) %>
+    <% end %>
+  <% end %>
+<% end %>
