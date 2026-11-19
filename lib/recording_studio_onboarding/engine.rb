@@ -52,6 +52,15 @@ module RecordingStudioOnboarding
       end
     end
 
+    # Soft optional. Recording Studio Dashboard is not a gemspec dependency.
+    initializer "recording_studio_onboarding.register_dashboard_widget" do
+      config.to_prepare do
+        next unless defined?(::RecordingStudioDashboard)
+
+        RecordingStudioOnboarding::SetupWidget.register_dashboard_widget!
+      end
+    end
+
     # Soft register with RecordingStudioAdmin when the host mounts it.
     # Controllers also live under RecordingStudioOnboarding::Admin; load (not
     # require) so register! is redefined after Zeitwerk reloads that namespace.
