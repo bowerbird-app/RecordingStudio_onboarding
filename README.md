@@ -17,7 +17,8 @@ user-facing flow.
   Accessible `:view` or they raise `Unauthorized`. `active_run` returns `nil`
   in that case.
 - **Setup checklists** — host-registered items with a saved complete flag,
-  a live Your setup page, and a background recheck. Separate from flows.
+  a live Your setup page, an optional Dashboard widget, and a background
+  recheck. Separate from flows.
 - **Before-onboarding gates** — `config.before_onboarding` callables; RS Terms
   auto-registers when present
 - **Card UI** — `RunComponent`, `CardShellComponent`, permanent chrome
@@ -47,6 +48,7 @@ user-facing flow.
 - `/demos/onboarding` — layout gallery (splash, top-card, plain, button positions)
 - `/onboarding/runs/:uuid` — full-screen card shell for the current step
 - `/onboarding/setup/:checklist` — Your setup (live checklist)
+- `/dashboard` — dummy studio dashboard with the optional setup widget
 - `/recording_studio_terms_and_conditions/acceptance` — RS Terms Agree (when installed)
 - `/admin` — RS Admin root section (onboarding hub + screens)
 - `/admin/root` — host admin landing with search
@@ -282,6 +284,43 @@ Workspace and subject checklists need Accessible `:view`.
 When Warden is loaded, a successful sign-in enqueues the same recheck. If
 Warden is absent, sign-in is unchanged.
 
+### Dashboard widget
+
+Recording Studio Dashboard is optional. This gem does not depend on it. When
+that gem is loaded, onboarding registers the widget `:onboarding_setup`.
+
+```ruby
+RecordingStudioDashboard.register(:home) do
+  row :setup, title: "Finish your studio" do
+    widget :onboarding_setup, span: 6, config: {
+      checklist: :studio,
+      link: "/onboarding/setup/studio",
+      subject: ->(context) { context.workspace }
+    }
+  end
+end
+```
+
+`checklist` is the registered name. The widget calls `setup_status` for that
+name and draws the items still left. It does not draw a heading. Dashboard
+owns the section title: set it with `row :setup, title: "..."`. Rows have no
+subtitle. Each item keeps its link. "See your setup" opens the full setup
+page. Pass `link` when that destination should be somewhere else.
+
+`link` is a String or a Proc of the dashboard context. `subject`
+is the record passed to `setup_status`, or a Proc of the dashboard context
+that returns that record. Use it for a workspace or subject checklist. The
+person is `context.actor` when the context responds to `actor`. Otherwise the
+context itself is the person.
+
+The widget stays off the dashboard when the checklist does not apply, and when
+every item is done. Pass `show_complete: true` to keep the finished state
+visible. Access still uses Accessible `:view` inside `setup_status`. A person
+without access does not see the widget.
+
+The setup page still computes live. The widget reads the saved status and
+enqueues a recheck when that row is older than `setup_recheck_interval`.
+
 ## Using setup status in your host
 
 `RecordingStudioOnboarding.setup_status` is the call. The setup page and the
@@ -419,7 +458,8 @@ is removed.
   Accessible `v0.45.1`, Admin `v2.18.0`, API `v1.2.1`, Attachable `v0.31.0`,
   Cache `v0.7.0`, Icons `v0.4.0`, Logs `v0.8.0`, RecordingStudio_users `v0.32.0`,
   Metrics `v0.9.0`, Moveable `v6.0.0`, Trashable `v1.0.1`, Root Switchable
-  `v0.16.0`, Flatpack `v0.1.377`.
+  `v0.16.0`, Flatpack `v0.1.377`. The dummy also pins Dashboard `v0.5.0`.
+  The gem does not depend on Dashboard.
   Dummy omits Terms and Publishable until Terms ships a core 7 tag.
   Gemspec: `recording_studio` `>= 7.0`, `< 8.0`, `recording_studio_user`
   `>= 0.30.0`, `< 1.0`. Create roots with `RecordingStudio.create_root_recording!`.

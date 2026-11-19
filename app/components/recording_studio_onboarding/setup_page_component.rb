@@ -21,9 +21,5 @@ module RecordingStudioOnboarding
     def subtitle
       status.subtitle
     end
-
-    def row_chevron
-      render FlatPack::Shared::IconComponent.new(name: "chevron-right", size: :sm)
-    end
   end
 end

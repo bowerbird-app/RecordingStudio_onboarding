@@ -9,6 +9,7 @@
   for the registration-completed provisioning subscriber; dummy mounts users auth
 - RecordingStudio_metrics `v0.9.0`
 - Accessible dummy tag `v0.45.1`, Attachable `v0.31.0`, Admin `v2.18.0`,
+  Dashboard `v0.5.0` (dummy only; the gem does not depend on it),
   API `v1.2.1` (`require: false`), Moveable `v6.0.0` (`require: false`),
   Icons `v0.4.0` (`require: false`), Cache `v0.7.0`, Logs `v0.8.0`,
   Trashable `v1.0.1` (dummy `purge_at` column; kept rows use `Recording.kept`),
@@ -18,6 +19,23 @@
   Agree-before-onboarding is tested once Terms ships a core 7 tag.
 - Dummy Puma `8.1.1` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
+
+## 0.10.0 Dashboard widget
+
+- No migration. Flows, provisioning, checklist keys, and in-progress runs stay
+  as they are.
+- Recording Studio Dashboard is optional. The gem does not depend on it. When
+  the host has loaded that gem, onboarding registers `:onboarding_setup`.
+- Place it with a `checklist` name. The widget calls `setup_status` (the saved
+  row, then a recheck when the row is stale) and shows the remaining items.
+  It does not draw a heading. Set the section title on the dashboard row.
+  "See your setup" links to the setup page. `link` is a String or a Proc of
+  the dashboard context. `subject` is a record or a Proc of that context.
+- The widget is omitted when the checklist does not apply or is complete.
+  `show_complete: true` keeps the finished state. Accessible `:view` is
+  unchanged. A person without access does not see the widget.
+- The setup page still computes live. The widget uses the saved row and
+  enqueues a recheck when it is stale.
 
 ## 0.9.1 Your setup column
 
