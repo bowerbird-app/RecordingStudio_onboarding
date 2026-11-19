@@ -18,6 +18,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `skip_confirmation!`. `password_registration_confirmation` is removed.
 - Dummy and without-terms lockfiles pin Puma `8.1.1`.
 
+## [0.10.0] - 2026-11-19
+
+### Added
+- Optional Dashboard widget `:onboarding_setup`. It renders one named checklist
+  through `RecordingStudioOnboarding.setup_status` (title, subtitle, remaining
+  items, and each item's link and icon). The gem registers the widget only
+  when Recording Studio Dashboard is loaded. There is no gemspec dependency.
+- `SetupItemsComponent` draws the remaining rows for Your setup and the widget.
+
+### Upgrade notes
+- No migration. Checklists, flows, provisioning, and the setup page stay as
+  they are. Hosts that do not install Dashboard see no change.
+- To show the widget, install Recording Studio Dashboard and place
+  `:onboarding_setup` with a `checklist` name. It hides when the checklist
+  does not apply or is complete. `show_complete: true` keeps the finished
+  state. `title` and `link` are a String or a Proc of the dashboard context.
+  `subject` is a record or a Proc of that context. The widget calls
+  `setup_status` (the saved row, then a recheck when the row is stale). The
+  setup page still computes live.
+
 ## [0.9.1] - 2026-11-19
 
 ### Added

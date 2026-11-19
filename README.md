@@ -17,7 +17,8 @@ user-facing flow.
   Accessible `:view` or they raise `Unauthorized`. `active_run` returns `nil`
   in that case.
 - **Setup checklists** — host-registered items with a saved complete flag,
-  a live Your setup page, and a background recheck. Separate from flows.
+  a live Your setup page, an optional Dashboard widget, and a background
+  recheck. Separate from flows.
 - **Before-onboarding gates** — `config.before_onboarding` callables; RS Terms
   auto-registers when present
 - **Card UI** — `RunComponent`, `CardShellComponent`, permanent chrome
@@ -47,6 +48,7 @@ user-facing flow.
 - `/demos/onboarding` — layout gallery (splash, top-card, plain, button positions)
 - `/onboarding/runs/:uuid` — full-screen card shell for the current step
 - `/onboarding/setup/:checklist` — Your setup (live checklist)
+- `/dashboard` — dummy studio dashboard with the optional setup widget
 - `/recording_studio_terms_and_conditions/acceptance` — RS Terms Agree (when installed)
 - `/admin` — RS Admin root section (onboarding hub + screens)
 - `/admin/root` — host admin landing with search
@@ -281,6 +283,43 @@ Workspace and subject checklists need Accessible `:view`.
 
 When Warden is loaded, a successful sign-in enqueues the same recheck. If
 Warden is absent, sign-in is unchanged.
+
+### Dashboard widget
+
+Recording Studio Dashboard is optional. This gem does not depend on it. When
+that gem is loaded, onboarding registers the widget `:onboarding_setup`.
+
+```ruby
+RecordingStudioDashboard.register(:home) do
+  row :setup, title: "Still to do" do
+    widget :onboarding_setup, span: 6, config: {
+      checklist: :studio,
+      title: ->(context) { "Finish #{context.studio_name}" },
+      link: "/onboarding/setup/studio",
+      subject: ->(context) { context.workspace }
+    }
+  end
+end
+```
+
+`checklist` is the registered name. The widget calls `setup_status` for that
+name and shows the title, the subtitle, and the items still left. Each row
+keeps that item's link. "See your setup" opens the full setup page. Pass
+`link` when that destination should be somewhere else.
+
+`title` and `link` are a String or a Proc of the dashboard context. `subject`
+is the record passed to `setup_status`, or a Proc of the dashboard context
+that returns that record. Use it for a workspace or subject checklist. The
+person is `context.actor` when the context responds to `actor`. Otherwise the
+context itself is the person.
+
+The widget stays off the dashboard when the checklist does not apply, and when
+every item is done. Pass `show_complete: true` to keep the finished state
+visible. Access still uses Accessible `:view` inside `setup_status`. A person
+without access does not see the widget.
+
+The setup page still computes live. The widget reads the saved status and
+enqueues a recheck when that row is older than `setup_recheck_interval`.
 
 ## Using setup status in your host
 

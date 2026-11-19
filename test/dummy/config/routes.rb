@@ -40,6 +40,7 @@ Rails.application.routes.draw do
   get "docs/methods", to: "docs#methods", as: :docs_methods
 
   get "provisioning", to: "provisioning#show", as: :provisioning
+  get "dashboard", to: "dashboards#show", as: :dashboard
 
   get "demos/onboarding", to: "onboarding_demos#index", as: :onboarding_demos
   get "demos/onboarding/:variant", to: "onboarding_demos#show", as: :onboarding_demo
