@@ -236,7 +236,10 @@ URLs.
 
 The setup page lists only what is still left. Each row is the icon, the
 next-step line, and a link across the whole row. When nothing remains, the page
-says you're done. `setup_status` still returns both the done and remaining lists.
+says you're done. From the medium breakpoint up, the heading, that list, and
+the done line sit in the first column of a two-column grid. The second column
+is empty. Narrower screens use one full-width column. `setup_status` still
+returns both the done and remaining lists.
 
 `check` and `applies_to` receive the actor and the scope target. A check that
 returns a truthy value means the item is done. An item whose `applies_to`

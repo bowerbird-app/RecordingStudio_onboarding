@@ -1,4 +1,6 @@
-<% page = RecordingStudioOnboarding::SetupPageComponent.new(status: @status, heading: false) %>
-<% content_for :title, page.title %>
-<% content_for :subtitle, page.subtitle.html_safe %>
-<%= render page %>
+<% page = RecordingStudioOnboarding::SetupPageComponent.new(status: @status) %>
+<%= render FlatPack::Grid::Component.new(cols: 2) do |grid| %>
+  <% grid.with_item do %>
+    <%= render page %>
+  <% end %>
+<% end %>

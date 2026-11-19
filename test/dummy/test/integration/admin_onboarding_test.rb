@@ -328,5 +328,6 @@ class AdminOnboardingTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Publish your first press kit"
     refute_includes response.body, "Confirm the email on your account"
     refute_includes response.body, "other@example.com"
+    refute_includes response.body, "md:grid-cols-2"
   end
 end

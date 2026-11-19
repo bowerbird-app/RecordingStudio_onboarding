@@ -92,10 +92,13 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: "Your setup", count: 1
     assert_includes response.body, "What to do next."
-    assert_select "[data-testid=setup-remaining].flat-pack-list-divided" do
-      assert_select "[data-testid=setup-item-name] a[href=?]", "https://example.com/name", text: /Add a name/
-      assert_select "[data-testid=setup-item-name][class*='hover:bg-']"
-      assert_select "[data-flat-pack--icon-name-value=chevron-right]"
+    assert_setup_in_first_column do |grid|
+      assert_select grid, "h1", text: "Your setup", count: 1
+      assert_select grid, "[data-testid=setup-remaining].flat-pack-list-divided" do
+        assert_select "[data-testid=setup-item-name] a[href=?]", "https://example.com/name", text: /Add a name/
+        assert_select "[data-testid=setup-item-name][class*='hover:bg-']"
+        assert_select "[data-flat-pack--icon-name-value=chevron-right]"
+      end
     end
     assert_select "[data-testid=setup-done]", count: 0
     refute_includes response.body, ">Open<"
@@ -111,6 +114,10 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Nothing left. Nice work."
     assert_includes response.body, "You&#39;re all set."
+    assert_setup_in_first_column do |grid|
+      assert_select grid, "h1", text: "Your setup", count: 1
+      assert_select grid, "p", text: "Nothing left. Nice work."
+    end
   end
 
   test "a raising check stays on the page as not done" do
@@ -181,6 +188,15 @@ class SetupChecklistIntegrationTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def assert_setup_in_first_column
+    grid = css_select("div.grid").find { |node| node["class"].to_s.split.include?("md:grid-cols-2") }
+    assert grid, "expected the setup page to use a two-column grid"
+    classes = grid["class"].to_s.split
+    assert_includes classes, "grid-cols-1"
+    assert_equal 1, css_select(grid, ".fp-grid__item").size
+    yield grid
+  end
 
   def register_box(check)
     RecordingStudioOnboarding.configure do |config|

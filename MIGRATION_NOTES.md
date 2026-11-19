@@ -19,6 +19,16 @@
 - Dummy Puma `8.1.1` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
 
+## 0.9.1 Your setup column
+
+- The default Your setup page uses `FlatPack::Grid` with `cols: 2`. The
+  heading, the remaining list, and the all-done line are the first cell. The
+  second column is empty. Below the `md` breakpoint the page is one column.
+- No migration. Admin lookup still renders `SetupPageComponent` at the full
+  width of that screen.
+- Override `app/views/recording_studio_onboarding/setup/show` to keep a
+  full-width list.
+
 ## 0.9.0 Setup checklists
 
 - Copy `db/migrate/20261118120000_create_recording_studio_onboarding_setup_checks.rb`

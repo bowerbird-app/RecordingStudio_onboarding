@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `skip_confirmation!`. `password_registration_confirmation` is removed.
 - Dummy and without-terms lockfiles pin Puma `8.1.1`.
 
+## [0.9.1] - 2026-11-19
+
+### Changed
+- Your setup (`/onboarding/setup/:checklist`) places the heading, the remaining
+  list, and the all-done line in the first column of a two-column FlatPack
+  grid (`cols: 2`). The second column is empty. Below the `md` breakpoint the
+  grid is one column. Admin lookup is unchanged.
+
+### Upgrade notes
+- Hosts that use the default setup view get the narrower column. Override
+  `app/views/recording_studio_onboarding/setup/show` to keep a full-width list.
+  No migration.
+
 ## [0.9.0] - 2026-11-18
 
 ### Added
