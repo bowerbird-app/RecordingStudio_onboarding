@@ -68,11 +68,7 @@ class SetupWidgetTest < ViewComponent::TestCase
     assert_equal "Almost there", preparation.data.title
     assert_equal ["Add a name", "Add a photo"], preparation.data.status.remaining.map(&:next_step)
 
-    render_inline RecordingStudioOnboarding::SetupWidget.new(
-      context: @context,
-      config: { checklist: :open },
-      preparation: preparation
-    )
+    render_inline RecordingStudioOnboarding::SetupWidget.new(preparation: preparation)
     assert_rendered "h2", text: "Almost there"
     assert_rendered "[data-testid=setup-item-name] a", text: "Add a name", href: "https://example.com/name"
     assert_rendered "[data-testid=setup-item-photo] a", text: "Add a photo", href: "https://example.com/photo"

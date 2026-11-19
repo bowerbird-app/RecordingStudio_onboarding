@@ -9,10 +9,8 @@ module RecordingStudioOnboarding
     WIDGET_ID = :onboarding_setup
     Source = Data.define(:status, :title, :link, :subject)
 
-    def initialize(context: nil, config: nil, preparation: nil, **)
+    def initialize(preparation: nil, **)
       super()
-      @context = context
-      @config = config
       @source = source_from(preparation)
     end
 

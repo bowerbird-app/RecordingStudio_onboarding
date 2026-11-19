@@ -1,8 +1,4 @@
-<%= render FlatPack::Card::Component.new(
-      padding: :none,
-      class: "min-w-0 h-full",
-      data: { testid: "onboarding-setup" }
-    ) do |card| %>
+<%= render FlatPack::Card::Component.new(padding: :none, data: { testid: "onboarding-setup" }) do |card| %>
   <% card.header(padding: :sm) do %>
     <%= render FlatPack::Stack::Component.new(gap: :sm) do %>
       <%= render FlatPack::Heading::Component.new(text: title, level: 2, size: :sm) %>
