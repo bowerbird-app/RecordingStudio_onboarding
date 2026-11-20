@@ -5,8 +5,10 @@
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
 - Recording Studio `>= 7.0`, `< 8.0` (dummy GitHub tag `v7.8.0`)
-- RecordingStudio_users `>= 0.30.0`, `< 1.0` (dummy/root GitHub tag `v0.41.0`)
+- RecordingStudio_users `>= 0.30.0`, `< 1.0` (dummy/root GitHub tag `v0.42.1`)
   for the registration-completed provisioning subscriber; dummy mounts users auth
+- Dummy Notifications `v0.21.0` and Notifications email `v0.5.4` so password
+  sign-up can send its confirmation code. The gem does not depend on them.
 - RecordingStudio_metrics `v0.10.0`
 - Accessible dummy tag `v0.58.0`, Attachable `v0.34.0`, Admin `v2.20.0`,
   Dashboard `v0.6.0` (dummy only; the gem does not depend on it),
@@ -20,6 +22,24 @@
   Agree-before-onboarding is tested once Terms ships a core 7 tag.
 - Dummy Puma `8.1.1` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
+
+## 0.12.1 Users sign-up
+
+- No onboarding migration. Gemspec floors stay `recording_studio` `>= 7.0`,
+  `< 8.0` and `recording_studio_user` `>= 0.30.0`, `< 1.0`.
+- Dummy and root pins move to RecordingStudio_users `v0.42.1` (`~> 0.42`).
+  `Directory.create_user!` with no actor records the Profile as the new user.
+- Dummy `authorize_write` allows a person to record their own Profile on the
+  People root. Users writes that row during sign-up, before the person has
+  Accessible `:edit` on People. Copy that allowance if the host authorizer
+  only allows Accessible `:edit`.
+- Password sign-up confirms with an email code, then emits
+  `registration.completed.recording_studio_user`. Provisioning runs on that
+  event. The dummy installs Notifications `v0.21.0` and the email channel
+  `v0.5.4`, and copies the Users one-time-code migration plus the
+  Notifications migrations. OTP login stays off.
+- Hosts that already use Users `0.42.1`, allow the own-Profile write, and
+  send the confirmation code keep the same onboarding calls.
 
 ## 0.12.0 Async provisioning
 

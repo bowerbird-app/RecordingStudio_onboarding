@@ -8,9 +8,18 @@ class UsersDirectoryProfileWriteGapTest < ActionDispatch::IntegrationTest
     refute File.exist?(initializer), "do not restore a Directory.create_user! prepend shim"
     refute_includes File.read(Rails.root.join("app/models/user.rb")), "recording_studio_user_directory_create"
 
-    skip "Users gap: Directory.create_user! and record_profile! have no API for a first " \
-         "Profile write when host authorize_write allows AccessCreationContext only for " \
-         "RecordingStudio::Access and Accessible :edit otherwise. Users v0.30.0 writes the " \
-         "Profile before bootstrap_owner_access! and OmniAuth omits actor:."
+    email = "gap-user-#{SecureRandom.hex(4)}@example.com"
+    user = RecordingStudioUser::Directory.create_user!(
+      email: email,
+      password: "Password123!",
+      password_confirmation: "Password123!",
+      first_name: "Gap",
+      last_name: "User",
+      confirm: true
+    )
+
+    profile = RecordingStudioUser::Directory.profile_for(user)
+    assert profile, "expected create_user! to record a Profile"
+    assert_equal user.id, profile.user_id
   end
 end

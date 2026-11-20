@@ -10,7 +10,6 @@ class RsUsersPasswordRegistrationTest < ActionDispatch::IntegrationTest
   end
 
   test "RS Users password sign-up fires registration.completed and provisions" do
-    skip UsersProfileWriteGap::MESSAGE
     email = "rs-user-#{SecureRandom.hex(4)}@example.com"
     events = []
     subscriber = ActiveSupport::Notifications.subscribe(
@@ -24,13 +23,20 @@ class RsUsersPasswordRegistrationTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_response :success
 
-    assert_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count }, 1 do
-      assert_difference -> { Workspace.count }, 1 do
-        assert_difference -> { User.count }, 1 do
+    assert_difference -> { User.count }, 1 do
+      assert_no_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count } do
+        assert_no_difference -> { Workspace.count } do
           post user_registration_path, params: {
             user: { email: email, password: "Password123!" }
           }
         end
+      end
+    end
+    assert_redirected_to verify_user_registration_path
+
+    assert_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count }, 1 do
+      assert_difference -> { Workspace.count }, 1 do
+        submit_password_signup_code!
       end
     end
   ensure

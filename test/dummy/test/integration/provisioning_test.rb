@@ -18,18 +18,26 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
   end
 
   test "RS Users password registration provisions a workspace exactly once" do
-    skip UsersProfileWriteGap::MESSAGE
     email = "new-user-#{SecureRandom.hex(4)}@example.com"
 
     post new_user_registration_path, params: { user: { email: email } }
     assert_response :redirect
     follow_redirect!
 
+    assert_difference -> { User.count }, 1 do
+      assert_no_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count } do
+        assert_no_difference -> { Workspace.count } do
+          post user_registration_path, params: {
+            user: { email: email, password: "Password123!" }
+          }
+        end
+      end
+    end
+    assert_redirected_to verify_user_registration_path
+
     assert_difference -> { RecordingStudioOnboarding::ProvisioningExecution.count }, 1 do
       assert_difference -> { Workspace.count }, 1 do
-        post user_registration_path, params: {
-          user: { email: email, password: "Password123!" }
-        }
+        submit_password_signup_code!
       end
     end
 
@@ -60,7 +68,6 @@ class ProvisioningTest < ActionDispatch::IntegrationTest
   end
 
   test "RS Users oauth new-user registration provisions a workspace" do
-    skip UsersProfileWriteGap::MESSAGE
     email = "oauth-user-#{SecureRandom.hex(4)}@example.com"
     mock_provider_auth!(
       :google_oauth2,

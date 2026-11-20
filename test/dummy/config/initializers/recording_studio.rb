@@ -29,6 +29,8 @@ RecordingStudio.configure do |config|
 
   # Access rows may be written only inside AccessCreationContext (grant/bootstrap).
   # create_root_recording! authorizes before a root exists, so a nil target is a new root.
+  # A person may record their own Profile on the shared People root. Users writes
+  # that row during sign-up, before the person has :edit on People.
   # Every other write needs Accessible :edit on the recording being written.
   config.authorize_write = lambda { |actor:, recordable:, recording:, root_recording:, parent_recording:, **|
     next false if actor.blank?
@@ -37,6 +39,13 @@ RecordingStudio.configure do |config|
     if recordable.is_a?(RecordingStudio::Access)
       RecordingStudioAccessible::AccessCreationContext.allowed?
     elsif recording.nil? && parent_recording.nil? && root_recording.nil?
+      true
+    elsif defined?(RecordingStudioUser::Profile) &&
+          recordable.is_a?(RecordingStudioUser::Profile) &&
+          actor.respond_to?(:id) &&
+          recordable.user_id.present? &&
+          recordable.user_id == actor.id &&
+          root_recording&.recordable_type == "RecordingStudioUser::People"
       true
     else
       target = recording || parent_recording || root_recording
