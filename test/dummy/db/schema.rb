@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_18_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_20_082817) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -241,6 +241,88 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_18_120000) do
     t.index ["task", "subject", "finished_at"], name: "index_rs_logs_maintenance_runs_on_task_and_subject"
   end
 
+  create_table "recording_studio_notifications_deliveries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "notification_id", null: false
+    t.string "channel", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "delivered_at"
+    t.text "error_message"
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "rollup_reserved_at"
+    t.index ["channel", "status"], name: "idx_rsn_deliveries_channel_status"
+    t.index ["notification_id", "channel"], name: "idx_rsn_deliveries_notification_channel", unique: true
+    t.index ["status", "rollup_reserved_at"], name: "idx_rsn_deliveries_rollup_reservation"
+  end
+
+  create_table "recording_studio_notifications_email_suppressions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "address", null: false
+    t.string "reason", null: false
+    t.string "provider", null: false
+    t.datetime "lifted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["address"], name: "idx_rsne_suppressions_address", unique: true
+  end
+
+  create_table "recording_studio_notifications_notifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "notification_type", null: false
+    t.string "recipient_type", null: false
+    t.uuid "recipient_id", null: false
+    t.string "actor_type"
+    t.uuid "actor_id"
+    t.string "notifiable_type"
+    t.uuid "notifiable_id"
+    t.uuid "recording_id"
+    t.uuid "root_recording_id"
+    t.string "title", null: false
+    t.text "body"
+    t.string "url"
+    t.jsonb "metadata", default: {}, null: false
+    t.string "idempotency_key"
+    t.datetime "read_at"
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "cleared_at"
+    t.boolean "inbox", default: true, null: false
+    t.string "thread_key"
+    t.index ["recipient_type", "recipient_id", "created_at", "id"], name: "idx_rsn_notifications_inbox", order: { created_at: :desc, id: :desc }, where: "((archived_at IS NULL) AND (inbox = true))"
+    t.index ["recipient_type", "recipient_id", "idempotency_key"], name: "idx_rsn_notifications_idempotency", unique: true, where: "(idempotency_key IS NOT NULL)"
+    t.index ["recipient_type", "recipient_id", "notification_type"], name: "idx_rsn_notifications_recipient_type"
+    t.index ["recipient_type", "recipient_id"], name: "idx_rsn_notifications_unread", where: "((read_at IS NULL) AND (cleared_at IS NULL) AND (archived_at IS NULL) AND (inbox = true))"
+    t.index ["recording_id"], name: "idx_rsn_notifications_recording"
+    t.index ["root_recording_id", "created_at"], name: "idx_rsn_notifications_root_created"
+  end
+
+  create_table "recording_studio_notifications_preferences", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "recipient_type", null: false
+    t.uuid "recipient_id", null: false
+    t.string "notification_type", null: false
+    t.string "channel"
+    t.boolean "enabled"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "cadence"
+    t.index ["notification_type", "channel"], name: "idx_rsn_preferences_type_channel"
+    t.index ["recipient_type", "recipient_id", "notification_type", "channel"], name: "idx_rsn_preferences_channel", unique: true, where: "(channel IS NOT NULL)"
+    t.index ["recipient_type", "recipient_id", "notification_type"], name: "idx_rsn_preferences_cadence", unique: true, where: "(channel IS NULL)"
+    t.check_constraint "channel IS NOT NULL AND enabled IS NOT NULL AND cadence IS NULL OR channel IS NULL AND enabled IS NULL AND cadence IS NOT NULL", name: "chk_rsn_preferences_shape"
+  end
+
+  create_table "recording_studio_notifications_replies", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "notification_id", null: false
+    t.string "channel", null: false
+    t.string "idempotency_key", null: false
+    t.string "status", null: false
+    t.string "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel", "idempotency_key"], name: "idx_rsn_replies_channel_idempotency", unique: true
+    t.index ["notification_id"], name: "idx_rsn_replies_notification"
+  end
+
   create_table "recording_studio_onboarding_flow_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "flow_key", null: false
     t.integer "flow_version", default: 1, null: false
@@ -410,6 +492,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_18_120000) do
     t.index ["user_id"], name: "index_recording_studio_user_identities_on_user_id"
   end
 
+  create_table "recording_studio_user_otp_challenges", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "purpose", null: false
+    t.string "code_digest", null: false
+    t.text "delivery_code_ciphertext"
+    t.datetime "expires_at", null: false
+    t.integer "attempts_count", default: 0, null: false
+    t.datetime "verified_at"
+    t.datetime "consumed_at"
+    t.datetime "revoked_at"
+    t.datetime "delivery_requested_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_recording_studio_user_otp_challenges_on_expires_at"
+    t.index ["user_id", "purpose"], name: "idx_on_user_id_purpose_2b7c2a59c4"
+    t.index ["user_id", "purpose"], name: "index_rs_user_otp_challenges_open_purpose", unique: true, where: "((consumed_at IS NULL) AND (revoked_at IS NULL))"
+    t.index ["user_id"], name: "index_recording_studio_user_otp_challenges_on_user_id"
+  end
+
   create_table "recording_studio_user_password_failures", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id", null: false
     t.datetime "created_at", null: false
@@ -482,11 +583,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_18_120000) do
   add_foreign_key "recording_studio_access_invitations", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "root_recording_id"
+  add_foreign_key "recording_studio_notifications_deliveries", "recording_studio_notifications_notifications", column: "notification_id"
+  add_foreign_key "recording_studio_notifications_replies", "recording_studio_notifications_notifications", column: "notification_id"
   add_foreign_key "recording_studio_onboarding_step_progresses", "recording_studio_onboarding_flow_runs", column: "flow_run_id"
   add_foreign_key "recording_studio_publishable_publishables", "recording_studio_recordings", column: "social_image_attachment_recording_id", name: "fk_rs_publishables_social_image_attachment_recording"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
   add_foreign_key "recording_studio_user_identities", "users"
+  add_foreign_key "recording_studio_user_otp_challenges", "users"
   add_foreign_key "recording_studio_user_password_failures", "users"
   add_foreign_key "recording_studio_user_profiles", "users"
   add_foreign_key "recording_studio_user_sign_in_links", "users"

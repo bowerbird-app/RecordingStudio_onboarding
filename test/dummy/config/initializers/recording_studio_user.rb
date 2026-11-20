@@ -51,8 +51,9 @@ RecordingStudioUser.configure do |config|
   config.profile_route_path = "profile"
   config.admin_route_path = "admin"
   config.layout = "recording_studio/default_layout"
-  # OTP stays off until RecordingStudio_notifications is installed. Password
-  # registration stays on. Users 0.31 removed password_registration_confirmation.
+  # OTP login stays off. Password registration stays on and confirms with
+  # an email code through Notifications. Users removed
+  # password_registration_confirmation.
   config.otp_enabled = false
   config.registration_authentication_methods = %i[password]
   config.require_password_confirmation = false

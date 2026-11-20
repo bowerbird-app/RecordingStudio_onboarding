@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-11-20
+
+### Fixed
+- Dummy password and provider sign-up can record a Profile and provision a
+  workspace. The dummy pins RecordingStudio_users `v0.42.1`. `create_user!`
+  with no actor records the Profile as the new user. Dummy `authorize_write`
+  allows that person to record their own Profile on the shared People root
+  before they have Accessible `:edit` there.
+- Dummy password sign-up follows the Users confirmation code. The dummy
+  installs Recording Studio Notifications `v0.21.0` and the email channel
+  `v0.5.4`, plus the Users one-time-code table. `registration.completed`
+  fires when the code is confirmed, and that is when provisioning runs.
+
+### Upgrade notes
+- No onboarding migration. Gemspec floors stay `recording_studio` `>= 7.0`,
+  `< 8.0` and `recording_studio_user` `>= 0.30.0`, `< 1.0`.
+- Hosts that sign people up with Users should move to Users `0.42.1` so a
+  sign-up with nobody signed in records the Profile as the new user.
+- `authorize_write` must allow that person to record their own Profile on the
+  People root. Users writes the row before the person has `:edit` on People.
+- Password sign-up confirms with an email code. Install
+  `recording_studio_notifications` and `recording_studio_notifications_email`,
+  and run the Users one-time-code migration plus the Notifications migrations.
+  Provisioning for that sign-up runs when the code is confirmed.
+- See `MIGRATION_NOTES.md`.
+
 ## [0.12.0] - 2026-11-20
 
 ### Added
@@ -599,7 +625,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.10.0...v0.11.0
 [0.8.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.4...v0.8.0

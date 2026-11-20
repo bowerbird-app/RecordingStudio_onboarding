@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioOnboardingTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.12.0", ::RecordingStudioOnboarding::VERSION
+    assert_equal "0.12.1", ::RecordingStudioOnboarding::VERSION
   end
 
   def test_async_provisioning_api_is_public
@@ -73,7 +73,9 @@ class RecordingStudioOnboardingTest < Minitest::Test
     [
       ["recording_studio", "~> 7.8", "bowerbird-app/RecordingStudio", "v7.8.0"],
       ["recording_studio_accessible", "~> 0.58", "bowerbird-app/RecordingStudio_accessible", "v0.58.0"],
-      ["recording_studio_user", "~> 0.41", "bowerbird-app/RecordingStudio_users", "v0.41.0"],
+      ["recording_studio_user", "~> 0.42", "bowerbird-app/RecordingStudio_users", "v0.42.1"],
+      ["recording_studio_notifications", "~> 0.21", "bowerbird-app/RecordingStudio_notifications", "v0.21.0"],
+      ["recording_studio_notifications_email", "~> 0.5", "bowerbird-app/RecordingStudio_notifications_email", "v0.5.4"],
       ["recording_studio_admin", "~> 2.20", "bowerbird-app/RecordingStudio_admin", "v2.20.0"],
       ["recording_studio_api", "~> 1.21", "bowerbird-app/RecordingStudio_api", "v1.21.2", "require: false"],
       ["recording_studio_attachable", "~> 0.34", "bowerbird-app/RecordingStudio_attachable", "v0.34.0"],
@@ -127,7 +129,15 @@ class RecordingStudioOnboardingTest < Minitest::Test
     refute_includes lock, "recording_studio_publishable"
     assert_github_pin(gemfile, "recording_studio", "~> 7.8", ["bowerbird-app/RecordingStudio", "v7.8.0"])
     assert_github_pin(
-      gemfile, "recording_studio_user", "~> 0.41", ["bowerbird-app/RecordingStudio_users", "v0.41.0"]
+      gemfile, "recording_studio_user", "~> 0.42", ["bowerbird-app/RecordingStudio_users", "v0.42.1"]
+    )
+    assert_github_pin(
+      gemfile, "recording_studio_notifications", "~> 0.21",
+      ["bowerbird-app/RecordingStudio_notifications", "v0.21.0"]
+    )
+    assert_github_pin(
+      gemfile, "recording_studio_notifications_email", "~> 0.5",
+      ["bowerbird-app/RecordingStudio_notifications_email", "v0.5.4"]
     )
     assert_includes lock, "puma (8.1.1)"
     assert_includes lock, "msgpack (1.8.7)"
@@ -250,6 +260,8 @@ class RecordingStudioOnboardingTest < Minitest::Test
     assert_includes initializer_source, "authorized?"
     assert_includes initializer_source, ":edit"
     assert_includes initializer_source, "root_recording.nil?"
+    assert_includes initializer_source, "recordable.user_id == actor.id"
+    assert_includes initializer_source, 'root_recording&.recordable_type == "RecordingStudioUser::People"'
     refute_includes initializer_source, "actor.present?"
     refute File.exist?(File.expand_path("dummy/config/initializers/recording_studio_user_directory_actor.rb", __dir__))
     assert_includes initializer_source, '"Workspace"'

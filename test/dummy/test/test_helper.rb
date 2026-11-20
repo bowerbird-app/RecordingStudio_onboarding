@@ -37,14 +37,15 @@ module OnboardingActorTestSupport
   end
 end
 
-module UsersProfileWriteGap
-  MESSAGE =
-    "Users gap: Directory.create_user! / record_profile! have no API for a first Profile write " \
-    "when host authorize_write allows AccessCreationContext only for RecordingStudio::Access " \
-    "and Accessible :edit otherwise. See users_directory_profile_write_gap_test.rb."
-end
-
 class ActionDispatch::IntegrationTest
   include TermsAcceptanceTestSupport
   include OnboardingActorTestSupport
+
+  # Password sign-up creates the account, then confirms with the email code.
+  # registration.completed fires on that confirm.
+  def submit_password_signup_code!
+    message = RecordingStudioUser.otp_message(session[:otp_challenge_id])
+    code = message.fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
+  end
 end
