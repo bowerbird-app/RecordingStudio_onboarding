@@ -62,14 +62,52 @@ module RecordingStudioOnboarding
 
       def run_handler!(execution)
         instrument("provision.started", execution)
-        invoke_handler
-        execution.update!(status: "completed", completed_at: Time.current, failure_details: nil)
-        instrument("provision.completed", execution)
+        async = RecordingStudioOnboarding.configuration.provision_async?
+        call_handler!(execution, async: async)
+        finish_handler!(execution, async: async)
         execution
       rescue StandardError => e
         persist_failure!(execution, e)
         instrument("provision.failed", execution, error: e)
         raise ProvisionFailed.new(e, execution: execution)
+      end
+
+      def call_handler!(execution, async:)
+        handler = resolve_handler
+        unless handler.respond_to?(:call)
+          raise ArgumentError, "Provisioner #{handler_source.inspect} does not respond to call"
+        end
+
+        handler.call(**handler_arguments(execution, async: async))
+      end
+
+      def handler_arguments(execution, async:)
+        arguments = {
+          actor: @actor,
+          subject: @subject,
+          root: @root,
+          context: @context
+        }
+        arguments[:execution] = execution if async
+        arguments
+      end
+
+      def finish_handler!(execution, async:)
+        return release_pending!(execution) if async
+
+        execution.update!(status: "completed", completed_at: Time.current, failure_details: nil)
+        instrument("provision.completed", execution)
+      end
+
+      # After the handler returns, a still-running row goes back to pending.
+      # A row the handler already finished stays as it is.
+      def release_pending!(execution)
+        execution.with_lock do
+          execution.reload
+          next unless execution.running?
+
+          execution.update!(status: "pending", completed_at: nil, failure_details: nil)
+        end
       end
     end
   end

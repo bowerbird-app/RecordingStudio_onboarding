@@ -21,6 +21,24 @@
 - Dummy Puma `8.1.1` and msgpack `>= 1.8.7`
 - Public RubyGems and GitHub access for dependency installation
 
+## 0.12.0 Async provisioning
+
+- No migration. `config.provision_async` defaults to `false`. Handlers keep
+  the signature `call(actor:, subject:, root:, context:)` and the execution
+  is completed when the handler returns.
+- Set `config.provision_async = true` when the handler enqueues a job. The
+  handler then also receives `execution:`. Pass `execution.id` to the job.
+  The job calls `RecordingStudioOnboarding.complete_provisioning!(execution_id)`
+  when the work succeeds. Call `fail_provisioning!(execution_id, error: error)`
+  only from `retry_on StandardError, attempts: 5 do |job, error|`, once those
+  attempts are exhausted, for whatever exception class stopped the retries,
+  then re-raise that exception so it propagates.
+- A later `registration.completed.recording_studio_user` event, or `provision`
+  with the same idempotency key, runs the handler again while the execution
+  is `pending` or `failed` and can enqueue another job. `provision_now` must
+  be idempotent. A `completed` execution stays completed. A second call does
+  not enter the handler while the first call is still `running`.
+
 ## 0.11.0 Dependency pins
 
 - No onboarding migration. Gemspec floors stay `recording_studio` `>= 7.0`,

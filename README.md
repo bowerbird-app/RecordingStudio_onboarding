@@ -12,7 +12,8 @@ user-facing flow.
 - **Flow registry** — Ruby-configured sequences (`config.flow`)
 - **`FlowRun` / `StepProgress`** — scoped persistence with row-lock transitions
 - **Public API** — `start`, `active_run`, `advance`, `back`, `skip`, `dismiss`,
-  `reset`, `restart`, `mark_viewed`, `preview`, `setup_status` (no automatic
+  `reset`, `restart`, `mark_viewed`, `preview`, `setup_status`,
+  `complete_provisioning!`, `fail_provisioning!` (no automatic
   redirect from `start`). Workspace/subject `start` and `provision` need
   Accessible `:view` or they raise `Unauthorized`. `active_run` returns `nil`
   in that case.
@@ -61,6 +62,7 @@ user-facing flow.
 ```ruby
 RecordingStudioOnboarding.configure do |config|
   config.provision :new_registration, with: "Host::ProvisionRegistration"
+  # config.provision_async = false # default; see Async provisioning
   config.current_actor = ->(controller) { controller.current_user }
   # Optional. nil uses RecordingStudio.configuration.layout, then
   # recording_studio/default_layout. false skips the layout.
@@ -426,13 +428,78 @@ No separate analytics store.
 `step.completed`, `step.skipped`, `flow.completed`, `flow.dismissed`, `flow.reset`,
 `setup.completed`, `setup.regressed`.
 
+## Async provisioning
+
+`config.provision_async` defaults to `false`. The handler is called with
+`actor:`, `subject:`, `root:`, and `context:`. When that call returns, the
+`ProvisioningExecution` is `completed`.
+
+Set the flag when the handler only enqueues work:
+
+```ruby
+RecordingStudioOnboarding.configure do |config|
+  config.provision_async = true
+  config.provision :new_registration, with: "Host::ProvisionRegistration"
+end
+```
+
+The handler then also receives `execution:` (the `ProvisioningExecution`).
+Pass `execution.id` into the job. The execution stays `pending` until the job
+reports the outcome:
+
+```ruby
+class Host::ProvisionRegistration
+  def self.call(actor:, execution:, **)
+    return if actor.nil? || actor.id.blank?
+
+    ProvisionRegistrationJob.perform_later(actor.id, execution.id)
+  end
+end
+
+class ProvisionRegistrationJob < ApplicationJob
+  retry_on StandardError, wait: :polynomially_longer, attempts: 5 do |job, error|
+    RecordingStudioOnboarding.fail_provisioning!(job.arguments.last, error: error)
+    raise error
+  end
+
+  def perform(actor_id, execution_id)
+    actor = User.find(actor_id)
+    Host::ProvisionRegistration.provision_now(actor: actor)
+    RecordingStudioOnboarding.complete_provisioning!(execution_id)
+  end
+end
+```
+
+`provision_now` must be idempotent. Call `complete_provisioning!` when the work
+succeeds. Call `fail_provisioning!` only from the `retry_on` block, once the
+attempts are exhausted, and pass the exception that stopped the retries (any
+exception class). Then re-raise it so the error propagates. Active Job does
+not re-raise for you when that block is present.
+
+`complete_provisioning!` accepts the execution or its id. A second call on a
+completed execution returns that row. It also completes a pending, running, or
+failed execution. `fail_provisioning!` requires an exception, stores status
+`failed`, and stores a scrubbed `error.class` and message. It raises
+`ArgumentError` when the execution is already completed.
+
+Replaying `registration.completed.recording_studio_user`, or calling
+`provision` again with the same idempotency key, runs the handler when the
+execution is `pending` or `failed`. A `completed` execution stays completed.
+While the handler is inside `call`, the execution is `running` and a second
+call does not enter the handler. A replay while the execution is still
+`pending` enqueues another job. `provision_now` must be idempotent.
+
+No migration. With the default, existing handlers keep the same call and the
+execution completes when the handler returns.
+
 ## RecordingStudio_users integration
 
 Requires **RecordingStudio_users >= 0.30.0**, **< 1.0**.
 
 Subscribes to `registration.completed.recording_studio_user` for every
-successful sign-up method (`:password`, `:oauth`, `:otp`). Provisioning is
-idempotent per actor, so duplicate events do not double-provision.
+successful sign-up method (`:password`, `:oauth`, `:otp`). A completed
+execution is not run again. With `provision_async`, a `pending` or `failed`
+execution runs again. See Async provisioning.
 
 The older OTP-only event (`otp.registration_completed.recording_studio_user`)
 is not subscribed; OTP is covered by the unified event.

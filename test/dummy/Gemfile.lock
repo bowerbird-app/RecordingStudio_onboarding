@@ -183,7 +183,7 @@ GIT
 PATH
   remote: ../..
   specs:
-    recording_studio_onboarding (0.11.0)
+    recording_studio_onboarding (0.12.0)
       rails (>= 8.1.0, < 9.0)
       recording_studio (>= 7.0, < 8.0)
       recording_studio_user (>= 0.30.0, < 1.0)
@@ -861,7 +861,7 @@ CHECKSUMS
   recording_studio_logs (0.9.0)
   recording_studio_metrics (0.10.0)
   recording_studio_moveable (6.1.0)
-  recording_studio_onboarding (0.11.0)
+  recording_studio_onboarding (0.12.0)
   recording_studio_root_switchable (0.17.0)
   recording_studio_trashable (1.3.0)
   recording_studio_user (0.41.0)

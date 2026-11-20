@@ -44,10 +44,26 @@ module RecordingStudioOnboarding
       nil
     end
 
-    # Execute a registered provisioner immediately with idempotent tracking.
+    # Execute a registered provisioner with idempotent tracking.
+    # The default finishes the execution when the handler returns. With
+    # config.provision_async, a successful handler leaves it pending.
     def provision(name, **)
       require "recording_studio_onboarding/services/provision"
       Services::Provision.call(name, **)
+    end
+
+    # Mark an async provisioning execution completed. Idempotent when it
+    # already completed. Accepts the execution or its id.
+    def complete_provisioning!(execution_or_id)
+      require "recording_studio_onboarding/services/finish_provisioning"
+      Services::FinishProvisioning.complete!(execution_or_id)
+    end
+
+    # Mark an async provisioning execution failed and store the error.
+    # Raises when the execution already completed.
+    def fail_provisioning!(execution_or_id, error:)
+      require "recording_studio_onboarding/services/finish_provisioning"
+      Services::FinishProvisioning.fail!(execution_or_id, error: error)
     end
 
     # Start (or resume) a registered flow. Never redirects or renders UI.

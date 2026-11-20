@@ -5,6 +5,9 @@ RecordingStudioOnboarding.configure do |config|
   #
   # config.provision :new_registration,
   #   with: "MyApp::ProvisionRegistration"
+  #
+  # Leave false unless the handler only enqueues a job. See the README.
+  # config.provision_async = false
 
   # config.checklist :studio do
   #   scope :user
