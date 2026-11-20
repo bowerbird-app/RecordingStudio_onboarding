@@ -29,17 +29,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - To finish provisioning from a background job, set `config.provision_async = true`
   and accept `execution:` in the provisioner. Pass `execution.id` into the job.
   On success the job calls `complete_provisioning!` with the execution or its
-  id. On failure it calls `fail_provisioning!(execution_id, error: error)` with
-  an exception, then re-raises that exception so the queue can retry.
-  `complete_provisioning!` is idempotent once the execution is completed, and
-  it can also complete a pending, running, or failed execution.
-  `fail_provisioning!` records status `failed` and a scrubbed error, and raises
-  `ArgumentError` if the execution is already completed.
+  id. Call `fail_provisioning!(execution_id, error: error)` only when `retry_on`
+  attempts are exhausted (`retry_on StandardError, attempts: 5 do |job, error|`),
+  passing whatever exception class stopped the retries, then re-raise that
+  exception so it propagates. `complete_provisioning!` is idempotent once the
+  execution is completed, and it can also complete a pending, running, or
+  failed execution. `fail_provisioning!` records status `failed` and a scrubbed
+  error, and raises `ArgumentError` if the execution is already completed.
 - While the execution is `pending` or `failed`, another
   `registration.completed.recording_studio_user` event (or `provision` with the
   same idempotency key, including admin retry of a failed row) runs the
-  handler again. Make the job safe to run more than once. A second call does
-  not enter the handler while the first call is still running.
+  handler again and can enqueue another job. `provision_now` must be
+  idempotent. A second call does not enter the handler while the first call
+  is still running.
 
 ## [0.11.0] - 2026-11-19
 

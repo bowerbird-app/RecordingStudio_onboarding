@@ -29,12 +29,15 @@
 - Set `config.provision_async = true` when the handler enqueues a job. The
   handler then also receives `execution:`. Pass `execution.id` to the job.
   The job calls `RecordingStudioOnboarding.complete_provisioning!(execution_id)`
-  when the work succeeds, or `fail_provisioning!(execution_id, error: error)`
-  with an exception when it fails, then re-raises so the queue can retry.
+  when the work succeeds. Call `fail_provisioning!(execution_id, error: error)`
+  only from `retry_on StandardError, attempts: 5 do |job, error|`, once those
+  attempts are exhausted, for whatever exception class stopped the retries,
+  then re-raise that exception so it propagates.
 - A later `registration.completed.recording_studio_user` event, or `provision`
   with the same idempotency key, runs the handler again while the execution
-  is `pending` or `failed`. A `completed` execution stays completed. A second
-  call does not enter the handler while the first call is still `running`.
+  is `pending` or `failed` and can enqueue another job. `provision_now` must
+  be idempotent. A `completed` execution stays completed. A second call does
+  not enter the handler while the first call is still `running`.
 
 ## 0.11.0 Dependency pins
 

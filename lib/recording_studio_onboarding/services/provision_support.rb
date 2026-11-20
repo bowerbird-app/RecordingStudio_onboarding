@@ -66,6 +66,9 @@ module RecordingStudioOnboarding
 
       def persist_failure!(execution, error)
         execution.with_lock do
+          execution.reload
+          next if execution.completed?
+
           execution.update!(
             status: "failed",
             completed_at: Time.current,

@@ -457,16 +457,24 @@ class Host::ProvisionRegistration
 end
 
 class ProvisionRegistrationJob < ApplicationJob
+  retry_on StandardError, wait: :polynomially_longer, attempts: 5 do |job, error|
+    RecordingStudioOnboarding.fail_provisioning!(job.arguments.last, error: error)
+    raise error
+  end
+
   def perform(actor_id, execution_id)
     actor = User.find(actor_id)
     Host::ProvisionRegistration.provision_now(actor: actor)
     RecordingStudioOnboarding.complete_provisioning!(execution_id)
-  rescue Host::GrantFailed => error
-    RecordingStudioOnboarding.fail_provisioning!(execution_id, error: error)
-    raise
   end
 end
 ```
+
+`provision_now` must be idempotent. Call `complete_provisioning!` when the work
+succeeds. Call `fail_provisioning!` only from the `retry_on` block, once the
+attempts are exhausted, and pass the exception that stopped the retries (any
+exception class). Then re-raise it so the error propagates. Active Job does
+not re-raise for you when that block is present.
 
 `complete_provisioning!` accepts the execution or its id. A second call on a
 completed execution returns that row. It also completes a pending, running, or
@@ -478,8 +486,8 @@ Replaying `registration.completed.recording_studio_user`, or calling
 `provision` again with the same idempotency key, runs the handler when the
 execution is `pending` or `failed`. A `completed` execution stays completed.
 While the handler is inside `call`, the execution is `running` and a second
-call does not enter the handler. Make the job safe to run again, because a
-replay while the execution is still `pending` enqueues another job.
+call does not enter the handler. A replay while the execution is still
+`pending` enqueues another job. `provision_now` must be idempotent.
 
 No migration. With the default, existing handlers keep the same call and the
 execution completes when the handler returns.

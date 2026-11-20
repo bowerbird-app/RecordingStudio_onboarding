@@ -65,6 +65,59 @@ class AsyncProvisioningTest < ActionDispatch::IntegrationTest
     assert_equal completed.completed_at, again.completed_at
   end
 
+  test "an async handler that completes and then raises keeps the completed execution" do
+    user = create_user!("complete-then-raise")
+    @configuration.provision_async = true
+    @configuration.provision(:complete_then_raise, with: lambda do |execution:, **|
+      RecordingStudioOnboarding.complete_provisioning!(execution)
+      raise RuntimeError, "after complete password=secret-value"
+    end)
+
+    error = assert_raises(RecordingStudioOnboarding::ProvisionFailed) do
+      RecordingStudioOnboarding.provision(:complete_then_raise, actor: user)
+    end
+    assert_kind_of RuntimeError, error.cause
+
+    execution = RecordingStudioOnboarding::ProvisioningExecution.find_by!(
+      provisioner: "complete_then_raise",
+      actor: user
+    )
+    assert_equal "completed", execution.status
+    assert_nil execution.failure_details
+  end
+
+  test "a raising async handler fails the execution and a replay retries it" do
+    calls = 0
+    @configuration.provision_async = true
+    @configuration.provision(:async_boom, with: lambda do |**|
+      calls += 1
+      raise RuntimeError, "workspace missing password=secret-value" if calls == 1
+
+      :enqueued
+    end)
+    user = create_user!("async-boom")
+
+    error = assert_raises(RecordingStudioOnboarding::ProvisionFailed) do
+      RecordingStudioOnboarding.provision(:async_boom, actor: user)
+    end
+    assert_kind_of RuntimeError, error.cause
+
+    execution = RecordingStudioOnboarding::ProvisioningExecution.find_by!(
+      provisioner: "async_boom",
+      actor: user
+    )
+    assert_equal "failed", execution.status
+    assert_includes execution.failure_details, "RuntimeError"
+    assert_includes execution.failure_details, "password=[FILTERED]"
+    refute_includes execution.failure_details, "secret-value"
+
+    retried = RecordingStudioOnboarding.provision(:async_boom, actor: user)
+    assert_equal execution.id, retried.id
+    assert_equal "pending", retried.status
+    assert_nil retried.failure_details
+    assert_equal 2, calls
+  end
+
   test "an async handler that already completed the execution keeps that outcome" do
     user = create_user!("inline")
     @configuration.provision_async = true
@@ -198,7 +251,7 @@ class AsyncProvisioningTest < ActionDispatch::IntegrationTest
     @configuration.provision(:running_handoff, with: lambda do |**|
       mutex.synchronize { calls += 1 }
       entered << true
-      release.pop
+      release.pop(timeout: 5)
       :enqueued
     end)
 
@@ -230,7 +283,7 @@ class AsyncProvisioningTest < ActionDispatch::IntegrationTest
     if defined?(release) && release && defined?(first) && first&.alive?
       release << true
     end
-    first.join if defined?(first) && first
+    Timeout.timeout(5) { first.join } if defined?(first) && first
     Thread.new do
       ActiveRecord::Base.connection_pool.with_connection do
         RecordingStudioOnboarding::ProvisioningExecution.where(provisioner: "running_handoff").delete_all
@@ -253,7 +306,7 @@ class AsyncProvisioningTest < ActionDispatch::IntegrationTest
   end
 
   def assert_thread_finished(thread)
-    thread.join
+    Timeout.timeout(5) { thread.join }
     return if thread.status == false
 
     flunk "provision thread failed"
