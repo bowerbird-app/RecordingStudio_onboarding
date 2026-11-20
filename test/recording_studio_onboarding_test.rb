@@ -4,7 +4,13 @@ require "test_helper"
 
 class RecordingStudioOnboardingTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.11.0", ::RecordingStudioOnboarding::VERSION
+    assert_equal "0.12.0", ::RecordingStudioOnboarding::VERSION
+  end
+
+  def test_async_provisioning_api_is_public
+    assert_respond_to RecordingStudioOnboarding, :complete_provisioning!
+    assert_respond_to RecordingStudioOnboarding, :fail_provisioning!
+    refute RecordingStudioOnboarding.configuration.provision_async?
   end
 
   def test_lockfiles_pin_patched_omniauth

@@ -56,15 +56,6 @@ module RecordingStudioOnboarding
         }
       end
 
-      def invoke_handler
-        handler = resolve_handler
-        unless handler.respond_to?(:call)
-          raise ArgumentError, "Provisioner #{handler_source.inspect} does not respond to call"
-        end
-
-        handler.call(actor: @actor, subject: @subject, root: @root, context: @context)
-      end
-
       def resolve_handler
         source = handler_source
         return source if source.respond_to?(:call)

@@ -6,7 +6,8 @@ require "recording_studio_onboarding/flow_definition"
 module RecordingStudioOnboarding
   class Configuration
     attr_reader :hooks, :provisioners, :flows, :checklists, :before_onboarding_gates, :layout
-    attr_accessor :authorize_run, :preview_context, :current_actor, :setup_recheck_interval
+    attr_accessor :authorize_run, :preview_context, :current_actor, :setup_recheck_interval,
+                  :provision_async
 
     def initialize
       @hooks = RecordingStudio::Hooks.new
@@ -19,6 +20,13 @@ module RecordingStudioOnboarding
       @current_actor = nil
       @layout = nil
       @setup_recheck_interval = 5.minutes
+    end
+
+    # Opt-in. When false (the default), a provisioner that returns is completed
+    # immediately. When true, a successful handler leaves the execution pending
+    # until the host calls complete_provisioning! or fail_provisioning!.
+    def provision_async?
+      @provision_async == true
     end
 
     def layout=(value)
@@ -134,6 +142,7 @@ module RecordingStudioOnboarding
         flows: @flows.keys,
         checklists: @checklists.keys,
         setup_recheck_interval: @setup_recheck_interval,
+        provision_async: provision_async?,
         before_onboarding_gates: @before_onboarding_gates.size,
         hooks_registered: @hooks.registered_counts
       }

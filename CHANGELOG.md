@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-20
+
+### Added
+- Opt-in async provisioning. `config.provision_async` defaults to `false`, and
+  a handler that returns still marks the `ProvisioningExecution` completed.
+- When `config.provision_async` is `true`, a handler that returns leaves the
+  execution `pending`. The handler receives `execution:` (the
+  `ProvisioningExecution`). The host job calls
+  `RecordingStudioOnboarding.complete_provisioning!(execution_or_id)` or
+  `fail_provisioning!(execution_or_id, error:)`.
+- Replaying `registration.completed.recording_studio_user`, or calling
+  `provision` again, runs the handler when the execution is `pending` or
+  `failed`. A `completed` execution stays completed. An execution that is
+  `running` (the handler is still inside `call`) is not started a second time.
+
+### Upgrade notes
+- No migration. Hosts that leave `provision_async` off keep the same handler
+  signature (`actor:`, `subject:`, `root:`, `context:`) and the same completed
+  outcome.
+- To finish provisioning from a background job, set `config.provision_async = true`
+  and accept `execution:` in the provisioner. Pass `execution.id` into the job.
+  On success the job calls `complete_provisioning!` with the execution or its
+  id. On failure it calls `fail_provisioning!(execution_id, error: error)` with
+  an exception, then re-raises that exception so the queue can retry.
+  `complete_provisioning!` is idempotent once the execution is completed, and
+  it can also complete a pending, running, or failed execution.
+  `fail_provisioning!` records status `failed` and a scrubbed error, and raises
+  `ArgumentError` if the execution is already completed.
+- While the execution is `pending` or `failed`, another
+  `registration.completed.recording_studio_user` event (or `provision` with the
+  same idempotency key, including admin retry of a failed row) runs the
+  handler again. Make the job safe to run more than once. A second call does
+  not enter the handler while the first call is still running.
+
 ## [0.11.0] - 2026-11-19
 
 ### Changed
@@ -563,7 +597,8 @@ New addons copied from this template are born on Recording Studio 4.x.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.10.0...v0.11.0
 [0.8.0]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/bowerbird-app/recording_studio_onboarding/compare/v0.7.3...v0.7.4

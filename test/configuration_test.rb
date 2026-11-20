@@ -7,6 +7,18 @@ class ConfigurationTest < Minitest::Test
     @configuration = RecordingStudioOnboarding::Configuration.new
   end
 
+  def test_provision_async_defaults_off
+    refute @configuration.provision_async?
+    refute @configuration.provision_async
+
+    @configuration.provision_async = true
+    assert @configuration.provision_async?
+
+    @configuration.provision_async = false
+    refute @configuration.provision_async?
+    assert_equal false, @configuration.to_h.fetch(:provision_async)
+  end
+
   def test_provision_registers_named_handler
     @configuration.provision :new_registration, with: "Dummy::ProvisionRegistration"
 
