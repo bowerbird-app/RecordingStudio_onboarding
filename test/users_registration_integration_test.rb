@@ -21,8 +21,8 @@ class UsersRegistrationIntegrationTest < Minitest::Test
     dummy_gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
     assert_includes gemspec, 'spec.add_dependency "recording_studio_user", ">= 0.30.0", "< 1.0"'
-    pin = 'gem "recording_studio_user", "~> 0.41", ' \
-          'github: "bowerbird-app/RecordingStudio_users", tag: "v0.41.0"'
+    pin = 'gem "recording_studio_user", "~> 0.42", ' \
+          'github: "bowerbird-app/RecordingStudio_users", tag: "v0.42.1"'
     assert_includes gemfile, pin
     assert_includes dummy_gemfile, pin
   end
